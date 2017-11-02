@@ -34,7 +34,7 @@ if os.environ.get('ON_HEROKU', False):
     SECURE_SSL_REDIRECT = True
 else:
     DEBUG = True
-    ALLOWED_HOSTS = []
+    ALLOWED_HOSTS = ['local.com', 'www.local.com', 'dashboard.local.com']
 
 
 # Application definition
@@ -54,6 +54,7 @@ INSTALLED_APPS = [
 
     # packages
     'webpack_loader',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -64,7 +65,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'verboze.urls'
@@ -100,6 +100,18 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '',
     }
+}
+
+
+# Channel layer definitions
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "asgi_redis.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("localhost", 6379)],
+        },
+        "ROUTING": "verboze.routing.channel_routing",
+    },
 }
 
 
@@ -153,5 +165,3 @@ WEBPACK_LOADER = {
         'STATS_FILE': os.path.join(BASE_DIR, 'webpack-stats.json')
     }
 }
-
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
