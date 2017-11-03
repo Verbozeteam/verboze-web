@@ -47,6 +47,17 @@ Then we simply source this file:
 $ source secrets.sh
 ```
 
+#### Setting up react and webpack
+Make sure you have `node` installed, open a terminal tab and navigate to root directory that has `package.json` and run:
+```sh
+$ node install
+```
+This will install the the node modules we need for react and webpack, since they alot, we do not push them to the repo.
+Now whenever we edit react js files, you have to build in order for webpack to create a bundle and that will be loaded to django through the webpack-loader that was installed from the `requirements.txt`:
+```sh
+$ node run build
+```
+
 #### Setting up redis
 Install redis and enable auto start
 ```sh
