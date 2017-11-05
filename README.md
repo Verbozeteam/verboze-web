@@ -46,7 +46,10 @@ Then we simply source this file:
 ```sh
 $ source secrets.sh
 ```
-
+#### Migrate database
+```sh
+$ python manage.py migrate
+```
 #### Setting up react and webpack
 Make sure you have `node` installed, open a terminal tab and navigate to root directory that has `package.json` and run:
 ```sh
@@ -57,6 +60,7 @@ Now whenever we edit react js files, you have to build in order for webpack to c
 ```sh
 $ node run build
 ```
+> **Note:** Whenever the you run the above command above, delete the old bundled files, otherwise it will keep creating new files, we never use the old ones again. I will incorporate something to automate this process soon.
 
 #### Setting up redis
 Install redis and enable auto start
@@ -270,6 +274,10 @@ Save the file. Then we need to run nginx (with sudo since we are using port 80):
 ```sh
 $ sudo nginx
 ```
+> **Note:** If you get an error the following error or something similar:
+`nginx: [emerg] open() "/usr/local/Cellar/nginx/1.12.2_1/logs/error.log" failed (2: No such file or directory)`
+Simply create that file, and it should solve the problem.
+
 If no errors appear it should be good to go, check if nginx is listening on port 80:
 ```sh
 $ sudo lsof -n -i:80 | grep LISTEN
