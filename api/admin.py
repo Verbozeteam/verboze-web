@@ -1,3 +1,6 @@
 from django.contrib import admin
+from api.models import *
 
-# Register your models here.
+admin.site.register(Hotel)
+admin.site.register(HotelRoom)
+admin.site.register(ConnectionToken)
