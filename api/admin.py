@@ -6,7 +6,6 @@ from api.models import *
 admin.site.register(User, UserAdmin)
 admin.site.register(Guest)
 admin.site.register(Room)
-admin.site.register(Floor)
 admin.site.register(Hotel)
 admin.site.register(Hub)
 admin.site.register(Token)

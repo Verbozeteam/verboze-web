@@ -33,14 +33,6 @@ class Guest(models.Model):
 		null=True,
 		default=None
 	)
-	floor = models.ForeignKey(
-		'Floor',
-		on_delete=models.CASCADE,
-		related_name='guests',
-		related_query_name='guest',
-		null=True,
-		default=None
-	)
 	first_name = models.CharField(max_length=128, default="")
 	last_name = models.CharField(max_length=128, default="")
 
@@ -55,13 +47,8 @@ class Guest(models.Model):
 # Hotel room
 class Room(models.Model):
 	tokens = GenericRelation('Token', related_query_name='rooms')
-	number = models.IntegerField()
-	floor = models.ForeignKey(
-		'Floor',
-		on_delete=models.CASCADE,
-		related_name='floors',
-		related_query_name='floor'
-	)
+	name = models.CharField(max_length=128)
+	floor = models.CharField(max_length=128)
 	hotel = models.ForeignKey(
 		'Hotel',
 		on_delete=models.CASCADE,
@@ -70,36 +57,20 @@ class Room(models.Model):
 	)
 
 	def __str__(self):
-		return "Room {} {}".format(
-			self.number,
-			self.floor
+		return "Room {} Floor {} at {}".format(
+			self.name,
+			self.floor,
+			self.hotel
 		)
 
 	@property
 	def websocket_group(self):
-		active_room_token = self.tokens.get(expired=False)
-		return "room-{}".format(active_room_token.id)
+		return "room-{}".format(self.id)
 
 	def send_message(self, message):
 		# send message to this room's group
 		Group(self.websocket_group).send(message)
 
-
-# Hotel floor
-class Floor(models.Model):
-	number = models.IntegerField()
-	hotel = models.ForeignKey(
-		'Hotel',
-		on_delete=models.CASCADE,
-		related_name='floors',
-		related_query_name='floor'
-	)
-
-	def __str__(self):
-		return "Floor {} at {}".format(
-			self.number,
-			self.hotel
-		)
 
 # Hotel where guest is staying in
 # This will be used for hotel dashboard as well
@@ -112,8 +83,7 @@ class Hotel(models.Model):
 
 	@property
 	def websocket_group(self):
-		active_hotel_token = self.tokens.get(expired=False)
-		return "hotel-{}".format(active_hotel_token.id)
+		return "hotel-{}".format(self.id)
 
 	def send_message(self, message):
 		# send message to this hotel's group (only contains this hotel)
@@ -135,8 +105,7 @@ class Hub(models.Model):
 
 	@property
 	def websocket_group(self):
-		active_hub_token = self.tokens.get(expired=False)
-		return "hub-{}".format(active_hub_token.id)
+		return "hub-{}".format(self.id)
 
 	def send_message(self, message):
 		# send message to this hub's group (only contains this hub)
