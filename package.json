@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "webpack --config webpack.dev.js --progress --colors --watch",
-    "build-production": "webpack --config webpack.prod.js --progress --colors",
+    "build-production": "webpack --config=webpack.prod.js -p",
     "heroku-postbuild": "npm run build-production"
 
   },
