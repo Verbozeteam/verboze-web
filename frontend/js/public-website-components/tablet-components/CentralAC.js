@@ -217,7 +217,6 @@ const styles = {
         display: 'flex',
         fontSize: 10,
         color: '#DDDDDD',
-        fontFamily: 'HKNova-MediumR'
     },
     center_text_container: {
         display: 'flex',
