@@ -6,6 +6,7 @@ import { connect as ReduxConnect } from 'react-redux';
 
 import { LightDimmer } from './LightDimmer';
 import { LightSwitch } from './LightSwitch';
+import { PresetsSwitch } from './PresetsSwitch';
 
 import * as ConnectionTypes from '../../api-utils/ConnectionTypes';
 
@@ -40,10 +41,10 @@ class LightsPanel extends React.Component<PropsType, StateType> {
 
         var dimmer_name = '';
         var slider_width = layout.width - 20;
-        var slider_height = 60;
+        var slider_height = 30;
         if (viewType == 'detail') {
             dimmer_name = dimmer.name.en;
-            slider_height = 90;
+            slider_height = 40;
             slider_width *= (3/4);
         } else if (layout.height <= 100) {
             slider_width *= 0.5;
@@ -89,25 +90,25 @@ class LightsPanel extends React.Component<PropsType, StateType> {
         </div>;
     }
 
-    // renderPresetsSwitch(presets: Array<Object>) {
-    //     const { viewType, layout } = this.props;
-    //     var key = 'presets-'+Object.keys(presets[0]).sort()[0];
+    renderPresetsSwitch(presets: Array<Object>) {
+        const { viewType, layout } = this.props;
+        var key = 'presets-'+Object.keys(presets[0]).sort()[0];
 
-    //     return <View key={key}
-    //         style={switch_styles.container}>
-    //         <View key={key+'-container-container'}
-    //             style={switch_styles.container_container}>
-    //             <PresetsSwitch
-    //                 key={key+'-switch'}
-    //                 presets={presets}
-    //                 viewType={viewType} />
-    //             <Text key={key+'-name'}
-    //                 style={[switch_styles.name, viewType === 'detail' ? {height: 100} : {}]}>
-    //                 {I18n.t("Presets")}
-    //             </Text>
-    //         </View>
-    //     </View>;
-    // }
+        return <div key={key}
+            style={switch_styles.container}>
+            <div key={key+'-container-container'}
+                style={switch_styles.container_container}>
+                <PresetsSwitch
+                    key={key+'-switch'}
+                    presets={presets}
+                    viewType={viewType} />
+                <div key={key+'-name'}
+                    style={{...switch_styles.name, ...(viewType === 'detail' ? {height: 50} : {})}}>
+                    {"Presets"}
+                </div>
+            </div>
+        </div>;
+    }
 
     render() {
         const { things, layout, presets, viewType } = this.props;
@@ -121,9 +122,9 @@ class LightsPanel extends React.Component<PropsType, StateType> {
                switches.push(this.renderLightSwitch(things[i]));
         }
 
-        // if (viewType ==='detail' && presets && typeof(presets) == "object" && presets.length > 0 ) {
-        //     switches.push(this.renderPresetsSwitch(presets));
-        // }
+        if (viewType ==='detail' && presets && typeof(presets) == "object" && presets.length > 0 ) {
+            switches.push(this.renderPresetsSwitch(presets));
+        }
 
         return (
             <div style={layout.height > 100 ? styles.container : styles.container_sm}>
@@ -183,7 +184,6 @@ const dimmer_styles = {
         display: 'flex',
         marginLeft: 20,
         fontSize: 20,
-        fontFamily: 'HKNova-MediumR',
         color: '#FFFFFF',
     },
 };
@@ -200,7 +200,6 @@ const switch_styles = {
         flex: 1,
 
         fontSize: 20,
-        fontFamily: 'HKNova-MediumR',
         color: '#FFFFFF',
         textAlign: 'center',
     },

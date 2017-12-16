@@ -151,7 +151,6 @@ const styles = {
     text_container: {
         width: 50,
         fontSize: 14,
-        fontFamily: 'HKNova-MediumR',
         color: '#FFFFFF',
         textAlign: 'center',
     },
