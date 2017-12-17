@@ -3,8 +3,8 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 
-// const GenericCircularSlider = require('../../react-components/GenericCircularSlider.web');
-// const GenericToggle = require('../../react-components/GenericToggle.web');
+const GenericCircularSlider = require('../../react-components/GenericCircularSlider.web');
+const GenericToggle = require('../../react-components/GenericToggle.web');
 const GenericButton = require('../../react-components/GenericButton.web');
 
 import * as connectionActions from '../redux/actions/connection';
@@ -118,7 +118,6 @@ class CentralAC extends React.Component<PropsType, StateType> {
         var center_text_sub = '';
         var room_temp_text = ' ';
         var hiding_style = {};
-        var presentation_style = {};
 
         if (viewType === 'detail') {
             if (fan) {
@@ -130,23 +129,26 @@ class CentralAC extends React.Component<PropsType, StateType> {
 
             room_temp_text = 'Room Temperature' + ' ' + temp.toFixed(1) + '°C';
 
-            // slider = (
-            //     <GenericCircularSlider value={set_pt}
-            //         minimum={this._min_temp} maximum={this._max_temp}
-            //         round={this.round.bind(this)}
-            //         onMove={this.changeTemperature(false).bind(this)}
-            //         onRelease={this.changeTemperature(true).bind(this)}
-            //         diameter={layout.height / 1.5}
-            //         disabled={fan === 0} />
-            // );
+            slider = (
+                <GenericCircularSlider
+                    value={set_pt}
+                    minimum={this._min_temp} maximum={this._max_temp}
+                    round={this.round.bind(this)}
+                    onMove={this.changeTemperature(false).bind(this)}
+                    onRelease={this.changeTemperature(true).bind(this)}
+                    diameter={layout.height / 1.5}
+                    arcWidth={15}
+                    knobDiameter={35}
+                    disabled={fan === 0} />
+            );
 
-            // toggles = (
-            //     <GenericToggle values={this._fan_speeds}
-            //         icon={this._fan_icon}
-            //         layout={{height: 80, width: 350}}
-            //         actions={this._fan_actions}
-            //         selected={fan} />
-            // );
+            toggles = (
+                <GenericToggle values={this._fan_speeds}
+                    icon={this._fan_icon}
+                    layout={{height: 35, width: layout.width - 150}}
+                    actions={this._fan_actions}
+                    selected={fan} />
+            );
         } else {
             hiding_style = {
                 display: 'none'
@@ -156,18 +158,18 @@ class CentralAC extends React.Component<PropsType, StateType> {
             center_text_sub = 'Room Temperature';
         }
 
+        var toggles_container_style = styles.stack;
+        if (viewType === 'detail')
+            toggles_container_style = {...toggles_container_style, ...styles.buttons_stack};
+
         return (
             <div style={styles.container}>
-                <div>
+                <div style={styles.stack}>
                     {slider}
-                </div>
-
-                <div>
-                    {toggles}
-                </div>
-
-                <div style={styles.room_temperature}>
-                    {room_temp_text}
+                    <div style={styles.center_text_container}>
+                        <div style={styles.center_text_sub}>{center_text_sub}</div>
+                        <div style={styles.center_text_main}>{center_text_main}</div>
+                    </div>
                 </div>
 
                 <div style={styles.minus_container}>
@@ -177,7 +179,7 @@ class CentralAC extends React.Component<PropsType, StateType> {
                         style={hiding_style}
                         layout={{width: 40, height: 40}}
                         action={() => {
-                          this.changeTemperature(true)(Math.max(this._min_temp, this.state.set_pt - 0.5))
+                            this.changeTemperature(true)(Math.max(this._min_temp, this.state.set_pt - 0.5))
                         }} />
                 </div>
 
@@ -192,9 +194,12 @@ class CentralAC extends React.Component<PropsType, StateType> {
                         }} />
                 </div>
 
-                <div style={Object.assign(presentation_style, styles.center_text_container)}>
-                    <div style={styles.center_text_sub}>{center_text_sub}</div>
-                    <div style={styles.center_text_main}>{center_text_main}</div>
+                <div style={styles.stack}>
+                    {toggles}
+                </div>
+
+                <div style={styles.stack}>
+                    <div style={styles.room_temperature}>{room_temp_text}</div>
                 </div>
             </div>
         );
@@ -207,46 +212,66 @@ CentralAC.contextTypes = {
 
 const styles = {
     container: {
+        position: 'relative',
         display: 'flex',
         width: '100%',
         height: '100%',
+        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center'
     },
-    room_temperature: {
-        display: 'flex',
-        fontSize: 10,
-        color: '#DDDDDD',
-    },
     center_text_container: {
+        pointerEvents: 'none',
         display: 'flex',
-        flexDirection: 'column',
+        width: '100%',
+        height: '100%',
         position: 'absolute',
         alignItems: 'center',
         justifyContent: 'center',
+        flexDirection: 'column'
     },
-    center_text_main: {
+    stack: {
+        position: 'relative',
         display: 'flex',
-        fontSize: 40,
-        color: '#FFFFFF',
-        marginTop: 10,
+        width: '100%',
+        alignItems: 'center',
+        justifyContent: 'center'
     },
-    center_text_sub: {
+    buttons_stack: {
+        position: 'relative',
         display: 'flex',
-        fontSize: 14,
-        color: '#DDDDDD',
+        height: 50,
     },
     minus_container: {
+        marginTop: -20,
         display: 'flex',
         position: 'absolute',
-        top: 120,
-        left: 15,
+        left: 10,
     },
     plus_container: {
+        marginTop: -20,
         display: 'flex',
         position: 'absolute',
-        top: 120,
-        right: 15,
+        right: 10,
+    },
+    room_temperature: {
+        position: 'relative',
+        display: 'flex',
+        fontSize: 14,
+        color: '#aaaaaa',
+        backgroundColor: '#00000000',
+    },
+    center_text_main: {
+        fontSize: 28,
+        color: '#ffffff',
+        backgroundColor: '#00000000',
+        alignItems: 'center',
+    },
+    center_text_sub: {
+        fontSize: 12,
+        color: '#aaaaaa',
+        backgroundColor: '#00000000',
+        alignItems: 'center',
     },
 };
 

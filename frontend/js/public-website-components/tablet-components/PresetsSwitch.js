@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 const GenericToggle = require('../../react-components/GenericToggle.web');
 
 const connectionActions = require('../redux/actions/connection');
-const WebSocketCommunication = require('../../api-utils/WebSocketCommunication');
+import { WebSocketCommunication } from '../../api-utils/WebSocketCommunication';
 
 type StateType = {
     currentPresetIndex: number,
@@ -98,7 +98,7 @@ class PresetsSwitch extends React.Component<PropsType, StateType> {
                         <GenericToggle values={values}
                             orientation={"vertical"}
                             layout={{
-                                height: 140,
+                                height: 100,
                                 width: 50,
                             }}
                             sameSameValue={true}

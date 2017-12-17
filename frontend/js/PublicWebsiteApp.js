@@ -1,7 +1,7 @@
 /* @flow */
 
 import * as React from 'react';
-import * as ReactDom from 'react-dom';
+import ReactNative from 'react-native';
 
 import {
   BrowserRouter,
@@ -14,11 +14,12 @@ import { App } from './public-website-components/App';
 let react_app_element = document.getElementById('react-app');
 
 if (react_app_element instanceof HTMLElement) {
-	ReactDom.render((
+	ReactNative.render((
 		<BrowserRouter>
 			<ScrollToTop>
-				<App/>
+				<App />
 			</ScrollToTop>
 		</BrowserRouter>
 	), react_app_element);
 }
+

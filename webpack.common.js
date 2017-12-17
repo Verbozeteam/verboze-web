@@ -14,7 +14,7 @@ module.exports = {
         filename: "[name]-[hash].js",
     },
 
-    plugins: [],
+	plugins: [],
 
     module: {
         loaders: [
@@ -23,6 +23,10 @@ module.exports = {
                 exclude: /node_modules/,
                 loader: "babel-loader",
                 query: {
+					plugins: [
+                        "transform-runtime",
+						"react-native-web/babel"
+					],
                     presets: ["react", "es2015", "stage-2"]
                 }
             },
