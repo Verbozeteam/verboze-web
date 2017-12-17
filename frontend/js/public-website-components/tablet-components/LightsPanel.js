@@ -103,7 +103,7 @@ class LightsPanel extends React.Component<PropsType, StateType> {
                     presets={presets}
                     viewType={viewType} />
                 <div key={key+'-name'}
-                    style={{...switch_styles.name, ...(viewType === 'detail' ? {height: 50} : {})}}>
+                    style={switch_styles.name}>
                     {"Presets"}
                 </div>
             </div>
