@@ -2,7 +2,10 @@
 
 import * as React from 'react';
 import PropTypes from 'prop-types';
-import { Button } from 'semantic-ui-react'
+import {
+    Button,
+    Header
+} from 'semantic-ui-react'
 import { connect as ReduxConnect } from 'react-redux';
 
 import * as APITypes from '../api-utils/APITypes';
@@ -126,6 +129,8 @@ class RoomDemoComponent extends React.Component<PropsType, StateType> {
                 <div style={styles.logoStaticContainer}>
                     <div style={currentStage > 1 ? styles.logoContainerFaded : styles.logoContainer}>
                         <img style={styles.logo} src={this._logo} />
+                        <Header inverted as='h3' style={{ fontSize: '2em' }}>The most advanced automation system etc etc etc etc</Header>
+                        <br/>
                         <Button {...loading_status} primary fade='true' vertical='true' size='massive' onClick={this.startDemo.bind(this)}>
                             {"Try demo!"}
                         </Button>

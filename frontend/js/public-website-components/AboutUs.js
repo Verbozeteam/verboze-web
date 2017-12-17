@@ -22,16 +22,35 @@ export default class AboutUs extends Component<PropsType, StateType> {
     _yusuf = require('../../assets/images/yusuf.png');
     _hasan = require('../../assets/images/hasan.png');
     _fituri = require('../../assets/images/fituri.jpg');
-    // _qstp = require('../../assets/images/qstp.jpg');
 
     render() {
         return (
             <div>
-                <Segment style={ styles.teamSegment }>
+                <Segment style={ styles.visionSegment }>
+                    <Container>
+                        <Grid textAlign='center' stackable>
+                            <Grid.Row>
+                                <Header textAlign='center' as='h3' style={{ fontSize: '2em' }}>Vision</Header>
+                                <br/>
+                            </Grid.Row>
+                            <Grid.Row>
+                                <p style={{ fontSize: '1.33em' }}>
+                                    This is the best vision ever, we will cash money and then floos. Then after that ipo very bestest ipo.
+                                    Control, hotel, phone, crazy tech. Very nice stuff.
+
+                                </p>
+                            </Grid.Row>
+                        </Grid>
+                    </Container>
+                </Segment>
+
+                <Segment inverted style={ styles.teamSegment }>
                     <Container>
                         <Grid textAlign='center' columns={3} stackable>
-                            <Header as='h3' style={{ fontSize: '2em' }}>Team</Header>
-                            <br/>
+                            <Grid.Row>
+                                <Header inverted as='h3' style={{ fontSize: '2em' }}>Team</Header>
+                                <br/>
+                            </Grid.Row>
                             <Grid.Row>
                                 <Grid.Column>
                                     <Card style={ styles.hasanCard }>
@@ -106,12 +125,21 @@ export default class AboutUs extends Component<PropsType, StateType> {
                     </Container>
                 </Segment>
 
-                <Segment inverted style={ styles.locationSegment }>
+                <Segment style={ styles.locationSegment }>
                     <Container>
                         <Grid textAlign='center' columns={2} stackable>
                             <Grid.Row>
-                                <Header inverted as='h3' style={{ fontSize: '2em' }}>Location</Header>
+                                <Header as='h3' style={{ fontSize: '2em' }}>Location</Header>
                                 <br/>
+                            </Grid.Row>
+                            <Grid.Row>
+                                <Grid.Column>
+                                    <Header textAlign='center' as='h3' style={{ fontSize: '2em' }}>Qatar Science & Technology Park</Header>
+                                    <p style={{ fontSize: '1.33em' }}>
+                                        Home for international technology companies in Qatar,
+                                        and an incubator of start-up technology businesses.
+                                    </p>
+                                </Grid.Column>
                             </Grid.Row>
                             <Grid.Row>
                                 <Grid.Column>
@@ -125,12 +153,6 @@ export default class AboutUs extends Component<PropsType, StateType> {
                                     />
                                 </Grid.Column>
                             </Grid.Row>
-                            <Grid.Row>
-                                <Header inverted as='h5' style={{ fontSize: '1em' }}>
-                                    Qatar Science & Technology Park is a home for international technology companies in Qatar,
-                                    and an incubator of start-up technology businesses.
-                                </Header>
-                            </Grid.Row>
                         </Grid>
                     </Container>
                 </Segment>
@@ -142,6 +164,11 @@ export default class AboutUs extends Component<PropsType, StateType> {
 
 
 const styles = {
+    visionSegment: {
+        padding: '8em 0em',
+        borderRadius: 0,
+        margin: 0
+    },
     teamSegment: {
         padding: '8em 0em',
         borderRadius: 0,
