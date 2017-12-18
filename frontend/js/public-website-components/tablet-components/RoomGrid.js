@@ -13,7 +13,6 @@ import { CentralAC } from './CentralAC';
 
 function mapStateToProps(state) {
     return {
-        roomConfig: state.connection.roomConfig,
     };
 }
 
@@ -23,7 +22,6 @@ function mapDispatchToProps(dispatch) {
 }
 
 type PropsType = {
-    roomConfig: ConnectionTypes.RoomType,
     width: number,
     height: number,
 };
@@ -135,7 +133,8 @@ class RoomGrid extends React.Component<PropsType, StateType> {
     }
 
     renderPresentationView() {
-        const { roomConfig, width, height } = this.props;
+        const { width, height } = this.props;
+        const roomConfig = this.context.store.getState().connection.roomConfig;
         var curRoomConfig = roomConfig.rooms[0];
 
         var renderedPanels = [];
@@ -175,7 +174,8 @@ class RoomGrid extends React.Component<PropsType, StateType> {
 
     renderDetailView() {
         const { currentPanel } = this.state;
-        const { roomConfig, width, height } = this.props;
+        const { width, height } = this.props;
+        const roomConfig = this.context.store.getState().connection.roomConfig;
         var curRoomConfig = roomConfig.rooms[0];
 
         var renderedPanels = [];
