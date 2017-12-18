@@ -38,8 +38,8 @@ export default class Features extends Component<PropsType, StateType> {
     render() {
         return (
             <div>
-                <Segment style={ styles.featureSegment } vertical>
-                    <Container id='retrofitting'>
+                <Segment style={ styles.featureSegment } vertical id='retrofitting'>
+                    <Container>
                         <Header as='h3' style={{ fontSize: '2em' }}>Retrofitting</Header>
                         <Grid>
                             <Grid.Row>
@@ -90,8 +90,8 @@ export default class Features extends Component<PropsType, StateType> {
                     </Container>
                 </Segment>
 
-                <Segment inverted style={ styles.featureSegment }>
-                    <Container id='control'>
+                <Segment inverted style={ styles.featureSegment } id='control'>
+                    <Container>
                         <Header inverted as='h3' style={{ fontSize: '2em' }}>Control</Header>
                         <p style={{ fontSize: '1.33em' }}>
                             Give your guests the ability to have full control of all aspects of their room and much more. All within reach of their finger tips with our intuitively designed apps.
@@ -146,8 +146,8 @@ export default class Features extends Component<PropsType, StateType> {
                     </Container>
                 </Segment>
 
-                <Segment style={ styles.featureSegment }>
-                    <Container id='monitoring'>
+                <Segment style={ styles.featureSegment } id='monitoring'>
+                    <Container>
                         <Header as='h3' style={{ fontSize: '2em' }}>Monitoring</Header>
                         <br/>
                         <Grid>
