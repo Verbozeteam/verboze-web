@@ -70,7 +70,7 @@ export default class AboutUs extends Component<PropsType, StateType> {
                                         </Card.Content>
                                         <Card.Content extra>
                                             <Icon name='mail' />
-                                            hbj@verboze.com
+                                            <a href='mailto:hbj@verboze.com'>hbj@verboze.com</a>
                                         </Card.Content>
                                     </Card>
                                 </Grid.Column>
@@ -93,7 +93,7 @@ export default class AboutUs extends Component<PropsType, StateType> {
                                         </Card.Content>
                                         <Card.Content extra>
                                             <Icon name='mail' />
-                                            mfituri@verboze.com
+                                            <a href='mailto:mfituri@verboze.com'>mfituri@verboze.com</a>
                                         </Card.Content>
                                     </Card>
                                 </Grid.Column>
@@ -116,7 +116,7 @@ export default class AboutUs extends Component<PropsType, StateType> {
                                         </Card.Content>
                                         <Card.Content extra>
                                             <Icon name='mail' />
-                                            ymusleh@verboze.com
+                                            <a href='mailto:ymusleh@verboze.com'>ymusleh@verboze.com</a>
                                         </Card.Content>
                                     </Card>
                                 </Grid.Column>

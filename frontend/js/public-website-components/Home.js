@@ -23,7 +23,7 @@ type StateType = {
 
 export default class Home extends Component<PropsType, StateType> {
     _white_image = require('../../assets/images/white-image.png');
-    _technology_luxury = require('../../assets/images/technology_luxury.png');
+    _technology_complements_luxury = require('../../assets/images/technology_complements_luxury.png');
 
     render() {
         return (
@@ -43,7 +43,7 @@ export default class Home extends Component<PropsType, StateType> {
                             <Grid.Column floated='right' width={6}>
                                 <Image
                                     size='large'
-                                    src={ this._technology_luxury }
+                                    src={ this._technology_complements_luxury }
                                 />
                             </Grid.Column>
                         </Grid.Row>
