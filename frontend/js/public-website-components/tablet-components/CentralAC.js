@@ -94,8 +94,9 @@ class CentralAC extends React.Component<PropsType, StateType> {
         return ((new_set_pt: number) => {
             if (send_socket) {
                 WebSocketCommunication.sendMessage({
-                    thing: this.props.id,
-                    set_pt: new_set_pt,
+                    [this.props.id]: {
+                        set_pt: new_set_pt,
+                    }
                 });
             }
             this.context.store.dispatch(connectionActions.setThingPartialState(this.props.id, {set_pt: new_set_pt}));
@@ -104,8 +105,9 @@ class CentralAC extends React.Component<PropsType, StateType> {
 
     changeFan(speed: number) {
         WebSocketCommunication.sendMessage({
-            thing: this.props.id,
-            fan: speed,
+            [this.props.id]: {
+                fan: speed,
+            }
         });
         this.context.store.dispatch(connectionActions.setThingPartialState(this.props.id, {fan: speed}));
     }

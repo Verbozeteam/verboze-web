@@ -74,12 +74,7 @@ class PresetsSwitch extends React.Component<PropsType, StateType> {
     changePreset(new_preset: number) {
         const { presets } = this.props;
 
-        for (var k in presets[new_preset]) {
-            WebSocketCommunication.sendMessage({
-                thing: k,
-                ...presets[new_preset][k],
-            });
-        }
+        WebSocketCommunication.sendMessage(presets[new_preset]);
         this.context.store.dispatch(connectionActions.setThingsPartialStates(presets[new_preset]));
     }
 
