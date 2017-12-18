@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import {
     Button,
     Header
-} from 'semantic-ui-react'
+} from 'semantic-ui-react';
 import { connect as ReduxConnect } from 'react-redux';
 
 import * as APITypes from '../api-utils/APITypes';

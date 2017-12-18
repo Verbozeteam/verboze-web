@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import PropTypes from 'prop-types';
+import { Button } from 'semantic-ui-react';
 import { connect as ReduxConnect } from 'react-redux';
 
 const QRCode = require('qrcode.react');
@@ -24,11 +25,13 @@ type PropsType = {
 
 type StateType = {
     isRendered: boolean,
+    curPage: number, // 0 is "get app" page, 1 is "scan QR" page
 };
 
 class RoomDemoControls extends React.Component<PropsType, StateType> {
     state = {
         isRendered: false,
+        curPage: 0,
     };
 
     animate() {
@@ -39,6 +42,8 @@ class RoomDemoControls extends React.Component<PropsType, StateType> {
     }
 
     render() {
+        const { curPage } = this.state;
+
         var style = {...styles.controlsContainer};
 
         if (!this.state.isRendered) {
@@ -47,11 +52,36 @@ class RoomDemoControls extends React.Component<PropsType, StateType> {
             requestAnimationFrame(this.animate.bind(this));
         }
 
+        var contents = null;
+        if (curPage === 0) {
+            contents = (
+                <div style={styles.phone_instructions}>
+                    <div style={styles.header}>Get the App</div>
+                    <img src={require('../../assets/images/play_store.png')} style={styles.store_icon} />
+                    <img src={require('../../assets/images/app_store.png')} style={styles.store_icon} />
+
+                    <Button primary fade='true' vertical='true' size='small' style={styles.button} onClick={(() => this.setState({curPage: 1})).bind(this)}>
+                        {"Use the app"}
+                    </Button>
+                </div>
+            );
+        } else if (curPage === 1) {
+            contents = (
+                <div style={styles.phone_instructions}>
+                    <div style={styles.header}>Scan this code</div>
+                    <div style={styles.qr_code}>
+                        <QRCode value={this.props.connectionURL} size={105} />
+                    </div>
+                    <Button primary fade='true' vertical='true' size='small' style={styles.button} onClick={(() => this.setState({curPage: 0})).bind(this)}>
+                        {"< Back"}
+                    </Button>
+                </div>
+            );
+        }
+
         return (
             <div style={style}>
-                <div style={styles.qr_code}>
-                    <QRCode value={this.props.connectionURL} />
-                </div>
+                {contents}
                 <RoomTablet />
             </div>
         );
@@ -70,17 +100,58 @@ const styles = {
         opacity: 1,
         transition: 'opacity 500ms, top 500ms',
     },
-    qr_code: {
+    phone_instructions: {
+        backgroundImage: 'url(' + require('../../assets/images/iphone_black.png') + ')',
+        backgroundSize: 'contain',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+
+        width: 200,
+        height: 300,
+
         position: 'absolute',
-        left: 50,
+        right: 650,
         bottom: 0,
-        width: 150,
-        height: 150,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    header: {
+        position: 'absolute',
+        margin: 0,
+        top: 46,
+        fontSize: 18,
+        height: 25,
+        color: '#ffffff',
+    },
+    qr_code: {
+        width: 120,
+        height: 120,
         alignItems: 'center',
         justifyContent: 'center',
         display: 'flex',
         backgroundColor: '#FFFFFF',
-    }
+    },
+    app_instructions: {
+        width: 250,
+        height: 150,
+        alignItems: 'center',
+        justifyContent: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+    },
+    store_icon: {
+        width: 120,
+        height: 42,
+    },
+    button: {
+        position: 'absolute',
+        margin: 0,
+        bottom: 46,
+        height: 30,
+        width: 110,
+    },
 };
 
 module.exports = { RoomDemoControls: ReduxConnect(mapStateToProps, mapDispatchToProps) (RoomDemoControls) };
