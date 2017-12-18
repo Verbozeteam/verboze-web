@@ -14,6 +14,7 @@ type StateType = {
     set_pt: number,
     temp: number,
     fan: number,
+    firstRender: boolean,
 };
 
 type PropsType = {
@@ -34,6 +35,7 @@ class CentralAC extends React.Component<PropsType, StateType> {
         set_pt: 0,
         temp: 0,
         fan: 0,
+        firstRender: true,
     };
 
     _fan_speeds = [
@@ -88,29 +90,38 @@ class CentralAC extends React.Component<PropsType, StateType> {
         return (Math.round(value * 2) / 2);
     }
 
-  changeTemperature(send_socket: boolean) {
-      return ((new_set_pt: number) => {
-          if (send_socket) {
-              WebSocketCommunication.sendMessage({
-                  thing: this.props.id,
-                  set_pt: new_set_pt,
-              });
-          }
-          this.context.store.dispatch(connectionActions.setThingPartialState(this.props.id, {set_pt: new_set_pt}));
-      }).bind(this);
-  }
+    changeTemperature(send_socket: boolean) {
+        return ((new_set_pt: number) => {
+            if (send_socket) {
+                WebSocketCommunication.sendMessage({
+                    thing: this.props.id,
+                    set_pt: new_set_pt,
+                });
+            }
+            this.context.store.dispatch(connectionActions.setThingPartialState(this.props.id, {set_pt: new_set_pt}));
+        }).bind(this);
+    }
 
-  changeFan(speed: number) {
-      WebSocketCommunication.sendMessage({
-          thing: this.props.id,
-          fan: speed,
-      });
-      this.context.store.dispatch(connectionActions.setThingPartialState(this.props.id, {fan: speed}));
-  }
+    changeFan(speed: number) {
+        WebSocketCommunication.sendMessage({
+            thing: this.props.id,
+            fan: speed,
+        });
+        this.context.store.dispatch(connectionActions.setThingPartialState(this.props.id, {fan: speed}));
+    }
+
+
+    firstFrameRendered() {
+        setTimeout((() => {
+            this.setState({
+                firstRender: false,
+            });
+        }).bind(this), 0);
+    }
 
     render() {
         const { id, layout, viewType } = this.props;
-        const { set_pt, temp, fan } = this.state;
+        const { set_pt, temp, fan, firstRender } = this.state;
 
         var slider = null;
         var toggles = null;
@@ -136,16 +147,16 @@ class CentralAC extends React.Component<PropsType, StateType> {
                     round={this.round.bind(this)}
                     onMove={this.changeTemperature(false).bind(this)}
                     onRelease={this.changeTemperature(true).bind(this)}
-                    diameter={layout.height / 1.5}
-                    arcWidth={15}
-                    knobDiameter={35}
+                    diameter={firstRender ? 1 : layout.height / 1.5}
+                    arcWidth={firstRender ? 1 : 15}
+                    knobDiameter={firstRender ? 1 : 35}
                     disabled={fan === 0} />
             );
 
             toggles = (
                 <GenericToggle values={this._fan_speeds}
                     icon={this._fan_icon}
-                    layout={{height: 35, width: layout.width - 150}}
+                    layout={{height: firstRender ? 0 : 35, width: firstRender ? 0 : layout.width - 150}}
                     actions={this._fan_actions}
                     selected={fan} />
             );
@@ -162,6 +173,9 @@ class CentralAC extends React.Component<PropsType, StateType> {
         if (viewType === 'detail')
             toggles_container_style = {...toggles_container_style, ...styles.buttons_stack};
 
+        if (firstRender)
+            requestAnimationFrame(this.firstFrameRendered.bind(this));
+
         return (
             <div style={styles.container}>
                 <div style={styles.stack}>
@@ -177,7 +191,7 @@ class CentralAC extends React.Component<PropsType, StateType> {
                         disabled={fan === 0 || set_pt == this._min_temp}
                         icon={require('../../../assets/images/minus.png')}
                         style={hiding_style}
-                        layout={{width: 40, height: 40}}
+                        layout={{width: firstRender ? 0 : 40, height: firstRender ? 0 : 40}}
                         action={() => {
                             this.changeTemperature(true)(Math.max(this._min_temp, this.state.set_pt - 0.5))
                         }} />
@@ -188,7 +202,7 @@ class CentralAC extends React.Component<PropsType, StateType> {
                         disabled={fan === 0 || set_pt == this._max_temp}
                         icon={require('../../../assets/images/plus.png')}
                         style={hiding_style}
-                        layout={{width: 40, height: 40}}
+                        layout={{width: firstRender ?  0 : 40, height: firstRender ? 0 : 40}}
                         action={() => {
                             this.changeTemperature(true)(Math.min(this._max_temp, this.state.set_pt + 0.5))
                         }} />

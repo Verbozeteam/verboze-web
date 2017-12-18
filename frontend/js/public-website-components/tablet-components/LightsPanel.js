@@ -33,10 +33,16 @@ type PropsType = {
 };
 
 type StateType = {
+    firstRender: boolean
 };
 
 class LightsPanel extends React.Component<PropsType, StateType> {
+    state = {
+        firstRender: true,
+    };
+
     renderDimmer(dimmer: ConnectionTypes.GenericThingType) {
+        const { firstRender } = this.state;
         const { viewType, layout } = this.props;
 
         var dimmer_name = '';
@@ -48,6 +54,11 @@ class LightsPanel extends React.Component<PropsType, StateType> {
             slider_width *= (3/4);
         } else if (layout.height <= 100) {
             slider_width *= 0.5;
+        }
+
+        if (firstRender) {
+            slider_width = 0;
+            slider_height = 0;
         }
 
         return <div
@@ -110,7 +121,16 @@ class LightsPanel extends React.Component<PropsType, StateType> {
         </div>;
     }
 
+    firstFrameRendered() {
+        setTimeout((() => {
+            this.setState({
+                firstRender: false,
+            });
+        }).bind(this), 0);
+    }
+
     render() {
+        const { firstRender } = this.state;
         const { things, layout, presets, viewType } = this.props;
 
         var dimmers = [];
@@ -125,6 +145,9 @@ class LightsPanel extends React.Component<PropsType, StateType> {
         if (viewType ==='detail' && presets && typeof(presets) == "object" && presets.length > 0 ) {
             switches.push(this.renderPresetsSwitch(presets));
         }
+
+        if (firstRender)
+            requestAnimationFrame(this.firstFrameRendered.bind(this));
 
         return (
             <div style={layout.height > 100 ? styles.container : styles.container_sm}>
