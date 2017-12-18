@@ -56,7 +56,10 @@ class RoomDemoComponent extends React.Component<PropsType, StateType> {
     _logo = require('../../assets/images/verboze_logo_white.png');
 
     createWebsocketURL(token: string): string {
-        return "ws://" + location.host + "/stream/" + token + '/';
+        var protocol = "ws://";
+        if (location.protocol === 'https:')
+            protocol = "wss://";
+        return protocol + location.host + "/stream/" + token + '/';
     }
 
     componentWillMount() {
