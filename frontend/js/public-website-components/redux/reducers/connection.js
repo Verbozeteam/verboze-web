@@ -26,7 +26,7 @@ const defaultState: StateType = {
             "detail": {"ratio": 4, "side": "left"},
             "grid": [{
                 "panels": [{
-                    "name": {"en": "Room Lighting"},
+                    "name": {"en": "Lighting"},
                     "presets": [{
                             "dimmer-1": {"intensity": 0},
                             "lightswitch-1": {"intensity": 0},
@@ -46,45 +46,29 @@ const defaultState: StateType = {
                     ],
                     "ratio": 5,
                     "things": [{
-                            "category": "dimmers",
-                            "id": "dimmer-1",
-                            "name": {"en": "Bedside"}
-                        }, {
-                            "category": "light_switches",
-                            "id": "lightswitch-1",
-                            "name": {"en": "Main"}
-                        }, {
-                            "category": "light_switches",
-                            "id": "lightswitch-2",
-                            "name": {"en": "Side"}
-                        }, {
-                            "category": "light_switches",
-                            "id": "lightswitch-3",
-                            "name": {"en": "Entrance"}
-                        }
-                    ]
+                        "category": "dimmers",
+                        "id": "dimmer-1",
+                        "name": {"en": "Bedside"}
+                    }, {
+                        "category": "light_switches",
+                        "id": "lightswitch-1",
+                        "name": {"en": "Main"}
+                    }, {
+                        "category": "light_switches",
+                        "id": "lightswitch-2",
+                        "name": {"en": "Side"}
+                    }, {
+                        "category": "light_switches",
+                        "id": "lightswitch-3",
+                        "name": {"en": "Entrance"}
+                    }]
                 }, {
-                    "name": {"en": "Bathroom Lighting"},
-                    "presets": [{
-                            "dimmer-2": {"intensity": 0},
-                            "lightswitch-4": {"intensity": 0}
-                        }, {
-                            "dimmer-2": {"intensity": 50},
-                            "lightswitch-4": {"intensity": 0}
-                        }, {
-                            "dimmer-2": {"intensity": 100},
-                            "lightswitch-4": {"intensity": 1}
-                        }
-                    ],
+                    "name": {"en": "Curtains"},
                     "ratio": 3,
                     "things": [{
-                            "category": "dimmers",
-                            "id": "dimmer-2",
+                            "category": "curtains",
+                            "id": "curtain-1",
                             "name": {"en": "Main"}
-                        }, {
-                            "category": "light_switches",
-                            "id": "lightswitch-4",
-                            "name": {"en": "Mirror"}
                         }
                     ]
                 }],
@@ -122,6 +106,7 @@ const defaultState: StateType = {
         "lightswitch-2": {"intensity": 0},
         "lightswitch-3": {"intensity": 0},
         "lightswitch-4": {"intensity": 0},
+        "curtain-1": {"curtain": 0},
         "central-ac-v0-d50": {"set_pt": 25.0, "temp": 25.0, "fan": 1},
         "hotel-controls": {"card": 1, "do_not_disturb": 0, "room_service": 0, "power": 1}
     },

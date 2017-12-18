@@ -57,8 +57,9 @@ class LightDimmer extends React.Component<PropsType, StateType> {
 
     changeIntensity(intensity: number) {
         WebSocketCommunication.sendMessage({
-            thing: this.props.id,
-            intensity
+            [this.props.id]: {
+                intensity
+            }
         });
         this.context.store.dispatch(connectionActions.setThingPartialState(this.props.id, {intensity}));
     }
