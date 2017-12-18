@@ -26,17 +26,17 @@ export const Footer = () => (
 
                     </Grid.Column>
                     <Grid.Column width={3}>
-                        <Header inverted as='h4' content='About' />
-                        <List link inverted>
-                            <List.Item as={ Link } to='/about-us'>Contact Us</List.Item>
-                        </List>
-                    </Grid.Column>
-                    <Grid.Column width={3}>
                         <Header inverted as='h4' content='Features' />
                         <List link inverted>
                             <List.Item as={ Link } to='/features'>Retrofitting</List.Item>
                             <List.Item as={ Link } to='/features'>Control</List.Item>
                             <List.Item as={ Link } to='/features'>Monitoring</List.Item>
+                        </List>
+                    </Grid.Column>
+                    <Grid.Column width={3}>
+                        <Header inverted as='h4' content='About' />
+                        <List link inverted>
+                            <List.Item as={ Link } to='/about-us'>Contact Us</List.Item>
                         </List>
                     </Grid.Column>
 

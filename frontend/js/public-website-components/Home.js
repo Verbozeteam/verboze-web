@@ -23,7 +23,10 @@ type StateType = {
 
 export default class Home extends Component<PropsType, StateType> {
     _white_image = require('../../assets/images/white-image.png');
-    _technology_complements_luxury = require('../../assets/images/technology_complements_luxury.png');
+    _technology_complements_luxury = require('../../assets/images/technology_complements_luxury.gif');
+
+    _insights = require('../../assets/images/insights.gif');
+    _seamless_exp = require('../../assets/images/seamless_experience.gif');
 
     render() {
         return (
@@ -51,10 +54,8 @@ export default class Home extends Component<PropsType, StateType> {
                         <Grid.Row>
                             <Grid.Column floated='left' width={6}>
                                 <Image
-                                    bordered
-                                    rounded
-                                    size='medium'
-                                    src={ this._white_image }
+                                    size='large'
+                                    src={ this._seamless_exp }
                                 />
                             </Grid.Column>
                             <Grid.Column width={8}>
@@ -72,16 +73,14 @@ export default class Home extends Component<PropsType, StateType> {
                             <Grid.Column width={8}>
                                 <Header as='h3' style={{ fontSize: '2em' }}>Insights to help run your Hotel</Header>
                                 <p style={{ fontSize: '1.33em' }}>
-                                    Give your staff periodic helpful insights about the current status of the hotel from the comfort of the frontdesk.
+                                    Give your staff periodic helpful insights about the current status of the hotel.
                                     Increasing their productivity, and decreasing their response time to any requests or issues that might come along.
                                 </p>
                             </Grid.Column>
                             <Grid.Column floated='right' width={6}>
                                 <Image
-                                    bordered
-                                    rounded
-                                    size='medium'
-                                    src={ this._white_image }
+                                    size='large'
+                                    src={ this._insights }
                                 />
                             </Grid.Column>
                         </Grid.Row>

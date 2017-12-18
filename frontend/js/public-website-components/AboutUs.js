@@ -34,10 +34,9 @@ export default class AboutUs extends Component<PropsType, StateType> {
                                 <br/>
                             </Grid.Row>
                             <Grid.Row>
-                                <p style={{ fontSize: '1.33em' }}>
-                                    This is the best vision ever, we will cash money and then floos. Then after that ipo very bestest ipo.
-                                    Control, hotel, phone, crazy tech. Very nice stuff.
-
+                                <p style={{ fontSize: '1.33em', textAlign: 'center' }}>
+                                    Verboze aims to provide a hoslistic seamless experience to the hospitality industy,
+                                    enhancing the guest's experience from start to finish, enabling and empowering hotels to do what they do best, but even better.
                                 </p>
                             </Grid.Row>
                         </Grid>

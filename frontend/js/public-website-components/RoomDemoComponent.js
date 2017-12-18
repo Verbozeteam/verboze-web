@@ -4,7 +4,7 @@ import * as React from 'react';
 import PropTypes from 'prop-types';
 import {
     Button,
-    Header
+    Header,
 } from 'semantic-ui-react';
 import { connect as ReduxConnect } from 'react-redux';
 
@@ -53,7 +53,7 @@ class RoomDemoComponent extends React.Component<PropsType, StateType> {
 
     _isUnmounting = false;
 
-    _logo = require('../../assets/images/verboze.png');
+    _logo = require('../../assets/images/verboze_logo_white.png');
 
     createWebsocketURL(token: string): string {
         return "ws://" + location.host + "/stream/" + token + '/';
@@ -122,6 +122,8 @@ class RoomDemoComponent extends React.Component<PropsType, StateType> {
     renderLogo() {
         const { currentStage } = this.state;
 
+        var _white_image = require('../../assets/images/white-image.png');
+
         var loading_status = currentStage > 0 ? {loading: true} : {};
 
         return (
@@ -129,10 +131,17 @@ class RoomDemoComponent extends React.Component<PropsType, StateType> {
                 <div style={styles.logoStaticContainer}>
                     <div style={currentStage > 1 ? styles.logoContainerFaded : styles.logoContainer}>
                         <img style={styles.logo} src={this._logo} />
-                        <Header inverted as='h3' style={{ fontSize: '2em' }}>The most advanced automation system etc etc etc etc</Header>
+                        <Header inverted as='h3' style={{ textAlign:'center', fontSize: '2em' }}>
+                            The most advanced smart phone activated automation system for hotels.
+                            <br/>
+                            Seamless Installation. Intuitive Control. Replicable Experience.
+
+                        </Header>
                         <br/>
+                        <br/>
+
                         <Button {...loading_status} primary fade='true' vertical='true' size='massive' onClick={this.startDemo.bind(this)}>
-                            {"Try demo!"}
+                            {"Try quick demo"}
                         </Button>
                     </div>
                 </div>
@@ -192,7 +201,7 @@ const styles = {
         alignItems: 'center',
         justifyContent: 'center',
 
-        marginTop: 0,
+        marginTop: 75,
         opacity: 1,
     },
     logoContainerFaded: {
@@ -207,7 +216,6 @@ const styles = {
     },
     logo: {
         width: 666,
-        height: 400,
     },
     whitePad: {
         position: 'relative',

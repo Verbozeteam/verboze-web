@@ -43,7 +43,7 @@ module.exports = {
                 }
             },
             {
-                test: /\.(jpg|png|svg|woff|woff2|eot|ttf|svg)$/,
+                test: /\.(jpg|png|svg|woff|woff2|eot|ttf|svg|gif)$/,
                 loaders: [
                     {
                         loader: 'file-loader',
@@ -57,9 +57,6 @@ module.exports = {
                     {
                         loader: 'image-webpack-loader',
                         options: {
-                            gifsicle: {
-                                interlaced: false,
-                            },
                             optipng: {
                                 optimizationLevel: 7,
                             },
