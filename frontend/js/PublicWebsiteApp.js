@@ -1,7 +1,7 @@
 /* @flow */
 
 import * as React from 'react';
-import ReactNative from 'react-native';
+import ReactNative from 'react-native-web';
 
 import {
   BrowserRouter,

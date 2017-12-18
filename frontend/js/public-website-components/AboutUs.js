@@ -27,7 +27,7 @@ export default class AboutUs extends Component<PropsType, StateType> {
         return (
             <div>
                 <Segment style={ styles.visionSegment }>
-                    <Container>
+                    <Container id='vision'>
                         <Grid textAlign='center' stackable>
                             <Grid.Row>
                                 <Header textAlign='center' as='h3' style={{ fontSize: '2em' }}>Vision</Header>
@@ -44,7 +44,7 @@ export default class AboutUs extends Component<PropsType, StateType> {
                 </Segment>
 
                 <Segment inverted style={ styles.teamSegment }>
-                    <Container>
+                    <Container id='team'>
                         <Grid textAlign='center' columns={3} stackable>
                             <Grid.Row>
                                 <Header inverted as='h3' style={{ fontSize: '2em' }}>Team</Header>
@@ -125,7 +125,7 @@ export default class AboutUs extends Component<PropsType, StateType> {
                 </Segment>
 
                 <Segment style={ styles.locationSegment }>
-                    <Container>
+                    <Container id='location'>
                         <Grid textAlign='center' columns={2} stackable>
                             <Grid.Row>
                                 <Header as='h3' style={{ fontSize: '2em' }}>Location</Header>

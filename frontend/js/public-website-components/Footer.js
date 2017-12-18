@@ -11,6 +11,10 @@ import {
 } from 'semantic-ui-react'
 
 import { Link } from 'react-router-dom';
+import { HashLink } from 'react-router-hash-link';
+
+// Use it just like a RRv4 link (to can be a string or an object, see RRv4 api for details):
+// <HashLink to="/some/path#with-hash-fragment">Link to Hash Fragment</HashLink>
 
 import verboze_logo from '../../assets/images/logo_symbol.png';
 
@@ -28,22 +32,23 @@ export const Footer = () => (
                     <Grid.Column width={3}>
                         <Header inverted as='h4' content='Features' />
                         <List link inverted>
-                            <List.Item as={ Link } to='/features'>Retrofitting</List.Item>
-                            <List.Item as={ Link } to='/features'>Control</List.Item>
-                            <List.Item as={ Link } to='/features'>Monitoring</List.Item>
+                            <List.Item as={ HashLink } to='/features#retrofitting'>Retrofitting</List.Item>
+                            <List.Item as={ HashLink } to='/features#control'>Control</List.Item>
+                            <List.Item as={ HashLink } to='/features#monitoring'>Monitoring</List.Item>
                         </List>
                     </Grid.Column>
                     <Grid.Column width={3}>
                         <Header inverted as='h4' content='About' />
                         <List link inverted>
-                            <List.Item as={ Link } to='/about-us'>Contact Us</List.Item>
+                            <List.Item as={ HashLink } to='/about-us#vision'>Vision</List.Item>
+                            <List.Item as={ HashLink } to='/about-us#team'>Team</List.Item>
+                            <List.Item as={ HashLink } to='/about-us#location'>Location</List.Item>
                         </List>
                     </Grid.Column>
 
                     <Grid.Column width={5} floated='right' textAlign='right' >
                         <Header inverted as='h5'>
                             © { new Date().getFullYear() } Verboze. All rights reserved.
-
                         </Header>
                     </Grid.Column>
 
