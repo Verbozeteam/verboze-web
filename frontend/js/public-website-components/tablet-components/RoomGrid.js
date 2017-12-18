@@ -240,6 +240,7 @@ const styles = {
         fontSize: 14,
         display: 'flex',
         flexDirection: 'column',
+        overflow: 'hidden',
 
         transition: 'left 300ms, top 300ms, right 300ms, bottom 300ms, width 300ms, height 300ms',
     },
