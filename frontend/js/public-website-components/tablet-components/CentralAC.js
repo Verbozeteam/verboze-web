@@ -95,6 +95,7 @@ class CentralAC extends React.Component<PropsType, StateType> {
             if (send_socket) {
                 WebSocketCommunication.sendMessage({
                     [this.props.id]: {
+                        ...this.context.store.getState().connection.roomState[this.props.id],
                         set_pt: new_set_pt,
                     }
                 });
@@ -106,6 +107,7 @@ class CentralAC extends React.Component<PropsType, StateType> {
     changeFan(speed: number) {
         WebSocketCommunication.sendMessage({
             [this.props.id]: {
+                ...this.context.store.getState().connection.roomState[this.props.id],
                 fan: speed,
             }
         });
@@ -149,7 +151,7 @@ class CentralAC extends React.Component<PropsType, StateType> {
                     round={this.round.bind(this)}
                     onMove={this.changeTemperature(false).bind(this)}
                     onRelease={this.changeTemperature(true).bind(this)}
-                    diameter={firstRender ? 1 : layout.height / 1.5}
+                    diameter={firstRender ? 1 : layout.height / 1.3}
                     arcWidth={firstRender ? 1 : 15}
                     knobDiameter={firstRender ? 1 : 35}
                     disabled={fan === 0} />

@@ -2,24 +2,12 @@
 
 import * as React from 'react';
 import PropTypes from 'prop-types';
-import { connect as ReduxConnect } from 'react-redux';
 import * as ConnectionTypes from '../../api-utils/ConnectionTypes';
-
-import * as connectionActions from '../redux/actions/connection';
 
 import { LightsPanel } from './LightsPanel';
 import { HotelControls } from './HotelControls';
 import { CentralAC } from './CentralAC';
-
-function mapStateToProps(state) {
-    return {
-    };
-}
-
-function mapDispatchToProps(dispatch) {
-    return {
-    };
-}
+import { Curtains } from './Curtains';
 
 type PropsType = {
     width: number,
@@ -58,7 +46,7 @@ class RoomGrid extends React.Component<PropsType, StateType> {
             case "light_switches":
                 return (
                     <LightsPanel
-                        layout={{left, width, top, height}}
+                        layout={{left, width, top, height: height-20}}
                         viewType={viewType}
                         things={panel.things}
                         presets={panel.presets}
@@ -67,13 +55,19 @@ class RoomGrid extends React.Component<PropsType, StateType> {
             case "central_acs":
                 return <CentralAC
                         id={panel.things[0].id}
-                        layout={{left, width, top, height}}
+                        layout={{left, width, top, height:height-20}}
                         viewType={viewType}
                     />
             case "hotel_controls":
                 return <HotelControls
                         id={panel.things[0].id}
                         viewType={viewType}
+                    />
+            case "curtains":
+                return <Curtains
+                        layout={{left, width, top, height:height-20}}
+                        viewType={viewType}
+                        things={panel.things}
                     />
         }
 
@@ -259,4 +253,4 @@ const styles = {
     }
 };
 
-module.exports = { RoomGrid: ReduxConnect(mapStateToProps, mapDispatchToProps) (RoomGrid) };
+export { RoomGrid };

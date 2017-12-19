@@ -60,9 +60,11 @@ class HotelControls extends React.Component<PropsType, StateType> {
         dnd_state = 0;
 
         WebSocketCommunication.sendMessage({
-            thing: this.props.id,
-            room_service: service_state,
-            do_not_disturb: dnd_state,
+            [this.props.id] : {
+                ...this.context.store.getState().connection.roomState[this.props.id],
+                room_service: service_state,
+                do_not_disturb: dnd_state,
+            }
         });
         this.context.store.dispatch(connectionActions.setThingPartialState(this.props.id, {room_service: service_state, do_not_disturb: dnd_state}));
     }
@@ -74,9 +76,10 @@ class HotelControls extends React.Component<PropsType, StateType> {
         service_state = 0;
 
         WebSocketCommunication.sendMessage({
-            thing: this.props.id,
-            room_service: service_state,
-            do_not_disturb: dnd_state,
+            [this.props.id] : {
+                room_service: service_state,
+                do_not_disturb: dnd_state,
+            }
         });
         this.context.store.dispatch(connectionActions.setThingPartialState(this.props.id, {room_service: service_state, do_not_disturb: dnd_state}));
     }

@@ -131,6 +131,7 @@ class RoomDemoComponent extends React.Component<PropsType, StateType> {
 
         return (
             <div style={styles.roomContainer}>
+                <RoomState opacity={0.2} />
                 <div style={styles.logoStaticContainer}>
                     <div style={currentStage > 1 ? styles.logoContainerFaded : styles.logoContainer}>
                         <img style={styles.logo} src={this._logo} />
@@ -187,6 +188,8 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
         backgroundColor: '#1b1c1d',
+        alignItems: 'center',
+        justifyContent: 'center',
 
 
         MozUserSelect: '-moz-none',
@@ -196,6 +199,7 @@ const styles = {
         userSelect: 'none',
     },
     logoStaticContainer: {
+        position: 'absolute',
         height: 700,
     },
     logoContainer: {

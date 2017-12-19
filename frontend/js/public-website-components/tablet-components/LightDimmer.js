@@ -23,7 +23,7 @@ type PropsType = {
 };
 
 class LightDimmer extends React.Component<PropsType, StateType> {
-    _unsubscribe: () => null = () => {return null;};
+    _unsubscribe: () => null = () => null;
 
     state = {
         intensity: 0,
@@ -58,6 +58,7 @@ class LightDimmer extends React.Component<PropsType, StateType> {
     changeIntensity(intensity: number) {
         WebSocketCommunication.sendMessage({
             [this.props.id]: {
+                ...this.context.store.getState().connection.roomState[this.props.id],
                 intensity
             }
         });
