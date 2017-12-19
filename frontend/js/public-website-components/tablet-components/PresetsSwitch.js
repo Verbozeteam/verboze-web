@@ -13,7 +13,6 @@ type StateType = {
 };
 
 type PropsType = {
-    viewType: ViewType,
     presets: Array<Object>,
 };
 
@@ -74,12 +73,20 @@ class PresetsSwitch extends React.Component<PropsType, StateType> {
     changePreset(new_preset: number) {
         const { presets } = this.props;
 
-        WebSocketCommunication.sendMessage(presets[new_preset]);
+        var ws_msg = {};
+        for (var k in presets[new_preset]) {
+            ws_msg[k] = {
+                ...this.context.store.getState().connection.roomState[k],
+                ...presets[new_preset][k],
+            };
+        }
+        WebSocketCommunication.sendMessage(ws_msg);
+
         this.context.store.dispatch(connectionActions.setThingsPartialStates(presets[new_preset]));
     }
 
     render() {
-        const { presets, viewType } = this.props;
+        const { presets } = this.props;
         const { currentPresetIndex } = this.state;
 
         var on_press = (() => this.changePreset((this.state.currentPresetIndex + 1) % presets.length)).bind(this);

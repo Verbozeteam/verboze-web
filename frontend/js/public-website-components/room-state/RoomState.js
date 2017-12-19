@@ -5,6 +5,9 @@ import PropTypes from 'prop-types';
 
 import { connect as ReduxConnect } from 'react-redux';
 
+const connectionActions = require('../redux/actions/connection');
+import { WebSocketCommunication } from '../../api-utils/WebSocketCommunication';
+
 function mapStateToProps(state) {
     return {
         roomState: state.connection.roomState,
@@ -17,6 +20,7 @@ function mapDispatchToProps(dispatch) {
 
 type PropsType = {
     roomState: Object,
+    opacity?: number,
 };
 
 type StateType = {
@@ -28,6 +32,11 @@ type StateType = {
 };
 
 class RoomState extends React.Component<PropsType, StateType> {
+
+    static defaultProps = {
+        opacity: 1.0,
+    };
+
     state = {
         currentStage: 0,
     };
@@ -82,7 +91,57 @@ class RoomState extends React.Component<PropsType, StateType> {
     renderTemperature() {
         const { roomState } = this.props;
 
+        for (var key in roomState) {
+            var thing = roomState[key];
+            if (thing.category === 'central_acs') {
+                var style = {...styles.temperatureStyle};
+
+                var tempDiff = thing.set_pt - thing.temp;
+                if (Math.abs(tempDiff) > 0.01) {
+                    setTimeout(() => requestAnimationFrame(this.stepTemperature.bind(this)), 100);
+                    style.opacity = Math.min(Math.max(Math.abs(tempDiff) / 10, 0), 0.1);
+                    if (tempDiff > 0)
+                        style.backgroundColor = 'rgb(255, 0, 0)';
+                    else
+                        style.backgroundColor = 'rgb(0, 0, 255)';
+                } else
+                    style.opacity = 0;
+
+                return <div key={'display-temp'} style={style} />
+            }
+        }
+
         return null;
+    }
+
+    stepTemperature() {
+        const { roomState } = this.props;
+
+        for (var key in roomState) {
+            var thing = roomState[key];
+            if (thing.category === 'central_acs') {
+                var step;
+                if (thing.set_pt - thing.temp > 1 || thing.set_pt - thing.temp < -1)
+                    step = (thing.set_pt - thing.temp) * 0.07;
+                else if (thing.set_pt - thing.temp > 0)
+                    step = 0.07;
+                else
+                    step = -0.07;
+                var state_update = {
+                    temp: thing.temp + step,
+                };
+                if (Math.abs(state_update.temp - thing.temp) > 0.1) {
+                    WebSocketCommunication.sendMessage({
+                        [thing.id]: {
+                            ...thing,
+                            ...state_update,
+                        }
+                    });
+                }
+                this.context.store.dispatch(connectionActions.setThingPartialState(thing.id, state_update));
+                return;
+            }
+        }
     }
 
     animationFrame() {
@@ -94,14 +153,15 @@ class RoomState extends React.Component<PropsType, StateType> {
 
     render() {
         const { currentStage } = this.state;
-        const { roomState } = this.props;
+        const { roomState, opacity } = this.props;
 
         var containerStyle = {...styles.container};
         containerStyle.backgroundImage = 'url(' + this._images.background + ')';
         if (currentStage === 0) {
             containerStyle.opacity = 0;
-            setTimeout(() => requestAnimationFrame(this.animationFrame.bind(this)), 100);
-        }
+            setTimeout(() => requestAnimationFrame(this.animationFrame.bind(this)), 500);
+        } else
+            containerStyle.opacity = opacity;
 
         var stacks = [];
 
@@ -137,7 +197,7 @@ const styles = {
         backgroundRepeat: 'no-repeat',
         maxWidth: 1600,
 
-        transition: 'opacity 500ms',
+        transition: 'opacity 2000ms',
         opacity: 1,
     },
     stackStyle: {
@@ -150,7 +210,11 @@ const styles = {
         maxWidth: 1600,
 
         transition: 'opacity 300ms',
-    }
+    },
+    temperatureStyle: {
+        width: '100%',
+        height: '100%',
+    },
 };
 
 module.exports = { RoomState: ReduxConnect(mapStateToProps, mapDispatchToProps) (RoomState) };
