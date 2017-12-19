@@ -58,11 +58,11 @@ module.exports = {
                         loader: 'image-webpack-loader',
                         options: {
                             optipng: {
-                                optimizationLevel: 7,
+                                optimizationLevel: 3,
                             },
                             pngquant: {
-                                quality: '65-90',
-                                speed: 4
+                                quality: '100',
+                                speed: 1
                             },
                             mozjpeg: {
                                 progressive: true,
