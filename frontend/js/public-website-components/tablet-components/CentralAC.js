@@ -95,6 +95,7 @@ class CentralAC extends React.Component<PropsType, StateType> {
             if (send_socket) {
                 WebSocketCommunication.sendMessage({
                     [this.props.id]: {
+                        ...this.context.store.getState().connection.roomState[this.props.id],
                         set_pt: new_set_pt,
                     }
                 });
@@ -106,6 +107,7 @@ class CentralAC extends React.Component<PropsType, StateType> {
     changeFan(speed: number) {
         WebSocketCommunication.sendMessage({
             [this.props.id]: {
+                ...this.context.store.getState().connection.roomState[this.props.id],
                 fan: speed,
             }
         });
