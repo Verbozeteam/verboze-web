@@ -33,33 +33,56 @@ class RoomState extends React.Component<PropsType, StateType> {
     };
 
     _images = {
-        background: require('../../../assets/images/empty_room.jpg'),
-        baseAssets: require('../../../assets/images/base_assets.png'),
-        dimmer1: require('../../../assets/images/dimmer_1.png'),
+        background: require('../../../assets/images/room_state/empty_room.png'),
+
+        ['dimmer-1']: require('../../../assets/images/room_state/dimmer-1.png'),
+        ['lightswitch-1']: require('../../../assets/images/room_state/lightswitch-1.png'),
+        ['lightswitch-2']: require('../../../assets/images/room_state/lightswitch-2.png'),
     };
 
     renderBase() {
-        return <div key={"display-base"} style={{...styles.stackStyle, backgroundImage: 'url('+(this._images.baseAssets)+')'}} />
+        return null;
     }
 
     renderCurtain() {
         return null;
-        // return (
-        //     <div key={"rendered-curtain"} style={styles.stackStyle}>
-        //         <div style={{...styles.stackStyle, backgroundImage: 'url('+(this._images.curtainBase)+')'}} />
-        //     </div>
-        // )
     }
 
     renderLighting() {
         const { roomState } = this.props;
 
-        return <div key={"display-lighting"}
-            style={{
-                ...styles.stackStyle,
-                backgroundImage: 'url('+(this._images.dimmer1)+')',
-                opacity: roomState["lightswitch-1"].intensity,
-            }} />
+        var layers = [];
+        for (var key in roomState) {
+            var thing = roomState[key];
+            if (key in this._images) {
+                switch (thing.category) {
+                    case "light_switches":
+                        layers.push(<div key={"display-"+thing.id}
+                            style={{
+                                ...styles.stackStyle,
+                                backgroundImage: 'url(' + this._images[key] + ')',
+                                opacity: thing.intensity,
+                            }} />);
+                        break;
+                    case "dimmers":
+                        layers.push(<div key={"display-"+thing.id}
+                            style={{
+                                ...styles.stackStyle,
+                                backgroundImage: 'url(' + this._images[key] + ')',
+                                opacity: thing.intensity / 100,
+                            }} />);
+                        break;
+                }
+            }
+        }
+
+        return <div key={"display-lights"}>{layers}</div>;
+    }
+
+    renderTemperature() {
+        const { roomState } = this.props;
+
+        return null;
     }
 
     animationFrame() {
@@ -83,9 +106,11 @@ class RoomState extends React.Component<PropsType, StateType> {
         var stacks = [];
 
         stacks = stacks
-            .concat(this.renderBase())
+            //.concat(this.renderBase())
             .concat(this.renderCurtain())
-            .concat(this.renderLighting());
+            .concat(this.renderLighting())
+            .concat(this.renderTemperature())
+        ;
 
         return (
             <div style={containerStyle}>
@@ -107,9 +132,10 @@ const styles = {
         flexDirection: 'row',
         color: 'red',
 
-        backgroundSize: 'contain',
+        backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
+        maxWidth: 1600,
 
         transition: 'opacity 500ms',
         opacity: 1,
@@ -118,9 +144,10 @@ const styles = {
         position: 'absolute',
         width: '100%',
         height: '100%',
-        backgroundSize: 'contain',
+        backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
+        maxWidth: 1600,
 
         transition: 'opacity 300ms',
     }

@@ -2,23 +2,12 @@
 
 import * as React from 'react';
 import PropTypes from 'prop-types';
-import { connect as ReduxConnect } from 'react-redux';
 
 import { LightDimmer } from './LightDimmer';
 import { LightSwitch } from './LightSwitch';
 import { PresetsSwitch } from './PresetsSwitch';
 
 import * as ConnectionTypes from '../../api-utils/ConnectionTypes';
-
-function mapStateToProps(state) {
-    return {
-    };
-}
-
-function mapDispatchToProps(dispatch) {
-    return {
-    };
-}
 
 type PropsType = {
     layout: {
@@ -228,4 +217,4 @@ const switch_styles = {
     },
 };
 
-module.exports = { LightsPanel: ReduxConnect(mapStateToProps, mapDispatchToProps) (LightsPanel) };
+export { LightsPanel };
