@@ -98,8 +98,8 @@ class RoomState extends React.Component<PropsType, StateType> {
 
                 var tempDiff = thing.set_pt - thing.temp;
                 if (Math.abs(tempDiff) > 0.01) {
-                    setTimeout(() => requestAnimationFrame(this.stepTemperature.bind(this)), 100);
-                    style.opacity = Math.min(Math.max(Math.abs(tempDiff) / 10, 0), 0.1);
+                    setTimeout(() => requestAnimationFrame(this.stepTemperature.bind(this)), 300);
+                    style.opacity = Math.min(Math.max(Math.abs(tempDiff) / 30, 0), 0.1);
                     if (tempDiff > 0)
                         style.backgroundColor = 'rgb(255, 0, 0)';
                     else
@@ -121,14 +121,15 @@ class RoomState extends React.Component<PropsType, StateType> {
             var thing = roomState[key];
             if (thing.category === 'central_acs') {
                 var step;
-                if (thing.set_pt - thing.temp > 1 || thing.set_pt - thing.temp < -1)
-                    step = (thing.set_pt - thing.temp) * 0.07;
-                else if (thing.set_pt - thing.temp > 0)
-                    step = 0.07;
+                var tempDiff = thing.set_pt - thing.temp;
+                if (tempDiff > 1 || tempDiff < -1)
+                    step = tempDiff * 0.2;
+                else if (tempDiff > 0)
+                    step = 0.08;
                 else
-                    step = -0.07;
+                    step = -0.08;
                 var state_update = {
-                    temp: thing.temp + step,
+                    temp: Math.abs(tempDiff) < 0.1 ? thing.set_pt : thing.temp + step,
                 };
                 if (Math.abs(state_update.temp - thing.temp) > 0.1) {
                     WebSocketCommunication.sendMessage({
