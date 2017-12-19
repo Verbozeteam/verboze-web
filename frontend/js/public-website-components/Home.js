@@ -38,7 +38,7 @@ export default class Home extends Component<PropsType, StateType> {
                             <Grid.Column width={8}>
                                 <Header as='h3' style={{ fontSize: '2em' }}>Technology that complements luxury</Header>
                                 <p style={{ fontSize: '1.33em' }}>
-                                    Technology doen't have to negatively impact your luxurious image. In fact, we worked hard
+                                    Technology doesn't have to negatively impact your luxurious image. In fact, we worked hard
                                     to improve it, by allowing your guests to experience all what you have to offer at their finger tips.
 
                                 </p>
@@ -64,7 +64,7 @@ export default class Home extends Component<PropsType, StateType> {
                                     Give your guests the same experience whenever they stay at your Hotel, no matter which branch they decide
                                     to visit.
                                     <br/>
-                                    Never worry about outliers accross your brand, ensure your guests are always happy, using their favorite preset settings.
+                                    Never worry about outliers across your brand, ensure your guests are always happy, using their favorite preset settings.
                                 </p>
                             </Grid.Column>
                         </Grid.Row>

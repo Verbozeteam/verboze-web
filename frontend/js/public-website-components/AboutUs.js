@@ -35,7 +35,7 @@ export default class AboutUs extends Component<PropsType, StateType> {
                             </Grid.Row>
                             <Grid.Row>
                                 <p style={{ fontSize: '1.33em', textAlign: 'center' }}>
-                                    Verboze aims to provide a hoslistic seamless experience to the hospitality industy,
+                                    Verboze aims to provide a holistic seamless experience to the hospitality industry,
                                     enhancing the guest's experience from start to finish, enabling and empowering hotels to do what they do best, but even better.
                                 </p>
                             </Grid.Row>

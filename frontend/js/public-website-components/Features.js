@@ -160,7 +160,7 @@ export default class Features extends Component<PropsType, StateType> {
                                         Give your staff the ability to monitor live status of the hotel.
                                         <br/>
                                         Provide them with insights and information
-                                        that will make them more efficient, and help improve the overall exerience for your guests.
+                                        that will make them more efficient, and help improve the overall experience for your guests.
                                     </p>
                                 </Grid.Column>
                             </Grid.Row>
