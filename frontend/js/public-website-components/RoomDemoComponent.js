@@ -10,7 +10,9 @@ import { connect as ReduxConnect } from 'react-redux';
 
 import * as APITypes from '../api-utils/APITypes';
 import * as ConnectionTypes from '../api-utils/ConnectionTypes';
-import { APICaller } from '../api-utils/API';
+
+import { PublicWebsiteAPICaller } from '../api-utils/PublicWebsiteAPI';
+
 import { WebSocketCommunication } from '../api-utils/WebSocketCommunication';
 
 import * as tabletActions from './redux/actions/tabletstate';
@@ -113,7 +115,7 @@ class RoomDemoComponent extends React.Component<PropsType, StateType> {
 
         if (this.state.currentStage === 0) {
             this.setState({currentStage: 1});
-            APICaller.createToken(((token: APITypes.CreatedToken) => {
+            PublicWebsiteAPICaller.createToken(((token: APITypes.CreatedToken) => {
                 setConnectionURL(this.createWebsocketURL(token.id));
                 WebSocketCommunication.connect(this.createWebsocketURL(token.id));
             }).bind(this), ((error: APITypes.ErrorType) => {
