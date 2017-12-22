@@ -101,7 +101,7 @@ class PresetsSwitch extends React.Component<PropsType, StateType> {
                             orientation={"vertical"}
                             layout={{
                                 height: 100,
-                                width: 50,
+                                width: 40,
                             }}
                             sameSameValue={true}
                             actions={actions}

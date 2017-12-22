@@ -40,7 +40,6 @@ class LightsPanel extends React.Component<PropsType, StateType> {
         if (viewType == 'detail') {
             dimmer_name = dimmer.name.en;
             slider_height = 40;
-            slider_width *= (3/4);
         } else if (layout.height <= 100) {
             slider_width *= 0.5;
         }
@@ -56,11 +55,8 @@ class LightsPanel extends React.Component<PropsType, StateType> {
             <LightDimmer
                 key={dimmer.id}
                 id={dimmer.id}
+                name={dimmer_name}
                 layout={{width: slider_width, height: slider_height, top: 0, left: 0}}/>
-            <div key={dimmer.id+'-name'}
-                style={dimmer_styles.name_container}>
-                {dimmer_name}
-            </div>
         </div>;
     }
 
@@ -194,7 +190,7 @@ const dimmer_styles = {
     name: {
         display: 'flex',
         marginLeft: 20,
-        fontSize: 20,
+        fontSize: 16,
         color: '#FFFFFF',
     },
 };
@@ -210,7 +206,7 @@ const switch_styles = {
         flexDirection: 'column',
         flex: 1,
 
-        fontSize: 20,
+        fontSize: 16,
         color: '#FFFFFF',
         textAlign: 'center',
     },
