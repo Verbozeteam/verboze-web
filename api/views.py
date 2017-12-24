@@ -1,7 +1,7 @@
 from api.models import Token, Room, Hotel, Hub
 from api.permissions import IsHotelUser
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import exceptions
 from api.serializers import RoomSerializer, HotelSerializer, HubSerializer
 from api.authentication import ExpiringTokenAuthentication
