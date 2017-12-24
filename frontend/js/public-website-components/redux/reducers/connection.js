@@ -99,7 +99,7 @@ const defaultState: StateType = {
                 }],
                 "ratio": 2
             }],
-            "layout": {"margin": 5},
+            "layout": {"margin": 2},
             "name": {"en": "QSTP 1"}
         }]
     },

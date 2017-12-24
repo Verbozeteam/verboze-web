@@ -14,6 +14,7 @@ type StateType = {
 
 type PropsType = {
     id: string,
+    name: string,
     layout: {
         width: number,
         height: number,
@@ -66,7 +67,7 @@ class LightDimmer extends React.Component<PropsType, StateType> {
     }
 
     render() {
-        const { layout } = this.props;
+        const { layout, name } = this.props;
         const { intensity } = this.state;
 
         return (
@@ -78,6 +79,8 @@ class LightDimmer extends React.Component<PropsType, StateType> {
                 maximum={100}
                 minimum={0}
                 round={(value: number) => Math.round(value)}
+                showValue={true}
+                textGenerator={v => name}
                 onMove={this.changeIntensity.bind(this)}
                 onRelease={this.changeIntensity.bind(this)} />
         );

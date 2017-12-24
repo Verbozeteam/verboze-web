@@ -228,8 +228,9 @@ const styles = {
     },
     panel: {
         position: 'absolute',
-        backgroundColor: 'black',
-        borderRadius: 5,
+        // backgroundColor: 'black',
+        background: 'linear-gradient(to bottom right, #1c2f4f, #0f1f3f)',
+        borderRadius: 0,
         color: 'white',
         fontSize: 14,
         display: 'flex',
