@@ -9,7 +9,8 @@ import * as connectionActions from './redux/actions/connection';
 
 import * as APITypes from '../api-utils/APITypes';
 import * as ConnectionTypes from '../api-utils/ConnectionTypes';
-import { APICaller } from '../api-utils/API';
+import { DashboardAPICaller } from '../api-utils/DashboardAPI';
+
 import { WebSocketCommunication } from '../api-utils/WebSocketCommunication';
 
 import { RoomCard } from './RoomCard';
@@ -50,7 +51,7 @@ class DashboardBase extends React.Component<PropsType, StateType> {
 	    WebSocketCommunication.setOnMessage(this.onMessage.bind(this));
 
         /** Fetch the rooms */
-		APICaller.getRooms(
+		DashboardAPICaller.getRooms(
 			((rooms: Array<APITypes.Room>) => {
 	            this.props.setRooms(rooms);
 			}).bind(this),

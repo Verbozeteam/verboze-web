@@ -4,7 +4,12 @@ import axios from 'axios';
 
 import * as APITypes from './APITypes';
 
-class APICallerClass {
+export class APICallerClass {
+    __extraHeaders : {[string]: string} = {
+        authorization: 'token 89640ba943f949a7c766defff8b315263a62efae',
+        'X-CSRFToken': '',
+    };
+
     __makeRequest(
         requestMethod: APITypes.RequestMethod,
         endpoint: string,
@@ -14,7 +19,7 @@ class APICallerClass {
 
         if (params.headers === undefined)
             params.headers = {};
-        params.headers['authorization'] = 'token 89640ba943f949a7c766defff8b315263a62efae';
+        params.headers = {...params.headers, ...this.__extraHeaders};
 
         axios({
             method: requestMethod,
@@ -28,13 +33,7 @@ class APICallerClass {
         });
     }
 
-    getRooms(success: (Array<APITypes.Room>) => any, failure?: (APITypes.ErrorType) => any) {
-        this.__makeRequest('get', '/api/rooms/', {}, success, failure);
-    }
-
-    createToken(success: (APITypes.CreatedToken) => any, failure?: (APITypes.ErrorType) => any) {
-        this.__makeRequest('post', '/api/tokens/', {}, success, failure);
+    setCSRFToken (token: string) {
+        this.__extraHeaders['X-CSRFToken'] = token;
     }
 };
-
-export const APICaller = new APICallerClass();

@@ -35,6 +35,7 @@ export default class NavBar extends Component<PropsType, StateType> {
                         <Menu.Item as={NavLink} exact to='/'>Home</Menu.Item>
                         <Menu.Item as={NavLink} to='/features'>Features</Menu.Item>
                         <Menu.Item as={NavLink} to='/about-us'>About Us</Menu.Item>
+                        <Menu.Item as={NavLink} to='/contact-us'>Contact Us</Menu.Item>
                     </Container>
                 </Menu>
             );
@@ -49,6 +50,7 @@ export default class NavBar extends Component<PropsType, StateType> {
                         <Menu.Item as={NavLink} exact to='/' >Home</Menu.Item>
                         <Menu.Item as={NavLink} to='/features'>Features</Menu.Item>
                         <Menu.Item as={NavLink} to='/about-us'>About Us</Menu.Item>
+                        <Menu.Item as={NavLink} to='/contact-us'>Contact Us</Menu.Item>
                     </Menu>
                 </Container>
             );

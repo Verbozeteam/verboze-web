@@ -12,4 +12,8 @@ export type Room = {
 
 export type CreatedToken = {
     id: string,
-}
+};
+
+export type ContactUs = {
+	success: string,
+};
