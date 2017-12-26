@@ -90,7 +90,7 @@ export default class ContactUs extends Component<PropsType, StateType> {
                         <Grid>
                             <Grid.Row>
                                 <Grid.Column style={{ textAlign: 'center' }}>
-                                    <Icon name='mail outline' size='massive' />
+                                <Icon color='blue' name='mail outline' size='massive' />
                                 </Grid.Column>
                             </Grid.Row>
                             <Grid.Row>
@@ -111,7 +111,7 @@ export default class ContactUs extends Component<PropsType, StateType> {
                         <Grid>
                             <Grid.Row>
                                 <Grid.Column style={{ textAlign: 'center' }}>
-                                    <Icon name='mail outline' size='massive' />
+                                    <Icon color='blue' name='mail outline' size='massive' />
                                 </Grid.Column>
                             </Grid.Row>
                             <Grid.Row>
