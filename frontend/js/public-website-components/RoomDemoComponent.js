@@ -210,7 +210,6 @@ const styles = {
         alignItems: 'center',
         justifyContent: 'center',
 
-        marginTop: 75,
         opacity: 1,
     },
     logoContainerFaded: {

@@ -23,11 +23,11 @@ type StateType = {
 
 export default class Features extends Component<PropsType, StateType> {
     _white_image = require('../../assets/images/white-image.png');
-    _retrofitting = require('../../assets/images/retrofitting.png');
+    _retrofitting = require('../../assets/images/retrofitting.gif');
     _iphone = require('../../assets/images/iphone.png');
     _pixel = require('../../assets/images/pixel.png');
     _tablet = require('../../assets/images/tablet.png');
-    _dashboard = require('../../assets/images/dashboard.png');
+    _monitoring = require('../../assets/images/monitoring.gif');
 
     _curtains = require('../../assets/images/curtains.png');
     _thermostat = require('../../assets/images/thermostat.png');
@@ -153,7 +153,7 @@ export default class Features extends Component<PropsType, StateType> {
                         <Grid>
                             <Grid.Row>
                                 <Grid.Column floated='left' width={6}>
-                                    <Image size='large' src={ this._dashboard } />
+                                    <Image size='large' src={ this._monitoring } />
                                 </Grid.Column>
                                 <Grid.Column width={8}>
                                     <p style={{ fontSize: '1.33em' }}>
