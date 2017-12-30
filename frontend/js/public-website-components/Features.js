@@ -33,6 +33,9 @@ export default class Features extends Component<PropsType, StateType> {
     _thermostat = require('../../assets/images/thermostat.png');
     _do_not_disturb = require('../../assets/images/do_not_disturb.png');
     _lights = require('../../assets/images/lights.png');
+    _alarm = require('../../assets/images/alarm.png');
+    _room_service = require('../../assets/images/room_service.png');
+    _electricity = require('../../assets/images/electricity.png');
     _more = require('../../assets/images/more.png');
 
     render() {
@@ -112,6 +115,15 @@ export default class Features extends Component<PropsType, StateType> {
                                     <Image circular src={ this._do_not_disturb }/>
                                 </Grid.Column>
                                 <Grid.Column width={2}>
+                                    <Image circular src={ this._alarm }/>
+                                </Grid.Column>
+                                <Grid.Column width={2}>
+                                    <Image circular src={ this._electricity }/>
+                                </Grid.Column>
+                                <Grid.Column width={2}>
+                                    <Image circular src={ this._room_service }/>
+                                </Grid.Column>
+                                <Grid.Column width={2}>
                                     <Image circular src={ this._more }/>
                                 </Grid.Column>
                             </Grid.Row>
@@ -124,7 +136,7 @@ export default class Features extends Component<PropsType, StateType> {
                                     <Header inverted as='h3' style={{ fontSize: '2em' }}>Touch screen display</Header>
                                     <Image style={{ margin: 'auto' }} size='large' src={ this._tablet }/>
                                     <br/>
-                                    <p style={{ fontSize: '1.33em' }}>Wall mounted or Portable</p>
+                                    <p style={{ fontSize: '1.33em' }}>Wall mounted or portable</p>
                                 </Grid.Column>
                                 <Grid.Column style={{ paddingBottom: '5em', paddingTop: '5em' }}>
                                     <Header inverted as='h3' style={{ fontSize: '2em' }}>Phone</Header>
