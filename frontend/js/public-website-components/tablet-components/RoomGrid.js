@@ -103,25 +103,30 @@ class RoomGrid extends React.Component<PropsType, StateType> {
             panelBodyStyle.pointerEvents = 'none';
 
         var panelContents = null;
-        if (viewType !== 'collapsed')
-            panelContents = this.renderPanelContents(
-                panel,
-                left+styles.panelBody.padding,
-                top+styles.panelBody.padding,
-                width-styles.panelBody.padding*2,
-                height-styles.panelBody.padding*2,
-                viewType
+        if (viewType !== 'collapsed') {
+            panelContents = (
+                <div style={panelBodyStyle}>{
+                    this.renderPanelContents(
+                        panel,
+                        left+styles.panelBody.padding,
+                        top+styles.panelBody.padding,
+                        width-styles.panelBody.padding*2,
+                        height-styles.panelBody.padding*2,
+                        viewType
+                    )
+                }</div>
             );
+        } else {
+            panelStyle.justifyContent = 'center';
+        }
 
         return (
             <div key={"panel-"+panel.name.en} style={panelStyle} onClick={viewType !== 'detail' ? toggleFunction : null}>
-                <div style={styles.panelHeader}>
+                <div style={viewType === 'collapsed' ? styles.panelHeaderCollapsed : styles.panelHeader}>
                     {panel.name.en}
                     {closeButton}
                 </div>
-                <div style={panelBodyStyle}>
-                    {panelContents}
-                </div>
+                {panelContents}
             </div>
         );
     }
@@ -241,6 +246,9 @@ const styles = {
     },
     panelHeader: {
         height: 20,
+        padding: 3,
+    },
+    panelHeaderCollapsed: {
         padding: 3,
     },
     closeButton: {
