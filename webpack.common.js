@@ -48,7 +48,7 @@ module.exports = {
                     {
                         loader: 'file-loader',
                         options: {
-                            name: '[hash].[ext]',
+                            name: '[name]-[hash].[ext]',
                             hash: 'sha512',
                             digest: 'hex',
                             publicPath: '../static/bundles/'
@@ -58,16 +58,20 @@ module.exports = {
                         loader: 'image-webpack-loader',
                         options: {
                             optipng: {
-                                optimizationLevel: 3,
+                                optimizationLevel: 7,
                             },
                             pngquant: {
-                                quality: '100',
+                                quality: '90-100',
                                 speed: 1
                             },
                             mozjpeg: {
                                 progressive: true,
                                 quality: 65
-                            }
+                            },
+                            gifsicle: {
+                                interlaced: true,
+                                optimizationLevel: 3
+                            },
                         }
                     }
                 ],
