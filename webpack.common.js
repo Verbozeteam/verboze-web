@@ -42,40 +42,6 @@ module.exports = {
                     localIdentNames: '[name]__[local]__[hash:base64:5]'
                 }
             },
-            {
-                test: /\.(jpg|png|svg|woff|woff2|eot|ttf|svg|gif)$/,
-                loaders: [
-                    {
-                        loader: 'file-loader',
-                        options: {
-                            name: '[name]-[hash].[ext]',
-                            hash: 'sha512',
-                            digest: 'hex',
-                            publicPath: '../static/bundles/'
-                        }
-                    },
-                    {
-                        loader: 'image-webpack-loader',
-                        options: {
-                            optipng: {
-                                optimizationLevel: 7,
-                            },
-                            pngquant: {
-                                quality: '90-100',
-                                speed: 1
-                            },
-                            mozjpeg: {
-                                progressive: true,
-                                quality: 65
-                            },
-                            gifsicle: {
-                                interlaced: true,
-                                optimizationLevel: 3
-                            },
-                        }
-                    }
-                ],
-            }
         ]
     },
 
