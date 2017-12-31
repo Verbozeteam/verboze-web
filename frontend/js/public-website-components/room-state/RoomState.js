@@ -1,11 +1,15 @@
 /* @flow */
 
 import * as React from 'react';
+import * as THREE from 'three'
 import PropTypes from 'prop-types';
+
+import ReactResizeDetector from 'react-resize-detector';
 
 import { connect as ReduxConnect } from 'react-redux';
 
 const connectionActions = require('../redux/actions/connection');
+import * as tabletActions from '../redux/actions/tabletstate';
 import { WebSocketCommunication } from '../../api-utils/WebSocketCommunication';
 
 function mapStateToProps(state) {
@@ -15,10 +19,14 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-    return {};
+    return {
+        setConnectionURL: u => dispatch(tabletActions.setCurrentConnectionURL(u)),
+    };
 }
 
 type PropsType = {
+    setConnectionURL: (string) => null,
+
     roomState: Object,
     opacity?: number,
 };
@@ -40,35 +48,175 @@ class RoomState extends React.Component<PropsType, StateType> {
 
     state = {
         currentStage: 0,
-        curtainOpenings: {},
+        curtainOpenings: {
+            ['curtain-1']: 0,
+            ['curtain-2']: 0,
+        },
     };
 
-    _images = {
-        background: require('../../../assets/images/room_state/empty_room.png'),
-        window: require('../../../assets/images/room_state/window.png'),
-        curtainLight: require('../../../assets/images/room_state/curtain_light.png'),
-        doha: require('../../../assets/images/room_state/doha.jpg'),
+    vertexShader: string = `
+        varying vec2 vUv;
+        uniform vec3 scale;
+        uniform vec3 offset;
 
-        ['dimmer-1']: require('../../../assets/images/room_state/dimmer-1.png'),
-        ['lightswitch-1']: require('../../../assets/images/room_state/lightswitch-1.png'),
-        ['lightswitch-2']: require('../../../assets/images/room_state/lightswitch-2.png'),
-        ['lightswitch-3']: require('../../../assets/images/room_state/lightswitch-3.png'),
+        void main() {
+            vUv = uv;
+            vec4 modelViewPosition = modelViewMatrix * vec4(position * scale + offset, 1.0);
+            gl_Position = projectionMatrix * modelViewPosition;
+        }`;
 
-        ['curtain-1-1']: require('../../../assets/images/room_state/curtain_left.png'),
-        ['curtain-1-2']: require('../../../assets/images/room_state/curtain_right.png'),
-        // ['curtain-2-1']: require('../../../assets/images/room_state/curtain_left.png'),
-        // ['curtain-2-2']: require('../../../assets/images/room_state/curtain_right.png'),
+    pixelShader: string = `
+        varying vec2 vUv;
+        uniform float opacity;
+        uniform float brightness;
+        uniform sampler2D textureSampler;
+
+        void main() {
+            gl_FragColor = texture2D(textureSampler, vUv) * vec4(brightness, brightness, brightness, opacity);
+        }`;
+
+    _imageDimensions: {width: number, height: number}
+    = {
+        width: 2048,
+        height: 2048,
     };
+
+    _images: {
+        [string]: {
+            image: string,
+            z: number,
+            texture?: Object,
+            material?: Object,
+            sprite?: Object,
+            blending?: Object,
+        }
+    } = {
+        background: {
+            image: require('../../../assets/images/room_state/empty_room.png'),
+            z: 5,
+        },
+        window: {
+            image: require('../../../assets/images/room_state/window.png'),
+            z: 2,
+        },
+        curtainLight: {
+            image: require('../../../assets/images/room_state/curtain_light.png'),
+            z: 8,
+            //blending: THREE.AdditiveBlending,
+        },
+        doha: {
+            image: require('../../../assets/images/room_state/doha.jpg'),
+            z: 1,
+        },
+        ['dimmer-1']: {
+            image: require('../../../assets/images/room_state/dimmer-1.png'),
+            z: 6,
+            //blending: THREE.AdditiveBlending,
+        },
+        ['lightswitch-1']: {
+            image: require('../../../assets/images/room_state/lightswitch-1.png'),
+            z: 7,
+            //blending: THREE.AdditiveBlending,
+        },
+        ['lightswitch-2']: {
+            image: require('../../../assets/images/room_state/lightswitch-2.png'),
+            z: 7,
+            //blending: THREE.AdditiveBlending,
+        },
+        ['lightswitch-3']: {
+            image: require('../../../assets/images/room_state/lightswitch-3.png'),
+            z: 7,
+            //blending: THREE.AdditiveBlending,
+        },
+        ['curtain-1-1']: {
+            image: require('../../../assets/images/room_state/curtain_left.png'),
+            z: 4,
+        },
+        ['curtain-1-2']: {
+            image: require('../../../assets/images/room_state/curtain_right.png'),
+            z: 4,
+        },
+        ['curtain-2']: {
+            image: require('../../../assets/images/room_state/shade.png'),
+            z: 3,
+        },
+    };
+
+    mount: Object;
+    cameraOrtho: Object;
+    sceneOrtho: Object;
+    renderer: Object;
+
+    componentDidMount() {
+        const width = this.mount.clientWidth;
+        const height = this.mount.clientHeight;
+
+        this.cameraOrtho = new THREE.OrthographicCamera( - width / 2, width / 2, height / 2, - height / 2, 1, 10 );
+        this.cameraOrtho.position.z = 10;
+        this.sceneOrtho = new THREE.Scene();
+
+        this.renderer = new THREE.WebGLRenderer({ antialias: false });
+        this.renderer.setClearColor('#000000');
+        this.renderer.setSize(width, height);
+
+        this.mount.appendChild(this.renderer.domElement);
+
+        this.loadAssets();
+        this.renderLayers();
+    }
+
+    componentWillUnmount() {
+        if (this.renderer) {
+            this.mount.removeChild(this.renderer.domElement);
+            this.renderer = undefined;
+        }
+    }
+
+    loadAssets() {
+        var textureLoader = new THREE.TextureLoader();
+        var promises = [];
+        for (var key in this._images) {
+            const k = key;
+            promises.push(new Promise((success, fail) => textureLoader.load(this._images[k].image, (t) => success({...this._images[k], key: k, texture: t}), fail)));
+        }
+
+        Promise.all(promises).then((textures => {
+            for (var i = 0; i < textures.length; i++) {
+                var img = textures[i].key;
+                this._images[img].texture = textures[i].texture;
+                //this._images[img].material = new THREE.SpriteMaterial({map: this._images[img].texture});
+                this._images[img].material = new THREE.ShaderMaterial({
+                    uniforms: {
+                        scale: {value: new THREE.Vector3(1, 1, 1)},
+                        offset: {value: new THREE.Vector3(0, 0, 0)},
+                        opacity: {value: 1},
+                        brightness: {value: 1},
+                        textureSampler: {type: 't', value: this._images[img].texture},
+                    },
+                    vertexShader: this.vertexShader,
+                    fragmentShader: this.pixelShader,
+                    blending: textures[i].blending || THREE.NormalBlending,
+                    transparent: true,
+                });
+                this._images[img].sprite = new THREE.Mesh(new THREE.PlaneGeometry(1, 1, 0, 0), this._images[img].material);
+                this._images[img].sprite.position.set(0, 0, 1); // center
+                this._images[img].sprite.renderOrder = textures[i].z;
+                this.sceneOrtho.add(this._images[img].sprite);
+            }
+            this.renderLayers();
+        }).bind(this)).catch(((reason) => {
+            console.log(reason);
+            this.props.setConnectionURL("");
+            WebSocketCommunication.disconnect();
+        }).bind(this));
+    }
 
     computeCurtainsLight() {
         if (Object.keys(this.state.curtainOpenings).length === 0)
             return 0;
 
-        var total = 1;
-        for (var key in this.state.curtainOpenings) {
-            total *= this.state.curtainOpenings[key] / 100;
-        }
-        return total;
+        return (this.state.curtainOpenings['curtain-1']/100) *
+            Math.max((this.state.curtainOpenings['curtain-2']/100), 0.2);
     }
 
     computeLightBrightness() {
@@ -88,79 +236,91 @@ class RoomState extends React.Component<PropsType, StateType> {
         return Math.min(Math.max((brightness / num_lights + this.computeCurtainsLight()), 0), 1);
     }
 
-    renderWindow() {
-        var brightness = 30 + this.computeLightBrightness() * 70;
-
-        return [
-            <div key={"display-window-background"}
-                style={{
-                    ...styles.stackStyle,
-                    backgroundImage: 'url(' + this._images.doha + ')',
-                }}
-            />,
-            <div key={"display-window"}
-                style={{
-                    ...styles.stackStyle,
-                    filter: 'brightness('+brightness+'%)',
-                    transition: 'filter 300ms',
-                    backgroundImage: 'url(' + this._images.window + ')',
-                }}
-            />
-        ];
-    }
-
-    renderBase() {
-        return [
-            <div key={"display-base"}
-                style={{
-                    ...styles.stackStyle,
-                    backgroundImage: 'url(' + this._images.background + ')',
-                }}
-            />
-        ];
-    }
-
-    renderCurtain() {
+    updateThingSprites() {
         const { roomState } = this.props;
         const { curtainOpenings } = this.state;
 
-        var brightness = 30 + this.computeLightBrightness() * 70;
+        var curtainBrightness = 0.3 + this.computeLightBrightness() * 0.7;
+        var windowBrightness = this.computeCurtainsLight();
 
-        var layers = [];
+        if ("curtainLight" in this._images && this._images.curtainLight.material)
+            this._images.curtainLight.material.uniforms.opacity.value = windowBrightness * 0.6;
+
+        if ("window" in this._images && this._images.window.material)
+            this._images.window.material.uniforms.brightness.value = curtainBrightness * 0.8;
+
         for (var key in roomState) {
             var thing = roomState[key];
-            if (key+"-1" in this._images && key+"-2" in this._images) {
-                switch (thing.category) {
-                    case "curtains":
-                        layers.push(<div key={"display-"+thing.id+"-1"}
-                            style={{
-                                ...styles.stackStyle,
-                                //width: (100 - (curtainOpenings[thing.id] || 0)/3) + '%',
-                                left: -curtainOpenings[thing.id] * 2,
-                                filter: 'brightness('+brightness+'%)',
-                                transition: 'filter 300ms',
-                                backgroundImage: 'url(' + this._images[key+"-1"] + ')',
-                            }} />);
-                        layers.push(<div key={"display-"+thing.id+"-2"}
-                            style={{
-                                ...styles.stackStyle,
-                                //width: (100 - (curtainOpenings[thing.id] || 0)/3) + '%',
-                                left: curtainOpenings[thing.id] * 2,
-                                filter: 'brightness('+brightness+'%)',
-                                transition: 'filter 300ms',
-                                backgroundImage: 'url(' + this._images[key+"-2"] + ')',
-                            }} />);
+            switch (thing.category) {
+                case "light_switches":
+                    if (key in this._images && this._images[key].material)
+                        this._images[key].material.uniforms.opacity.value = thing.intensity;
+                    break;
+                case "dimmers":
+                    if (key in this._images && this._images[key].material)
+                        this._images[key].material.uniforms.opacity.value = thing.intensity / 100;
+                    break;
+                case "curtains":
+                    if (key+"-1" in this._images && key+"-2" in this._images &&
+                        this._images[key+"-1"].material && this._images[key+"-2"].material) {
+                        var opening = curtainOpenings[thing.id] || 0;
+                        this._images[key+"-1"].material.uniforms.offset.value.set(-2-opening*1.8, 0, 1);
+                        this._images[key+"-1"].material.uniforms.scale.value.x *= 1 - (opening/200);
+                        this._images[key+"-1"].material.uniforms.brightness.value = curtainBrightness;
+                        this._images[key+"-2"].material.uniforms.offset.value.set(+2+opening*1.8, 0, 1);
+                        this._images[key+"-2"].material.uniforms.scale.value.x *= 1 - (opening/200);
+                        this._images[key+"-2"].material.uniforms.brightness.value = curtainBrightness;
                         if (thing.curtain != 0) {
                             const passedThing = thing;
                             setTimeout(() => requestAnimationFrame(this.stepCurtain(passedThing).bind(this)), 25);
                         }
-                        break;
-                }
+                    } else if (key in this._images && this._images[key].material) {
+                        var opening = curtainOpenings[thing.id] || 0;
+                        this._images[key].material.uniforms.offset.value.set(0, 5+opening*2.2, 1);
+                        this._images[key].material.uniforms.scale.value.y *= 1 - (opening/200);
+                        this._images[key].material.uniforms.brightness.value = curtainBrightness;
+                        if (thing.curtain != 0) {
+                            const passedThing = thing;
+                            setTimeout(() => requestAnimationFrame(this.stepCurtain(passedThing).bind(this)), 25);
+                        }
+                    }
+                    break;
             }
         }
-
-        return <div key={"display-curtains"}>{layers}</div>;
     }
+
+    renderLayers() {
+        if (this.renderer) {
+            const width = this.mount.clientWidth;
+            const height = this.mount.clientHeight;
+
+            this.renderer.setSize(width, height);
+            this.cameraOrtho.left = -width / 2;
+            this.cameraOrtho.right = width / 2;
+            this.cameraOrtho.top = height / 2;
+            this.cameraOrtho.bottom = -height / 2;
+            this.cameraOrtho.updateProjectionMatrix();
+
+            var scaler = Math.min(width / 1920,
+                                  height / 1080);
+            var imgWidth = this._imageDimensions.width * scaler;
+            var imgHeight = this._imageDimensions.height * scaler;
+
+            for (var key in this._images) {
+                if (this._images[key].material) {
+                    this._images[key].material.uniforms.offset.value.set(0, 0, 1);
+                    this._images[key].material.uniforms.scale.value.set(imgWidth, imgHeight, 1);
+                    // this._images[key].sprite.scale.set(imgWidth, imgHeight, 1);
+                    // this._images[key].sprite.position.set(0, 0, 1); // center
+                }
+            }
+
+            this.updateThingSprites();
+
+            this.renderer.render(this.sceneOrtho, this.cameraOrtho);
+        }
+    }
+
 
     stepCurtain(curtain: Object) {
         return (() => {
@@ -169,73 +329,6 @@ class RoomState extends React.Component<PropsType, StateType> {
             var newVal = Math.min(Math.max(curVal + step, 0), 100);
             this.setState({curtainOpenings: {...this.state.curtainOpenings, [curtain.id]: newVal}});
         }).bind(this);
-    }
-
-    renderLighting() {
-        const { roomState } = this.props;
-
-        var layers = [];
-        for (var key in roomState) {
-            var thing = roomState[key];
-            if (key in this._images) {
-                switch (thing.category) {
-                    case "light_switches":
-                        layers.push(<div key={"display-"+thing.id}
-                            style={{
-                                ...styles.stackStyle,
-                                backgroundImage: 'url(' + this._images[key] + ')',
-                                opacity: thing.intensity,
-                            }} />);
-                        break;
-                    case "dimmers":
-                        layers.push(<div key={"display-"+thing.id}
-                            style={{
-                                ...styles.stackStyle,
-                                backgroundImage: 'url(' + this._images[key] + ')',
-                                opacity: thing.intensity / 100,
-                            }} />);
-                        break;
-                }
-            }
-        }
-
-        layers.push(
-            <div key={"display-curtain-light"}
-                style={{
-                    ...styles.stackStyle,
-                    opacity: this.computeCurtainsLight(),
-                    backgroundImage: 'url(' + this._images.curtainLight + ')',
-                }}
-            />
-        );
-
-        return <div key={"display-lights"}>{layers}</div>;
-    }
-
-    renderTemperature() {
-        const { roomState } = this.props;
-
-        for (var key in roomState) {
-            var thing = roomState[key];
-            if (thing.category === 'central_acs') {
-                var style = {...styles.temperatureStyle};
-
-                var tempDiff = thing.set_pt - thing.temp;
-                if (Math.abs(tempDiff) > 0.01) {
-                    setTimeout(() => requestAnimationFrame(this.stepTemperature.bind(this)), 300);
-                    style.opacity = Math.min(Math.max(Math.abs(tempDiff) / 30, 0), 0.1);
-                    if (tempDiff > 0)
-                        style.backgroundColor = 'rgb(255, 0, 0)';
-                    else
-                        style.backgroundColor = 'rgb(0, 0, 255)';
-                } else
-                    style.opacity = 0;
-
-                return <div key={'display-temp'} style={style} />
-            }
-        }
-
-        return null;
     }
 
     stepTemperature() {
@@ -269,39 +362,15 @@ class RoomState extends React.Component<PropsType, StateType> {
         }
     }
 
-    animationFrame() {
-        const { currentStage } = this.state;
-        if (currentStage === 0) {
-            this.setState({currentStage: 1});
-        }
-    };
-
     render() {
-        const { currentStage } = this.state;
-        const { roomState, opacity } = this.props;
-
-        var curOpacity: number = 1;
-        if (currentStage === 0) {
-            curOpacity = 0;
-            setTimeout(() => requestAnimationFrame(this.animationFrame.bind(this)), 500);
-        } else
-            curOpacity = opacity || 0;
-
-        var stacks = [];
-
-        stacks = stacks
-            .concat(this.renderWindow())
-            .concat(this.renderCurtain())
-            .concat(this.renderBase())
-            .concat(this.renderLighting())
-            .concat(this.renderTemperature())
-        ;
-
+        requestAnimationFrame(this.renderLayers.bind(this));
         return (
-            <div style={{...styles.container, ...{filter: 'brightness('+(curOpacity*70+30)+'%)'}}}>
-                {stacks}
+            <div
+                style={styles.container}
+                ref={(mount: any) => { this.mount = mount }}>
+                <ReactResizeDetector handleWidth handleHeight onResize={this.renderLayers.bind(this)} />
             </div>
-        );
+        )
     }
 }
 RoomState.contextTypes = {
@@ -320,24 +389,8 @@ const styles = {
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
-        maxWidth: 1600,
 
         transition: 'filter 2000ms',
-    },
-    stackStyle: {
-        position: 'absolute',
-        width: '100%',
-        height: '100%',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        maxWidth: 1600,
-
-        transition: 'opacity 300ms',
-    },
-    temperatureStyle: {
-        width: '100%',
-        height: '100%',
     },
 };
 
