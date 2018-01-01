@@ -379,7 +379,7 @@ class RoomState extends React.Component<PropsType, StateType> {
                 case "light_switches":
                 case "dimmers":
                     var thingIntensity = thing.category === "dimmers" ? thing.intensity : thing.intensity * 100;
-                    var stepSpeed = thing.category === "dimmers" ? 5 : 15;
+                    var stepSpeed = thing.category === "dimmers" ? 10 : 25;
                     var curVal = this.state.lightIntensities[thing.id] || 0;
                     if (thingIntensity !== curVal) {
                         var diff = thingIntensity - curVal;
