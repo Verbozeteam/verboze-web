@@ -235,7 +235,7 @@ class RoomState extends React.Component<PropsType, StateType> {
                 this.sceneOrtho.add(this._images[img].sprite);
             }
             this.loadTemperatureOverlay();
-            this.renderLayers();
+            this.forceUpdate();
         }).bind(this)).catch(((reason) => {
             console.log(reason);
             this.props.setConnectionURL("");
@@ -432,10 +432,16 @@ class RoomState extends React.Component<PropsType, StateType> {
     }
 
     render() {
+        var { opacity } = this.props;
+
+        var curOpacity = opacity;
+        if (!this.tempOverlayMaterial)
+            curOpacity = 0;
+
         requestAnimationFrame(this.renderLayers.bind(this));
         return (
             <div
-                style={styles.container}
+                style={{...styles.container, opacity: curOpacity}}
                 ref={(mount: any) => { this.mount = mount }}>
                 <ReactResizeDetector handleWidth handleHeight onResize={this.renderLayers.bind(this)} />
             </div>
@@ -459,7 +465,7 @@ const styles = {
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
 
-        transition: 'filter 2000ms',
+        transition: 'opacity 2000ms',
     },
 };
 
