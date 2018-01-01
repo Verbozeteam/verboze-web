@@ -405,7 +405,7 @@ class RoomState extends React.Component<PropsType, StateType> {
                     var step;
                     var tempDiff = thing.set_pt - thing.temp;
                     if (tempDiff > 1 || tempDiff < -1)
-                        step = tempDiff * 0.005;
+                        step = tempDiff * 0.02;
                     else if (tempDiff > 0)
                         step = 0.01;
                     else
