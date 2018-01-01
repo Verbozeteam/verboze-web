@@ -38,7 +38,7 @@ module.exports = WebpackMerge(common, {
                                 optimizationLevel: 7,
                             },
                             pngquant: {
-                                quality: '90-100',
+                                quality: '80-85',
                                 speed: 1
                             },
                             mozjpeg: {
