@@ -93,6 +93,8 @@ class Curtains extends React.Component<PropsType, StateType> {
                         this._clickState[curtains[i].id].time = 0;
                         const c = curtains[i];
                         const v = value;
+                        if (this._clickState[curtains[i].id].autoClearTimeout)
+                            clearTimeout(this._clickState[curtains[i].id].autoClearTimeout);
                         this._clickState[curtains[i].id].autoClearTimeout = setTimeout(() => this.setCurtainValue(c)(v), this._clickState[curtains[i].id].moveMaxTime);
                         continue; // don't perform the update on this curtain, auto update will do it
                     }
