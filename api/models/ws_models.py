@@ -1,29 +1,10 @@
 from django.db import models
 from django.conf import settings
-from django.contrib.auth.models import AbstractUser
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 
-from .user_models import GuestUser, HotelUser, HubUser
-
 import uuid
 from channels import Group
-
-
-# This model behaves identically to the default user model,
-# but we’ll be able to customize it in the future if the need arises.
-# It would be much more difficult to do so mid-project after initial migrations.
-class User(AbstractUser):
-	def __str__(self):
-		if hasattr(self, 'guest_user'):
-			return "[GUEST USER] {}".format(self.username)
-		elif hasattr(self, 'hotel_user'):
-			return "[HOTEL USER] {}".format(self.username)
-		elif hasattr(self, 'hub_user'):
-			return "[HUB USER] {}".format(self.username)
-		else:
-			return self.username
-
 
 # Hotel room
 class Room(models.Model):
