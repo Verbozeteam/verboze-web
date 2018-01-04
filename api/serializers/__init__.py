@@ -1,1 +1,1 @@
-from .ws_serializers import *
+from .infrastructure_serializers import *
