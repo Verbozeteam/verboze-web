@@ -11,7 +11,7 @@ import { connect as ReduxConnect } from 'react-redux';
 
 const connectionActions = require('../redux/actions/connection');
 import * as tabletActions from '../redux/actions/tabletstate';
-import { WebSocketCommunication } from '../../api-utils/WebSocketCommunication';
+import { WebSocketCommunication } from '../../js-api-utils/WebSocketCommunication';
 
 function mapStateToProps(state) {
     return {
