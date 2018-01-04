@@ -8,8 +8,8 @@ import {
     SET_THING_PARTIAL_STATE,
 } from '../actions/connection';
 
-import * as APITypes from '../../../api-utils/APITypes';
-import * as ConnectionTypes from '../../../api-utils/ConnectionTypes';
+import * as APITypes from '../../../js-api-utils/APITypes';
+import * as ConnectionTypes from '../../../js-api-utils/ConnectionTypes';
 
 type StateType = {
     connectionState: 0 | 1 | 2,

@@ -8,12 +8,12 @@ import {
 } from 'semantic-ui-react';
 import { connect as ReduxConnect } from 'react-redux';
 
-import * as APITypes from '../api-utils/APITypes';
-import * as ConnectionTypes from '../api-utils/ConnectionTypes';
+import * as APITypes from '../js-api-utils/APITypes';
+import * as ConnectionTypes from '../js-api-utils/ConnectionTypes';
 
-import { PublicWebsiteAPICaller } from '../api-utils/PublicWebsiteAPI';
+import { PublicWebsiteAPICaller } from '../js-api-utils/PublicWebsiteAPI';
 
-import { WebSocketCommunication } from '../api-utils/WebSocketCommunication';
+import { WebSocketCommunication } from '../js-api-utils/WebSocketCommunication';
 
 import * as tabletActions from './redux/actions/tabletstate';
 import * as connectionActions from './redux/actions/connection';
