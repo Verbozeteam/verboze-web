@@ -9,7 +9,7 @@ import * as connectionActions from '../redux/actions/connection';
 
 import * as ConnectionTypes from '../../api-utils/ConnectionTypes';
 import { WebSocketCommunication } from '../../api-utils/WebSocketCommunication';
-import { TimeoutHandler } from './utils/TimeoutHandler';
+import { TimeoutHandler } from '../../js-api-utils/TimeoutHandler';
 
 type PropsType = {
     layout: {

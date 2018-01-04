@@ -42,8 +42,7 @@ class HotelViewSet(viewsets.ReadOnlyModelViewSet):
             if int(self.kwargs[lookup_url_kwarg]) == 0:
                 if "vtoken" in self.request.query_params:
                     return VerbozeToken.objects.get(id=self.request.query_params["vtoken"]).get_hotel()
-        except Exception as e:
-            print (e)
+        except:
             pass
         return super(HotelViewSet, self).get_object()
 
