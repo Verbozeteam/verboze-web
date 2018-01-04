@@ -1,4 +1,4 @@
-from api.models import Token, Hub, Hotel, Room
+from api.models import Token as VerbozeToken, Hub, Hotel, Room
 from django.db.models import Q
 from channels import Group
 
@@ -9,11 +9,11 @@ from django.utils import timezone
 
 def get_valid_token(token):
 	# delete old tokens
-	Token.objects.filter(~Q(expiry=None), expiry__lt=timezone.now()).delete()
+	VerbozeToken.objects.filter(~Q(expiry=None), expiry__lt=timezone.now()).delete()
 
 	try:
-		token_object = Token.objects.get(id=token)
-	except (Token.DoesNotExist, ValidationError):
+		token_object = VerbozeToken.objects.get(id=token)
+	except (VerbozeToken.DoesNotExist, ValidationError):
 		return None
 	return token_object
 

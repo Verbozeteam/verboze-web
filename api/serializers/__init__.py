@@ -1,1 +1,1 @@
-from .infrastructure_serializers import *
+from .hotel_serializers import *

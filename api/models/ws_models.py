@@ -1,4 +1,5 @@
 from django.db import models
+from .hotel_models import Hub, Hotel, Room
 
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
@@ -21,3 +22,12 @@ class Token(models.Model):
 
     def __str__(self):
         return "Token id={}".format(self.id)
+
+    def get_hotel(self):
+        if isinstance(self.content_object, Hub):
+            return self.content_object.hotel
+        elif isinstance(self.content_object, Hotel):
+            return self.content_object
+        elif isinstance(self.content_object, Room):
+            self.content_object.hotel
+        return None
