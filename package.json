@@ -56,8 +56,10 @@
     "semantic-ui-react": "^0.77.0",
     "style-loader": "^0.19.0",
     "three": "^0.89.0",
+    "three-effectcomposer-es6": "0.0.4",
     "uglifyjs-webpack-plugin": "^1.0.1",
     "url-loader": "^0.6.2",
+    "video-react": "^0.9.4",
     "webpack": "^3.8.1",
     "webpack-bundle-tracker": "^0.2.0",
     "webpack-merge": "^4.1.1"

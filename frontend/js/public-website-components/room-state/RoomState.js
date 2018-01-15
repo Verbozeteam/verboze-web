@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import * as THREE from 'three'
+import EffectComposer, { RenderPass, ShaderPass, CopyShader } from 'three-effectcomposer-es6'
 import PropTypes from 'prop-types';
 import { Grid, Progress } from 'semantic-ui-react';
 
@@ -29,6 +30,7 @@ type PropsType = {
     setConnectionURL: (string) => null,
 
     roomState: Object,
+    dimensions: {width: number, height: number},
     opacity?: number,
 };
 
@@ -64,33 +66,56 @@ class RoomState extends React.Component<PropsType, StateType> {
         },
     };
 
-    vertexShader: string = `
-        varying vec2 vUv;
-        uniform vec3 scale;
-        uniform vec3 offset;
+    _rendererDimensions = {width: 0, height: 0};
 
-        void main() {
-            vUv = uv;
-            vec4 modelViewPosition = modelViewMatrix * vec4(position * scale + offset, 1.0);
-            gl_Position = projectionMatrix * modelViewPosition;
-        }`;
+    _shaders: {[string]: string} = {
+        vertexShader: `
+            varying vec2 vUv;
+            uniform vec3 scale;
+            uniform vec3 offset;
 
-    pixelShader: string = `
-        varying vec2 vUv;
-        uniform float opacity;
-        uniform float brightness;
-        uniform sampler2D textureSampler;
+            void main() {
+                vUv = uv;
+                vec4 modelViewPosition = modelViewMatrix * vec4(position * scale + offset, 1.0);
+                gl_Position = projectionMatrix * modelViewPosition;
+            }`,
 
-        void main() {
-            gl_FragColor = texture2D(textureSampler, vUv) * vec4(brightness, brightness, brightness, opacity);
-        }`;
+        screenVertexShader: `
+            varying vec2 vUv;
+            uniform vec3 scale;
+            uniform vec3 offset;
 
-    flatPixelShader: string = `
-        uniform vec4 color;
+            void main() {
+                vUv = uv;
+                vec4 modelViewPosition = modelViewMatrix * vec4(position * scale + offset, 1.0);
+                gl_Position = projectionMatrix * modelViewPosition;
+            }`,
 
-        void main() {
-            gl_FragColor = color;
-        }`;
+        pixelShader: `
+            varying vec2 vUv;
+            uniform float opacity;
+            uniform float brightness;
+            uniform float grayscale;
+            uniform sampler2D textureSampler;
+
+            void main() {
+                gl_FragColor = texture2D(textureSampler, vUv) * vec4(brightness, brightness, brightness, opacity);
+                float avg = (gl_FragColor.r + gl_FragColor.g + gl_FragColor.b) / 3.0;
+                gl_FragColor = mix(gl_FragColor, vec4(avg, avg, avg, gl_FragColor.a), grayscale);
+                float xCoord1 = min(1.0, max(0.0, vUv.x - 0.03125) * 10000.0);
+                float xCoord2 = min(1.0, -min(0.0, vUv.x - (1.0-0.03125)) * 10000.0);
+                float yCoord1 = min(1.0, max(0.0, vUv.y - 0.236328125) * 10000.0);
+                float yCoord2 = min(1.0, -min(0.0, vUv.y - (1.0-0.236328125)) * 10000.0);
+                gl_FragColor.a *= xCoord1 * xCoord2 * yCoord1 * yCoord2;
+            }`,
+
+        flatPixelShader: `
+            uniform vec4 color;
+
+            void main() {
+                gl_FragColor = color;
+            }`,
+    };
 
     _imageDimensions: {width: number, height: number}
     = {
@@ -162,9 +187,23 @@ class RoomState extends React.Component<PropsType, StateType> {
     mount: Object;
     cameraOrtho: Object;
     sceneOrtho: Object;
+    postSceneOrtho: Object;
     renderer: Object;
-    tempOverlayMaterial: Object = undefined;
-    animationTimeout: any = undefined;
+    animationTimeout: Object = undefined;
+
+    _textures: {[string]: Object} = {
+        renderBuffer: undefined,
+    };
+
+    _materials: {[string]: Object} = {
+        finalRender: undefined,
+        finalRenderBkg: undefined,
+        tempOverlay: undefined,
+    };
+
+    _geometries: {[string]: Object} = {
+        paddedPlane: undefined,
+    };
 
     componentDidMount() {
         const width = this.mount.clientWidth;
@@ -173,15 +212,36 @@ class RoomState extends React.Component<PropsType, StateType> {
         this.cameraOrtho = new THREE.OrthographicCamera( - width / 2, width / 2, height / 2, - height / 2, 1, 10 );
         this.cameraOrtho.position.z = 10;
         this.sceneOrtho = new THREE.Scene();
+        this.postSceneOrtho = new THREE.Scene();
 
         this.renderer = new THREE.WebGLRenderer({ antialias: false });
-        this.renderer.setClearColor('#000000');
+        this.renderer.setClearColor('#1b1c1d');
         this.renderer.setSize(width, height);
+        this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.renderer.autoClear = false;
+        this._rendererDimensions = {width, height};
+
+        this._textures.renderBuffer = new THREE.WebGLRenderTarget(
+            width,
+            height,
+            {
+                minFilter: THREE.LinearFilter,
+                magFilter: THREE.NearestFilter
+            }
+        );
 
         this.mount.appendChild(this.renderer.domElement);
 
+        this.loadGeometries();
         this.loadAssets();
         this.renderLayers();
+
+
+        this.composer = new EffectComposer(this.renderer);
+        this.composer.addPass(new RenderPass(this.sceneOrtho, this.cameraOrtho));
+        const copyPass = new ShaderPass(CopyShader);
+        copyPass.renderToScreen = true;
+        this.composer.addPass(copyPass);
     }
 
     componentWillUnmount() {
@@ -191,19 +251,88 @@ class RoomState extends React.Component<PropsType, StateType> {
         }
     }
 
+    loadGeometries() {
+        this._geometries.paddedPlane = new THREE.Geometry();
+        this._geometries.paddedPlane.vertices.push(
+            new THREE.Vector3(-0.5,  0.5 * (1080/1920), 0),
+            new THREE.Vector3(-0.5, -0.5 * (1080/1920), 0),
+            new THREE.Vector3( 0.5, -0.5 * (1080/1920), 0),
+
+            new THREE.Vector3(-0.5,  0.5 * (1080/1920), 0),
+            new THREE.Vector3( 0.5,  0.5 * (1080/1920), 0),
+            new THREE.Vector3( 0.5, -0.5 * (1080/1920), 0),
+        );
+
+        this._geometries.paddedPlane.faceVertexUvs[0].push([
+            new THREE.Vector2(0.03125, 1-0.236328125),
+            new THREE.Vector2(0.03125, 0.236328125),
+            new THREE.Vector2(1-0.03125, 0.236328125),
+        ]);
+        this._geometries.paddedPlane.faceVertexUvs[0].push([
+            new THREE.Vector2(1-0.03125, 0.236328125),
+            new THREE.Vector2(1-0.03125, 1-0.236328125),
+            new THREE.Vector2(0.03125, 1-0.236328125),
+        ]);
+
+        this._geometries.paddedPlane.faces.push(
+            new THREE.Face3(0, 1, 2),
+            new THREE.Face3(5, 4, 3),
+        );
+
+        this._geometries.paddedPlane.computeBoundingSphere();
+    }
+
+    loadPostRenderAssets() {
+        this._materials.finalRender = new THREE.ShaderMaterial({
+            uniforms: {
+                scale: {value: new THREE.Vector3(1, 1, 1)},
+                offset: {value: new THREE.Vector3(0, 0, 0)},
+                opacity: {value: 1},
+                brightness: {value: 1},
+                grayscale: {value: 0},
+                textureSampler: {type: 't', value: this._textures.renderBuffer.texture},
+            },
+            vertexShader: this._shaders.screenVertexShader,
+            fragmentShader: this._shaders.pixelShader,
+            transparent: true,
+        });
+
+        var sprite = new THREE.Mesh(this._geometries.paddedPlane, this._materials.finalRender);
+        sprite.renderOrder = 102;
+        this.postSceneOrtho.add(sprite);
+
+        this._materials.finalRenderBkg = new THREE.ShaderMaterial({
+            uniforms: {
+                scale: {value: new THREE.Vector3(1, 1, 1)},
+                offset: {value: new THREE.Vector3(0, 0, 0)},
+                opacity: {value: 1},
+                brightness: {value: 0.5},
+                grayscale: {value: 0},
+                textureSampler: {type: 't', value: this._textures.renderBuffer.texture},
+            },
+            vertexShader: this._shaders.screenVertexShader,
+            fragmentShader: this._shaders.pixelShader,
+            transparent: true,
+        });
+
+        var sprite = new THREE.Mesh(this._geometries.paddedPlane, this._materials.finalRenderBkg);
+        sprite.renderOrder = 101;
+        this.postSceneOrtho.add(sprite);
+    }
+
     loadTemperatureOverlay() {
-        this.tempOverlayMaterial = new THREE.ShaderMaterial({
+        this._materials.tempOverlay = new THREE.ShaderMaterial({
             uniforms: {
                 scale: {value: new THREE.Vector3(1, 1, 1)},
                 offset: {value: new THREE.Vector3(0, 0, 0)},
                 color: {value: new THREE.Vector4(1, 0, 0, 0)},
             },
-            vertexShader: this.vertexShader,
-            fragmentShader: this.flatPixelShader,
+            vertexShader: this._shaders.vertexShader,
+            fragmentShader: this._shaders.flatPixelShader,
             blending: THREE.AdditiveBlending,
             transparent: true,
         });
-        var sprite = new THREE.Mesh(new THREE.PlaneGeometry(1, 1, 0, 0), this.tempOverlayMaterial);
+        var sprite = new THREE.Mesh(new THREE.PlaneGeometry(1, 1, 0, 0), this._materials.tempOverlay);
         sprite.renderOrder = 100;
         this.sceneOrtho.add(sprite);
     }
@@ -232,10 +361,11 @@ class RoomState extends React.Component<PropsType, StateType> {
                         offset: {value: new THREE.Vector3(0, 0, 0)},
                         opacity: {value: 1},
                         brightness: {value: 1},
+                        grayscale: {value: 0},
                         textureSampler: {type: 't', value: this._images[img].texture},
                     },
-                    vertexShader: this.vertexShader,
-                    fragmentShader: this.pixelShader,
+                    vertexShader: this._shaders.vertexShader,
+                    fragmentShader: this._shaders.pixelShader,
                     blending: textures[i].blending || THREE.NormalBlending,
                     transparent: true,
                 });
@@ -244,7 +374,9 @@ class RoomState extends React.Component<PropsType, StateType> {
                 this._images[img].sprite.renderOrder = textures[i].z;
                 this.sceneOrtho.add(this._images[img].sprite);
             }
+            this._images.doha.material.uniforms.grayscale.value = 0.45;
             this.loadTemperatureOverlay();
+            this.loadPostRenderAssets();
             this.forceUpdate();
         }).bind(this)).catch(((reason) => {
             console.log(reason);
@@ -275,7 +407,7 @@ class RoomState extends React.Component<PropsType, StateType> {
         const { roomState } = this.props;
         const { curtainOpenings, lightIntensities } = this.state;
 
-        var curtainBrightness = 0.3 + this.computeLightBrightness() * 0.7;
+        var curtainBrightness = 0.3 + this.computeLightBrightness() * 0.5;
         var windowBrightness = this.computeCurtainsLight();
 
         if ("curtainLight" in this._images && this._images.curtainLight.material)
@@ -329,8 +461,8 @@ class RoomState extends React.Component<PropsType, StateType> {
                         else
                             b = 1;
                     }
-                    if (this.tempOverlayMaterial)
-                        this.tempOverlayMaterial.uniforms.color.value.set(r, g, b, a);
+                    if (this._materials.tempOverlay)
+                        this._materials.tempOverlay.uniforms.color.value.set(r, g, b, a);
                     break;
             }
         }
@@ -344,18 +476,30 @@ class RoomState extends React.Component<PropsType, StateType> {
         if (this.renderer) {
             const width = this.mount.clientWidth;
             const height = this.mount.clientHeight;
+            const maxRenderedLayerHeight = Math.min(700, height);
 
-            this.renderer.setSize(width, height);
+            var scaler = Math.min(width / 1920, maxRenderedLayerHeight / 1080);
+            var imgWidth = this._imageDimensions.width * scaler;
+            var imgHeight = this._imageDimensions.height * scaler;
+            var renderedLayerWidth = 1920 * imgWidth / this._imageDimensions.width;
+            var renderedLayerHeight = 1080 * imgHeight / this._imageDimensions.height;
+
+            //
+            // Render the room layers to a square texture
+            //
+
+            if (width !== this._rendererDimensions.width || height !== this._rendererDimensions.height) {
+                this._rendererDimensions = {width, height};
+                this._textures.renderBuffer.setSize (imgWidth, imgHeight);
+                this.renderer.setSize(width, height);
+            }
+
+
             this.cameraOrtho.left = -width / 2;
             this.cameraOrtho.right = width / 2;
             this.cameraOrtho.top = height / 2;
             this.cameraOrtho.bottom = -height / 2;
             this.cameraOrtho.updateProjectionMatrix();
-
-            var scaler = Math.min(width / 1920,
-                                  height / 1080);
-            var imgWidth = this._imageDimensions.width * scaler;
-            var imgHeight = this._imageDimensions.height * scaler;
 
             for (var key in this._images) {
                 if (this._images[key].material) {
@@ -365,14 +509,37 @@ class RoomState extends React.Component<PropsType, StateType> {
                     // this._images[key].sprite.position.set(0, 0, 1); // center
                 }
             }
-            if (this.tempOverlayMaterial) {
-                this.tempOverlayMaterial.uniforms.offset.value.set(0, 0, 2);
-                this.tempOverlayMaterial.uniforms.scale.value.set(imgWidth, imgHeight, 1);
+            if (this._materials.tempOverlay) {
+                this._materials.tempOverlay.uniforms.offset.value.set(0, 0, 2);
+                this._materials.tempOverlay.uniforms.scale.value.set(imgWidth, imgHeight, 1);
             }
 
             this.updateThingSprites();
 
-            this.renderer.render(this.sceneOrtho, this.cameraOrtho);
+            if(this.composer)
+                this.composer.render();
+
+            /*this.renderer.render(this.sceneOrtho, this.cameraOrtho, this._textures.renderBuffer);
+
+            //
+            // Render the room to the final render target (screen)
+            //
+
+            if (this._materials.finalRender && this._materials.finalRenderBkg) {
+                var excessHeight = (height-renderedLayerHeight) / 2.0;
+                this._materials.finalRender.uniforms.offset.value.set(0, excessHeight, 2);
+                this._materials.finalRender.uniforms.scale.value.set(imgWidth, imgHeight, 1);
+                this._materials.finalRenderBkg.uniforms.offset.value.set(0, excessHeight, 2);
+                this._materials.finalRenderBkg.uniforms.scale.value.set(width, height*2, 1);
+            }
+
+            this.cameraOrtho.left = -width / 2;
+            this.cameraOrtho.right = width / 2;
+            this.cameraOrtho.top = height / 2;
+            this.cameraOrtho.bottom = -height / 2;
+            this.cameraOrtho.updateProjectionMatrix();
+
+            this.renderer.render(this.postSceneOrtho, this.cameraOrtho);*/
         }
     }
 
@@ -443,19 +610,19 @@ class RoomState extends React.Component<PropsType, StateType> {
 
     render() {
         var { loadingProgress } = this.state;
-        var { opacity } = this.props;
+        var { opacity, dimensions } = this.props;
 
         var curOpacity = opacity;
-        if (!this.tempOverlayMaterial)
+        if (!this._materials.tempOverlay)
             curOpacity = 0;
 
         var progress = null;
-        if (loadingProgress < 1 && opacity >= 1)
+        if (loadingProgress < 1)
             progress = <Progress style={styles.progress} size={"medium"} percent={Math.floor(loadingProgress * 100)} progress indicating />
 
         requestAnimationFrame(this.renderLayers.bind(this));
         return (
-            <div style={{...styles.container}}>
+            <div style={{...styles.container, ...dimensions}}>
                 <Grid style={styles.progressContainer} centered columns={1} verticalAlign='middle'>
                     {progress}
                 </Grid>
@@ -476,7 +643,6 @@ const styles = {
     container: {
         position: 'relative',
         width: '100%',
-        height: 700,
     },
     canvas: {
         width: '100%',

@@ -33,7 +33,6 @@ const styles = {
         backgroundColor: 'black',
         borderRadius: 10,
         position: 'absolute',
-        right: 100,
         border: '1px solid white',
         alignItems: 'center',
         justifyContent: 'center',

@@ -27,7 +27,7 @@ export default class NavBar extends Component<PropsType, StateType> {
     render() {
         if (this.props.sticky) {
             return (
-                <Menu fixed='top' size='large'>
+                <Menu fixed='top' size='large' style={styles.fixed}>
                     <Container>
                         <Menu.Item as={NavLink} activeClassName="" exact to='/'>
                             <img src={this._verboze_logo} />
@@ -62,5 +62,5 @@ const styles = {
     logo: {
         marginTop: -10,
         marginBottom: -10
-    }
+    },
 }
