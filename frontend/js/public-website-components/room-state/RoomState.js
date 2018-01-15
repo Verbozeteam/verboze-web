@@ -80,17 +80,6 @@ class RoomState extends React.Component<PropsType, StateType> {
                 gl_Position = projectionMatrix * modelViewPosition;
             }`,
 
-        screenVertexShader: `
-            varying vec2 vUv;
-            uniform vec3 scale;
-            uniform vec3 offset;
-
-            void main() {
-                vUv = uv;
-                vec4 modelViewPosition = modelViewMatrix * vec4(position * scale + offset, 1.0);
-                gl_Position = projectionMatrix * modelViewPosition;
-            }`,
-
         pixelShader: `
             varying vec2 vUv;
             uniform float opacity;
@@ -187,17 +176,11 @@ class RoomState extends React.Component<PropsType, StateType> {
     mount: Object;
     cameraOrtho: Object;
     sceneOrtho: Object;
-    postSceneOrtho: Object;
     renderer: Object;
-    animationTimeout: Object = undefined;
-
-    _textures: {[string]: Object} = {
-        renderBuffer: undefined,
-    };
+    composer: Object;
+    animationTimeout: Object;
 
     _materials: {[string]: Object} = {
-        finalRender: undefined,
-        finalRenderBkg: undefined,
         tempOverlay: undefined,
     };
 
@@ -212,7 +195,6 @@ class RoomState extends React.Component<PropsType, StateType> {
         this.cameraOrtho = new THREE.OrthographicCamera( - width / 2, width / 2, height / 2, - height / 2, 1, 10 );
         this.cameraOrtho.position.z = 10;
         this.sceneOrtho = new THREE.Scene();
-        this.postSceneOrtho = new THREE.Scene();
 
         this.renderer = new THREE.WebGLRenderer({ antialias: false });
         this.renderer.setClearColor('#1b1c1d');
@@ -221,14 +203,6 @@ class RoomState extends React.Component<PropsType, StateType> {
         this.renderer.autoClear = false;
         this._rendererDimensions = {width, height};
 
-        this._textures.renderBuffer = new THREE.WebGLRenderTarget(
-            width,
-            height,
-            {
-                minFilter: THREE.LinearFilter,
-                magFilter: THREE.NearestFilter
-            }
-        );
 
         this.mount.appendChild(this.renderer.domElement);
 
@@ -280,44 +254,6 @@ class RoomState extends React.Component<PropsType, StateType> {
         );
 
         this._geometries.paddedPlane.computeBoundingSphere();
-    }
-
-    loadPostRenderAssets() {
-        this._materials.finalRender = new THREE.ShaderMaterial({
-            uniforms: {
-                scale: {value: new THREE.Vector3(1, 1, 1)},
-                offset: {value: new THREE.Vector3(0, 0, 0)},
-                opacity: {value: 1},
-                brightness: {value: 1},
-                grayscale: {value: 0},
-                textureSampler: {type: 't', value: this._textures.renderBuffer.texture},
-            },
-            vertexShader: this._shaders.screenVertexShader,
-            fragmentShader: this._shaders.pixelShader,
-            transparent: true,
-        });
-
-        var sprite = new THREE.Mesh(this._geometries.paddedPlane, this._materials.finalRender);
-        sprite.renderOrder = 102;
-        this.postSceneOrtho.add(sprite);
-
-        this._materials.finalRenderBkg = new THREE.ShaderMaterial({
-            uniforms: {
-                scale: {value: new THREE.Vector3(1, 1, 1)},
-                offset: {value: new THREE.Vector3(0, 0, 0)},
-                opacity: {value: 1},
-                brightness: {value: 0.5},
-                grayscale: {value: 0},
-                textureSampler: {type: 't', value: this._textures.renderBuffer.texture},
-            },
-            vertexShader: this._shaders.screenVertexShader,
-            fragmentShader: this._shaders.pixelShader,
-            transparent: true,
-        });
-
-        var sprite = new THREE.Mesh(this._geometries.paddedPlane, this._materials.finalRenderBkg);
-        sprite.renderOrder = 101;
-        this.postSceneOrtho.add(sprite);
     }
 
     loadTemperatureOverlay() {
@@ -376,7 +312,6 @@ class RoomState extends React.Component<PropsType, StateType> {
             }
             this._images.doha.material.uniforms.grayscale.value = 0.45;
             this.loadTemperatureOverlay();
-            this.loadPostRenderAssets();
             this.forceUpdate();
         }).bind(this)).catch(((reason) => {
             console.log(reason);
@@ -403,7 +338,7 @@ class RoomState extends React.Component<PropsType, StateType> {
         return Math.min(Math.max((brightness / num_lights + this.computeCurtainsLight()), 0), 1);
     }
 
-    updateThingSprites() {
+    updateThingSprites(yOffset: number) {
         const { roomState } = this.props;
         const { curtainOpenings, lightIntensities } = this.state;
 
@@ -433,17 +368,17 @@ class RoomState extends React.Component<PropsType, StateType> {
                     if (key+"-1" in this._images && key+"-2" in this._images &&
                         this._images[key+"-1"].material && this._images[key+"-2"].material) {
                         var opening = curtainOpenings[thing.id] || 0;
-                        this._images[key+"-1"].material.uniforms.offset.value.set(-2-opening*1.8, 0, 1);
+                        this._images[key+"-1"].material.uniforms.offset.value.x = -2-opening*1.8;
                         this._images[key+"-1"].material.uniforms.scale.value.x *= 1 - (opening/200);
                         this._images[key+"-1"].material.uniforms.brightness.value = curtainBrightness;
-                        this._images[key+"-2"].material.uniforms.offset.value.set(+2+opening*1.8, 0, 1);
+                        this._images[key+"-2"].material.uniforms.offset.value.x = +2+opening*1.8;
                         this._images[key+"-2"].material.uniforms.scale.value.x *= 1 - (opening/200);
                         this._images[key+"-2"].material.uniforms.brightness.value = curtainBrightness;
                         if (thing.curtain != 0)
                             needAnimation = true;
                     } else if (key in this._images && this._images[key].material) {
                         var opening = curtainOpenings[thing.id] || 0;
-                        this._images[key].material.uniforms.offset.value.set(0, 5+opening*2.2, 1);
+                        this._images[key].material.uniforms.offset.value.y = yOffset + 5+opening*2.2;
                         this._images[key].material.uniforms.scale.value.y *= 1 - (opening/200);
                         this._images[key].material.uniforms.brightness.value = curtainBrightness;
                         if (thing.curtain != 0)
@@ -473,7 +408,7 @@ class RoomState extends React.Component<PropsType, StateType> {
     }
 
     renderLayers() {
-        if (this.renderer) {
+        if (this.composer) {
             const width = this.mount.clientWidth;
             const height = this.mount.clientHeight;
             const maxRenderedLayerHeight = Math.min(700, height);
@@ -483,6 +418,7 @@ class RoomState extends React.Component<PropsType, StateType> {
             var imgHeight = this._imageDimensions.height * scaler;
             var renderedLayerWidth = 1920 * imgWidth / this._imageDimensions.width;
             var renderedLayerHeight = 1080 * imgHeight / this._imageDimensions.height;
+            var yOffset = (height-renderedLayerHeight) / 2.0;
 
             //
             // Render the room layers to a square texture
@@ -490,7 +426,6 @@ class RoomState extends React.Component<PropsType, StateType> {
 
             if (width !== this._rendererDimensions.width || height !== this._rendererDimensions.height) {
                 this._rendererDimensions = {width, height};
-                this._textures.renderBuffer.setSize (imgWidth, imgHeight);
                 this.renderer.setSize(width, height);
             }
 
@@ -503,43 +438,20 @@ class RoomState extends React.Component<PropsType, StateType> {
 
             for (var key in this._images) {
                 if (this._images[key].material) {
-                    this._images[key].material.uniforms.offset.value.set(0, 0, 1);
+                    this._images[key].material.uniforms.offset.value.set(0, yOffset, 1);
                     this._images[key].material.uniforms.scale.value.set(imgWidth, imgHeight, 1);
                     // this._images[key].sprite.scale.set(imgWidth, imgHeight, 1);
                     // this._images[key].sprite.position.set(0, 0, 1); // center
                 }
             }
             if (this._materials.tempOverlay) {
-                this._materials.tempOverlay.uniforms.offset.value.set(0, 0, 2);
+                this._materials.tempOverlay.uniforms.offset.value.set(0, yOffset, 2);
                 this._materials.tempOverlay.uniforms.scale.value.set(imgWidth, imgHeight, 1);
             }
 
-            this.updateThingSprites();
+            this.updateThingSprites(yOffset);
 
-            if(this.composer)
-                this.composer.render();
-
-            /*this.renderer.render(this.sceneOrtho, this.cameraOrtho, this._textures.renderBuffer);
-
-            //
-            // Render the room to the final render target (screen)
-            //
-
-            if (this._materials.finalRender && this._materials.finalRenderBkg) {
-                var excessHeight = (height-renderedLayerHeight) / 2.0;
-                this._materials.finalRender.uniforms.offset.value.set(0, excessHeight, 2);
-                this._materials.finalRender.uniforms.scale.value.set(imgWidth, imgHeight, 1);
-                this._materials.finalRenderBkg.uniforms.offset.value.set(0, excessHeight, 2);
-                this._materials.finalRenderBkg.uniforms.scale.value.set(width, height*2, 1);
-            }
-
-            this.cameraOrtho.left = -width / 2;
-            this.cameraOrtho.right = width / 2;
-            this.cameraOrtho.top = height / 2;
-            this.cameraOrtho.bottom = -height / 2;
-            this.cameraOrtho.updateProjectionMatrix();
-
-            this.renderer.render(this.postSceneOrtho, this.cameraOrtho);*/
+            this.composer.render();
         }
     }
 
