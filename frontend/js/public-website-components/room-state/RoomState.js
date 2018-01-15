@@ -69,6 +69,15 @@ class RoomState extends React.Component<PropsType, StateType> {
     _rendererDimensions = {width: 0, height: 0};
 
     _shaders: {[string]: string} = {
+        basicVertexShader: `
+            varying vec2 vUv;
+
+            void main() {
+                vUv = uv;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `,
+
         vertexShader: `
             varying vec2 vUv;
             uniform vec3 scale;
@@ -91,11 +100,6 @@ class RoomState extends React.Component<PropsType, StateType> {
                 gl_FragColor = texture2D(textureSampler, vUv) * vec4(brightness, brightness, brightness, opacity);
                 float avg = (gl_FragColor.r + gl_FragColor.g + gl_FragColor.b) / 3.0;
                 gl_FragColor = mix(gl_FragColor, vec4(avg, avg, avg, gl_FragColor.a), grayscale);
-                float xCoord1 = min(1.0, max(0.0, vUv.x - 0.03125) * 10000.0);
-                float xCoord2 = min(1.0, -min(0.0, vUv.x - (1.0-0.03125)) * 10000.0);
-                float yCoord1 = min(1.0, max(0.0, vUv.y - 0.236328125) * 10000.0);
-                float yCoord2 = min(1.0, -min(0.0, vUv.y - (1.0-0.236328125)) * 10000.0);
-                gl_FragColor.a *= xCoord1 * xCoord2 * yCoord1 * yCoord2;
             }`,
 
         flatPixelShader: `
@@ -104,6 +108,55 @@ class RoomState extends React.Component<PropsType, StateType> {
             void main() {
                 gl_FragColor = color;
             }`,
+
+        hBlur: `
+            uniform sampler2D tDiffuse;
+            uniform float h;
+
+            varying vec2 vUv;
+
+            void main() {
+                vec4 sum = vec4( 0.0 );
+
+                vec4 originalSample = texture2D( tDiffuse, vUv );
+
+                sum += texture2D( tDiffuse, vec2( vUv.x - 4.0 * h, vUv.y ) ) * 0.0162;
+                sum += texture2D( tDiffuse, vec2( vUv.x - 3.0 * h, vUv.y ) ) * 0.0540;
+                sum += texture2D( tDiffuse, vec2( vUv.x - 2.0 * h, vUv.y ) ) * 0.1216;
+                sum += texture2D( tDiffuse, vec2( vUv.x - 1.0 * h, vUv.y ) ) * 0.1945;
+                sum += originalSample * 0.2270;
+                sum += texture2D( tDiffuse, vec2( vUv.x + 1.0 * h, vUv.y ) ) * 0.1945;
+                sum += texture2D( tDiffuse, vec2( vUv.x + 2.0 * h, vUv.y ) ) * 0.1216;
+                sum += texture2D( tDiffuse, vec2( vUv.x + 3.0 * h, vUv.y ) ) * 0.0540;
+                sum += texture2D( tDiffuse, vec2( vUv.x + 4.0 * h, vUv.y ) ) * 0.0162;
+
+                gl_FragColor = sum;
+            }`,
+
+        vBlur: `
+            uniform sampler2D tDiffuse;
+            uniform float v;
+
+            varying vec2 vUv;
+
+            void main() {
+                vec4 sum = vec4( 0.0 );
+
+                vec4 originalSample = texture2D( tDiffuse, vUv );
+
+                sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y - 4.0 * v ) ) * 0.0162;
+                sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y - 3.0 * v ) ) * 0.0540;
+                sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y - 2.0 * v ) ) * 0.1216;
+                sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y - 1.0 * v ) ) * 0.1945;
+                sum += originalSample * 0.2270;
+                sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y + 1.0 * v ) ) * 0.1945;
+                sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y + 2.0 * v ) ) * 0.1216;
+                sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y + 3.0 * v ) ) * 0.0540;
+                sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y + 4.0 * v ) ) * 0.0162;
+
+                gl_FragColor = sum;
+            }
+        `,
     };
 
     _imageDimensions: {width: number, height: number}
@@ -192,14 +245,15 @@ class RoomState extends React.Component<PropsType, StateType> {
         const width = this.mount.clientWidth;
         const height = this.mount.clientHeight;
 
-        this.cameraOrtho = new THREE.OrthographicCamera( - width / 2, width / 2, height / 2, - height / 2, 1, 10 );
+        this.cameraOrtho = new THREE.OrthographicCamera(-width / 2, width / 2, height / 2, - height / 2, 1, 10);
         this.cameraOrtho.position.z = 10;
         this.sceneOrtho = new THREE.Scene();
 
-        this.renderer = new THREE.WebGLRenderer({ antialias: false });
+        this.renderer = new THREE.WebGLRenderer({ antialias: false, alpha:true, logarithmicDepthBuffer: true});
+        this.renderer.setClearColor(0x000000, 1.0);
+        this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.setClearColor('#1b1c1d');
         this.renderer.setSize(width, height);
-        this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.autoClear = false;
         this._rendererDimensions = {width, height};
 
@@ -210,12 +264,22 @@ class RoomState extends React.Component<PropsType, StateType> {
         this.loadAssets();
         this.renderLayers();
 
-
         this.composer = new EffectComposer(this.renderer);
-        this.composer.addPass(new RenderPass(this.sceneOrtho, this.cameraOrtho));
-        const copyPass = new ShaderPass(CopyShader);
-        copyPass.renderToScreen = true;
-        this.composer.addPass(copyPass);
+        this.composer.renderTarget2.texture.format = this.composer.renderTarget1.texture.format = THREE.RGBAFormat;
+
+        var blur1Passes = this.CreateBlurShaderPasses(800, 600);
+        var blur2Passes = this.CreateBlurShaderPasses(400, 300);
+
+        var blurPass = new RenderPass(this.sceneOrtho, this.cameraOrtho);
+        blurPass.clear = true;
+        blurPass.clearAlpha = 0.0;
+
+        this.composer.addPass(blurPass);
+        this.composer.addPass(blur1Passes.horizontalPass);
+        this.composer.addPass(blur1Passes.verticalPass);
+        this.composer.addPass(blur2Passes.horizontalPass);
+        this.composer.addPass(blur2Passes.horizontalPass);
+        blur2Passes.horizontalPass.renderToScreen = true;
     }
 
     componentWillUnmount() {
@@ -256,6 +320,31 @@ class RoomState extends React.Component<PropsType, StateType> {
         this._geometries.paddedPlane.computeBoundingSphere();
     }
 
+    CreateBlurShaderPasses(h: number, v: number) {
+        var HBlurShader = {
+            uniforms: {
+                tDiffuse: { type: "t", value: null },
+                h: { type: "f", value: 1.0 / h }
+            },
+            vertexShader: this._shaders.basicVertexShader,
+            fragmentShader: this._shaders.hBlur,
+        };
+
+        var VBlurShader = {
+            uniforms: {
+                tDiffuse: { type: "t", value: null },
+                v: { type: "f", value: 1.0 / v }
+            },
+            vertexShader: this._shaders.basicVertexShader,
+            fragmentShader: this._shaders.vBlur,
+        };
+
+        var HBlur = new ShaderPass(HBlurShader);
+        var VBlur = new ShaderPass(VBlurShader);
+
+        return { horizontalPass: HBlur, verticalPass: VBlur };
+    }
+
     loadTemperatureOverlay() {
         this._materials.tempOverlay = new THREE.ShaderMaterial({
             uniforms: {
@@ -268,7 +357,7 @@ class RoomState extends React.Component<PropsType, StateType> {
             blending: THREE.AdditiveBlending,
             transparent: true,
         });
-        var sprite = new THREE.Mesh(new THREE.PlaneGeometry(1, 1, 0, 0), this._materials.tempOverlay);
+        var sprite = new THREE.Mesh(this._geometries.paddedPlane, this._materials.tempOverlay);
         sprite.renderOrder = 100;
         this.sceneOrtho.add(sprite);
     }
@@ -305,7 +394,7 @@ class RoomState extends React.Component<PropsType, StateType> {
                     blending: textures[i].blending || THREE.NormalBlending,
                     transparent: true,
                 });
-                this._images[img].sprite = new THREE.Mesh(new THREE.PlaneGeometry(1, 1, 0, 0), this._images[img].material);
+                this._images[img].sprite = new THREE.Mesh(this._geometries.paddedPlane, this._images[img].material);
                 this._images[img].sprite.position.set(0, 0, 1); // center
                 this._images[img].sprite.renderOrder = textures[i].z;
                 this.sceneOrtho.add(this._images[img].sprite);
