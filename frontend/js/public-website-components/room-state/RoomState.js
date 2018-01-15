@@ -1,8 +1,7 @@
 /* @flow */
-
 import * as React from 'react';
 import * as THREE from 'three'
-import EffectComposer, { RenderPass, ShaderPass, CopyShader } from 'three-effectcomposer-es6'
+import EffectComposer, { RenderPass, ShaderPass } from 'three-effectcomposer-es6'
 import PropTypes from 'prop-types';
 import { Grid, Progress } from 'semantic-ui-react';
 
@@ -107,6 +106,17 @@ class RoomState extends React.Component<PropsType, StateType> {
 
             void main() {
                 gl_FragColor = color;
+            }`,
+
+        compositionShader: `
+            uniform sampler2D tDiffuse;
+
+            varying vec2 vUv;
+
+            void main() {
+                vec4 blurred = texture2D(tDiffuse, vUv);
+
+                gl_FragColor = blurred;
             }`,
 
         hBlur: `
@@ -229,16 +239,23 @@ class RoomState extends React.Component<PropsType, StateType> {
     mount: Object;
     cameraOrtho: Object;
     sceneOrtho: Object;
+    compositionScene: Object;
     renderer: Object;
     composer: Object;
     animationTimeout: Object;
 
     _materials: {[string]: Object} = {
         tempOverlay: undefined,
+        foregroundRender: undefined,
+        backgroundRender: undefined,
     };
 
     _geometries: {[string]: Object} = {
         paddedPlane: undefined,
+    };
+
+    _textures: {[string]: Object} = {
+        renderBuffer: undefined,
     };
 
     componentDidMount() {
@@ -250,36 +267,28 @@ class RoomState extends React.Component<PropsType, StateType> {
         this.sceneOrtho = new THREE.Scene();
 
         this.renderer = new THREE.WebGLRenderer({ antialias: false, alpha:true, logarithmicDepthBuffer: true});
-        this.renderer.setClearColor(0x000000, 1.0);
+        this.renderer.setClearColor(0x1b1c1d, 0.0);
         this.renderer.setPixelRatio(window.devicePixelRatio);
-        this.renderer.setClearColor('#1b1c1d');
         this.renderer.setSize(width, height);
         this.renderer.autoClear = false;
         this._rendererDimensions = {width, height};
 
+        this._textures.renderBuffer = new THREE.WebGLRenderTarget(
+            width,
+            height,
+            {
+                minFilter: THREE.LinearFilter,
+                magFilter: THREE.NearestFilter
+            }
+        );
 
         this.mount.appendChild(this.renderer.domElement);
 
         this.loadGeometries();
+        this.prepareComposer();
+        this.createFinalComposition();
         this.loadAssets();
         this.renderLayers();
-
-        this.composer = new EffectComposer(this.renderer);
-        this.composer.renderTarget2.texture.format = this.composer.renderTarget1.texture.format = THREE.RGBAFormat;
-
-        var blur1Passes = this.CreateBlurShaderPasses(800, 600);
-        var blur2Passes = this.CreateBlurShaderPasses(400, 300);
-
-        var blurPass = new RenderPass(this.sceneOrtho, this.cameraOrtho);
-        blurPass.clear = true;
-        blurPass.clearAlpha = 0.0;
-
-        this.composer.addPass(blurPass);
-        this.composer.addPass(blur1Passes.horizontalPass);
-        this.composer.addPass(blur1Passes.verticalPass);
-        this.composer.addPass(blur2Passes.horizontalPass);
-        this.composer.addPass(blur2Passes.horizontalPass);
-        blur2Passes.horizontalPass.renderToScreen = true;
     }
 
     componentWillUnmount() {
@@ -320,7 +329,23 @@ class RoomState extends React.Component<PropsType, StateType> {
         this._geometries.paddedPlane.computeBoundingSphere();
     }
 
-    CreateBlurShaderPasses(h: number, v: number) {
+    prepareComposer() {
+        this.composer = new EffectComposer(this.renderer);
+        this.composer.renderTarget2.texture.format = this.composer.renderTarget1.texture.format = THREE.RGBAFormat;
+
+        var blur1Passes = this.createBlurShaderPasses(800, 800);
+        var blur2Passes = this.createBlurShaderPasses(400, 400);
+
+        var blurPass = new RenderPass(this.sceneOrtho, this.cameraOrtho);
+
+        this.composer.addPass(blurPass);
+        this.composer.addPass(blur1Passes.horizontalPass);
+        this.composer.addPass(blur1Passes.verticalPass);
+        this.composer.addPass(blur2Passes.horizontalPass);
+        this.composer.addPass(blur2Passes.horizontalPass);
+    }
+
+    createBlurShaderPasses(h: number, v: number) {
         var HBlurShader = {
             uniforms: {
                 tDiffuse: { type: "t", value: null },
@@ -343,6 +368,42 @@ class RoomState extends React.Component<PropsType, StateType> {
         var VBlur = new ShaderPass(VBlurShader);
 
         return { horizontalPass: HBlur, verticalPass: VBlur };
+    }
+
+    createFinalComposition() {
+        this.compositionScene = new THREE.Scene();
+        this._materials.backgroundRender = new THREE.ShaderMaterial({
+            uniforms: {
+                scale: {value: new THREE.Vector3(1, 1, 1)},
+                offset: {value: new THREE.Vector3(0, 0, 0)},
+                opacity: {value: 1},
+                brightness: {value: 0.5},
+                grayscale: {value: 0},
+                textureSampler: {type: 't', value: this.composer.renderTarget1.texture},
+            },
+            vertexShader: this._shaders.vertexShader,
+            fragmentShader: this._shaders.pixelShader,
+            transparent: true,
+        });
+        this._materials.foregroundRender = new THREE.ShaderMaterial({
+            uniforms: {
+                scale: {value: new THREE.Vector3(1, 1, 1)},
+                offset: {value: new THREE.Vector3(0, 0, 0)},
+                opacity: {value: 1},
+                brightness: {value: 1.0},
+                grayscale: {value: 0},
+                textureSampler: {type: 't', value: this._textures.renderBuffer.texture},
+            },
+            vertexShader: this._shaders.vertexShader,
+            fragmentShader: this._shaders.pixelShader,
+            transparent: true,
+        });
+        var sprite = new THREE.Mesh(new THREE.PlaneGeometry(1, 1, 0, 0), this._materials.backgroundRender);
+        sprite.renderOrder = 101;
+        this.compositionScene.add(sprite);
+        var sprite = new THREE.Mesh(new THREE.PlaneGeometry(1, 1, 0, 0), this._materials.foregroundRender);
+        sprite.renderOrder = 102;
+        this.compositionScene.add(sprite);
     }
 
     loadTemperatureOverlay() {
@@ -507,7 +568,7 @@ class RoomState extends React.Component<PropsType, StateType> {
             var imgHeight = this._imageDimensions.height * scaler;
             var renderedLayerWidth = 1920 * imgWidth / this._imageDimensions.width;
             var renderedLayerHeight = 1080 * imgHeight / this._imageDimensions.height;
-            var yOffset = (height-renderedLayerHeight) / 2.0;
+            var yOffset = 0;//(height-renderedLayerHeight) / 2.0;
 
             //
             // Render the room layers to a square texture
@@ -515,15 +576,15 @@ class RoomState extends React.Component<PropsType, StateType> {
 
             if (width !== this._rendererDimensions.width || height !== this._rendererDimensions.height) {
                 this._rendererDimensions = {width, height};
+                this._textures.renderBuffer.setSize(imgWidth, imgHeight);
                 this.renderer.setSize(width, height);
+
+                this.cameraOrtho.left = -width / 2;
+                this.cameraOrtho.right = width / 2;
+                this.cameraOrtho.top = height / 2;
+                this.cameraOrtho.bottom = -height / 2;
+                this.cameraOrtho.updateProjectionMatrix();
             }
-
-
-            this.cameraOrtho.left = -width / 2;
-            this.cameraOrtho.right = width / 2;
-            this.cameraOrtho.top = height / 2;
-            this.cameraOrtho.bottom = -height / 2;
-            this.cameraOrtho.updateProjectionMatrix();
 
             for (var key in this._images) {
                 if (this._images[key].material) {
@@ -537,10 +598,18 @@ class RoomState extends React.Component<PropsType, StateType> {
                 this._materials.tempOverlay.uniforms.offset.value.set(0, yOffset, 2);
                 this._materials.tempOverlay.uniforms.scale.value.set(imgWidth, imgHeight, 1);
             }
+            if (this._materials.backgroundRender && this._materials.foregroundRender) {
+                this._materials.backgroundRender.uniforms.offset.value.set(0, (height-renderedLayerHeight) / 2.0, 2);
+                this._materials.backgroundRender.uniforms.scale.value.set(width*2, height*2, 1);
+                this._materials.foregroundRender.uniforms.offset.value.set(0, (height-renderedLayerHeight) / 2.0, 2);
+                this._materials.foregroundRender.uniforms.scale.value.set(width, height, 1);
+            }
 
             this.updateThingSprites(yOffset);
 
+            this.renderer.render(this.sceneOrtho, this.cameraOrtho, this._textures.renderBuffer, true);
             this.composer.render();
+            this.renderer.render(this.compositionScene, this.cameraOrtho);
         }
     }
 
