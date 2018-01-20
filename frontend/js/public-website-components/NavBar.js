@@ -42,17 +42,8 @@ export default class NavBar extends Component<PropsType, StateType> {
         }
         else {
             return (
-                <Container>
-                    <Menu inverted pointing secondary size='large'>
-                        <Menu.Item as={NavLink} activeClassName="" exact to='/'>
-                            <img style={ styles.logo } src={this._verboze_logo} />
-                        </Menu.Item>
-                        <Menu.Item as={NavLink} exact to='/' >Home</Menu.Item>
-                        <Menu.Item as={NavLink} to='/features'>Features</Menu.Item>
-                        <Menu.Item as={NavLink} to='/about-us'>About Us</Menu.Item>
-                        <Menu.Item as={NavLink} to='/contact-us'>Contact Us</Menu.Item>
-                    </Menu>
-                </Container>
+                <div>
+                </div>
             );
         };
     };

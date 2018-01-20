@@ -1,7 +1,7 @@
 /* @flow */
 import * as React from 'react';
 import * as THREE from 'three'
-import EffectComposer, { RenderPass, ShaderPass } from 'three-effectcomposer-es6'
+import EffectComposer, { RenderPass, ShaderPass, CopyShader } from 'three-effectcomposer-es6'
 import PropTypes from 'prop-types';
 import { Grid, Progress } from 'semantic-ui-react';
 
@@ -12,6 +12,67 @@ import { connect as ReduxConnect } from 'react-redux';
 const connectionActions = require('../redux/actions/connection');
 import * as tabletActions from '../redux/actions/tabletstate';
 import { WebSocketCommunication } from '../../js-api-utils/WebSocketCommunication';
+
+
+
+var TexturePass = function ( map, opacity ) {
+
+    RenderPass.call( this );
+
+    if ( CopyShader === undefined )
+        console.error( "TexturePass relies on CopyShader" );
+
+    var shader = CopyShader;
+
+    this.map = map;
+    this.opacity = ( opacity !== undefined ) ? opacity : 1.0;
+
+    this.uniforms = THREE.UniformsUtils.clone( shader.uniforms );
+
+    this.material = new THREE.ShaderMaterial( {
+
+        uniforms: this.uniforms,
+        vertexShader: shader.vertexShader,
+        fragmentShader: shader.fragmentShader,
+        depthTest: false,
+        depthWrite: false
+
+    } );
+
+    this.needsSwap = false;
+
+    this.camera = new THREE.OrthographicCamera( - 1, 1, 1, - 1, 0, 1 );
+    this.scene  = new THREE.Scene();
+
+    this.quad = new THREE.Mesh( new THREE.PlaneBufferGeometry( 2, 2 ), null );
+    this.scene.add( this.quad );
+
+};
+
+TexturePass.prototype = Object.assign( Object.create( RenderPass.prototype ), {
+
+    constructor: TexturePass,
+
+    render: function ( renderer, writeBuffer, readBuffer, delta, maskActive ) {
+
+        var oldAutoClear = renderer.autoClear;
+        renderer.autoClear = false;
+
+        this.quad.material = this.material;
+
+        this.uniforms[ "opacity" ].value = this.opacity;
+        this.uniforms[ "tDiffuse" ].value = this.map;
+        this.material.transparent = ( this.opacity < 1.0 );
+
+        renderer.render( this.scene, this.camera, this.renderToScreen ? null : readBuffer, this.clear );
+
+        renderer.autoClear = oldAutoClear;
+    }
+
+} );
+
+
+
 
 function mapStateToProps(state) {
     return {
@@ -31,6 +92,7 @@ type PropsType = {
     roomState: Object,
     dimensions: {width: number, height: number},
     opacity?: number,
+    navbarHeight?: number,
 };
 
 type StateType = {
@@ -48,6 +110,7 @@ class RoomState extends React.Component<PropsType, StateType> {
 
     static defaultProps = {
         opacity: 1.0,
+        navbarHeight: 0,
     };
 
     state = {
@@ -77,7 +140,16 @@ class RoomState extends React.Component<PropsType, StateType> {
             }
         `,
 
-        vertexShader: `
+        onlyPosVertexShader: `
+            uniform vec3 scale;
+            uniform vec3 offset;
+            void main() {
+                vec4 modelViewPosition = modelViewMatrix * vec4(position * scale + offset, 1.0);
+                gl_Position = projectionMatrix * modelViewPosition;
+            }
+        `,
+
+        posAndUVVertexShader: `
             varying vec2 vUv;
             uniform vec3 scale;
             uniform vec3 offset;
@@ -130,7 +202,6 @@ class RoomState extends React.Component<PropsType, StateType> {
 
                 vec4 originalSample = texture2D( tDiffuse, vUv );
 
-                sum += texture2D( tDiffuse, vec2( vUv.x - 4.0 * h, vUv.y ) ) * 0.0162;
                 sum += texture2D( tDiffuse, vec2( vUv.x - 3.0 * h, vUv.y ) ) * 0.0540;
                 sum += texture2D( tDiffuse, vec2( vUv.x - 2.0 * h, vUv.y ) ) * 0.1216;
                 sum += texture2D( tDiffuse, vec2( vUv.x - 1.0 * h, vUv.y ) ) * 0.1945;
@@ -138,7 +209,6 @@ class RoomState extends React.Component<PropsType, StateType> {
                 sum += texture2D( tDiffuse, vec2( vUv.x + 1.0 * h, vUv.y ) ) * 0.1945;
                 sum += texture2D( tDiffuse, vec2( vUv.x + 2.0 * h, vUv.y ) ) * 0.1216;
                 sum += texture2D( tDiffuse, vec2( vUv.x + 3.0 * h, vUv.y ) ) * 0.0540;
-                sum += texture2D( tDiffuse, vec2( vUv.x + 4.0 * h, vUv.y ) ) * 0.0162;
 
                 gl_FragColor = sum;
             }`,
@@ -154,7 +224,6 @@ class RoomState extends React.Component<PropsType, StateType> {
 
                 vec4 originalSample = texture2D( tDiffuse, vUv );
 
-                sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y - 4.0 * v ) ) * 0.0162;
                 sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y - 3.0 * v ) ) * 0.0540;
                 sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y - 2.0 * v ) ) * 0.1216;
                 sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y - 1.0 * v ) ) * 0.1945;
@@ -162,7 +231,6 @@ class RoomState extends React.Component<PropsType, StateType> {
                 sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y + 1.0 * v ) ) * 0.1945;
                 sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y + 2.0 * v ) ) * 0.1216;
                 sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y + 3.0 * v ) ) * 0.0540;
-                sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y + 4.0 * v ) ) * 0.0162;
 
                 gl_FragColor = sum;
             }
@@ -199,7 +267,7 @@ class RoomState extends React.Component<PropsType, StateType> {
             //blending: THREE.AdditiveBlending,
         },
         doha: {
-            image: require('../../../assets/images/room_state/doha.jpg'),
+            image: require('../../../assets/images/room_state/doha2.jpg'),
             z: 1,
         },
         ['dimmer-1']: {
@@ -242,7 +310,7 @@ class RoomState extends React.Component<PropsType, StateType> {
     compositionScene: Object;
     renderer: Object;
     composer: Object;
-    animationTimeout: Object;
+    animationTimeout: ?any;
 
     _materials: {[string]: Object} = {
         tempOverlay: undefined,
@@ -333,16 +401,14 @@ class RoomState extends React.Component<PropsType, StateType> {
         this.composer = new EffectComposer(this.renderer);
         this.composer.renderTarget2.texture.format = this.composer.renderTarget1.texture.format = THREE.RGBAFormat;
 
-        var blur1Passes = this.createBlurShaderPasses(800, 800);
-        var blur2Passes = this.createBlurShaderPasses(400, 400);
+        var blur1Passes = this.createBlurShaderPasses(600, 600);
+        var blur2Passes = this.createBlurShaderPasses(300, 300);
 
-        var blurPass = new RenderPass(this.sceneOrtho, this.cameraOrtho);
-
-        this.composer.addPass(blurPass);
+        this.composer.addPass(new TexturePass(this._textures.renderBuffer.texture, 1));
         this.composer.addPass(blur1Passes.horizontalPass);
         this.composer.addPass(blur1Passes.verticalPass);
         this.composer.addPass(blur2Passes.horizontalPass);
-        this.composer.addPass(blur2Passes.horizontalPass);
+        this.composer.addPass(blur2Passes.verticalPass);
     }
 
     createBlurShaderPasses(h: number, v: number) {
@@ -377,11 +443,11 @@ class RoomState extends React.Component<PropsType, StateType> {
                 scale: {value: new THREE.Vector3(1, 1, 1)},
                 offset: {value: new THREE.Vector3(0, 0, 0)},
                 opacity: {value: 1},
-                brightness: {value: 0.5},
+                brightness: {value: 0.6},
                 grayscale: {value: 0},
                 textureSampler: {type: 't', value: this.composer.renderTarget1.texture},
             },
-            vertexShader: this._shaders.vertexShader,
+            vertexShader: this._shaders.posAndUVVertexShader,
             fragmentShader: this._shaders.pixelShader,
             transparent: true,
         });
@@ -394,7 +460,7 @@ class RoomState extends React.Component<PropsType, StateType> {
                 grayscale: {value: 0},
                 textureSampler: {type: 't', value: this._textures.renderBuffer.texture},
             },
-            vertexShader: this._shaders.vertexShader,
+            vertexShader: this._shaders.posAndUVVertexShader,
             fragmentShader: this._shaders.pixelShader,
             transparent: true,
         });
@@ -413,7 +479,7 @@ class RoomState extends React.Component<PropsType, StateType> {
                 offset: {value: new THREE.Vector3(0, 0, 0)},
                 color: {value: new THREE.Vector4(1, 0, 0, 0)},
             },
-            vertexShader: this._shaders.vertexShader,
+            vertexShader: this._shaders.onlyPosVertexShader,
             fragmentShader: this._shaders.flatPixelShader,
             blending: THREE.AdditiveBlending,
             transparent: true,
@@ -429,7 +495,8 @@ class RoomState extends React.Component<PropsType, StateType> {
         var curProgress = 0;
         var progress = (() => {
             curProgress += 1;
-            this.setState({loadingProgress: curProgress / Object.keys(this._images).length});
+            if (this.renderer)
+                this.setState({loadingProgress: curProgress / Object.keys(this._images).length});
         }).bind(this);
 
         for (var key in this._images) {
@@ -450,7 +517,7 @@ class RoomState extends React.Component<PropsType, StateType> {
                         grayscale: {value: 0},
                         textureSampler: {type: 't', value: this._images[img].texture},
                     },
-                    vertexShader: this._shaders.vertexShader,
+                    vertexShader: this._shaders.posAndUVVertexShader,
                     fragmentShader: this._shaders.pixelShader,
                     blending: textures[i].blending || THREE.NormalBlending,
                     transparent: true,
@@ -462,7 +529,8 @@ class RoomState extends React.Component<PropsType, StateType> {
             }
             this._images.doha.material.uniforms.grayscale.value = 0.45;
             this.loadTemperatureOverlay();
-            this.forceUpdate();
+            if (this.renderer)
+                this.forceUpdate();
         }).bind(this)).catch(((reason) => {
             console.log(reason);
             this.props.setConnectionURL("");
@@ -488,7 +556,7 @@ class RoomState extends React.Component<PropsType, StateType> {
         return Math.min(Math.max((brightness / num_lights + this.computeCurtainsLight()), 0), 1);
     }
 
-    updateThingSprites(yOffset: number) {
+    updateThingSprites(imgWidth: number, imgHeight: number) {
         const { roomState } = this.props;
         const { curtainOpenings, lightIntensities } = this.state;
 
@@ -517,19 +585,20 @@ class RoomState extends React.Component<PropsType, StateType> {
                 case "curtains":
                     if (key+"-1" in this._images && key+"-2" in this._images &&
                         this._images[key+"-1"].material && this._images[key+"-2"].material) {
-                        var opening = curtainOpenings[thing.id] || 0;
-                        this._images[key+"-1"].material.uniforms.offset.value.x = -2-opening*1.8;
-                        this._images[key+"-1"].material.uniforms.scale.value.x *= 1 - (opening/200);
+                        var opening = (curtainOpenings[thing.id] || 0) / 100;
+                        this._images[key+"-1"].material.uniforms.offset.value.x = (-opening * (imgWidth/2)) / 3;
+                        this._images[key+"-1"].material.uniforms.scale.value.x *= 1-opening*(1/3);
                         this._images[key+"-1"].material.uniforms.brightness.value = curtainBrightness;
-                        this._images[key+"-2"].material.uniforms.offset.value.x = +2+opening*1.8;
-                        this._images[key+"-2"].material.uniforms.scale.value.x *= 1 - (opening/200);
+
+                        this._images[key+"-2"].material.uniforms.offset.value.x = (opening * (imgWidth/2)) / 3;
+                        this._images[key+"-2"].material.uniforms.scale.value.x *= 1-opening*(1/3);
                         this._images[key+"-2"].material.uniforms.brightness.value = curtainBrightness;
                         if (thing.curtain != 0)
                             needAnimation = true;
                     } else if (key in this._images && this._images[key].material) {
-                        var opening = curtainOpenings[thing.id] || 0;
-                        this._images[key].material.uniforms.offset.value.y = yOffset + 5+opening*2.2;
-                        this._images[key].material.uniforms.scale.value.y *= 1 - (opening/200);
+                        var opening = (curtainOpenings[thing.id] || 0) / 100;
+                        this._images[key].material.uniforms.offset.value.y = (opening * (imgHeight/2)) / 3;
+                        this._images[key].material.uniforms.scale.value.y *= 1-opening*(1/2);
                         this._images[key].material.uniforms.brightness.value = curtainBrightness;
                         if (thing.curtain != 0)
                             needAnimation = true;
@@ -558,58 +627,62 @@ class RoomState extends React.Component<PropsType, StateType> {
     }
 
     renderLayers() {
-        if (this.composer) {
+        if (this.composer && this.renderer) {
             const width = this.mount.clientWidth;
             const height = this.mount.clientHeight;
-            const maxRenderedLayerHeight = Math.min(700, height);
+            if (width > 1 && height > 1) {
+                const maxRenderedLayerWidth = width - 100;
+                const maxRenderedLayerHeight = Math.min(height-300, 800);
 
-            var scaler = Math.min(width / 1920, maxRenderedLayerHeight / 1080);
-            var imgWidth = this._imageDimensions.width * scaler;
-            var imgHeight = this._imageDimensions.height * scaler;
-            var renderedLayerWidth = 1920 * imgWidth / this._imageDimensions.width;
-            var renderedLayerHeight = 1080 * imgHeight / this._imageDimensions.height;
-            var yOffset = 0;//(height-renderedLayerHeight) / 2.0;
+                var scaler = Math.min(maxRenderedLayerWidth / 1920, maxRenderedLayerHeight / 1080);
+                var imgWidth = this._imageDimensions.width * scaler;
+                var imgHeight = this._imageDimensions.height * scaler;
+                var renderedLayerWidth = 1920 * imgWidth / this._imageDimensions.width;
+                var renderedLayerHeight = 1080 * imgHeight / this._imageDimensions.height;
 
-            //
-            // Render the room layers to a square texture
-            //
+                //
+                // Render the room layers to a square texture
+                //
 
-            if (width !== this._rendererDimensions.width || height !== this._rendererDimensions.height) {
-                this._rendererDimensions = {width, height};
-                this._textures.renderBuffer.setSize(imgWidth, imgHeight);
-                this.renderer.setSize(width, height);
+                if (width !== this._rendererDimensions.width || height !== this._rendererDimensions.height) {
+                    this._rendererDimensions = {width, height};
+                    this._textures.renderBuffer.setSize(imgWidth, imgHeight);
+                    this.renderer.setSize(width, height);
 
-                this.cameraOrtho.left = -width / 2;
-                this.cameraOrtho.right = width / 2;
-                this.cameraOrtho.top = height / 2;
-                this.cameraOrtho.bottom = -height / 2;
-                this.cameraOrtho.updateProjectionMatrix();
-            }
-
-            for (var key in this._images) {
-                if (this._images[key].material) {
-                    this._images[key].material.uniforms.offset.value.set(0, yOffset, 1);
-                    this._images[key].material.uniforms.scale.value.set(imgWidth, imgHeight, 1);
-                    // this._images[key].sprite.scale.set(imgWidth, imgHeight, 1);
-                    // this._images[key].sprite.position.set(0, 0, 1); // center
+                    this.cameraOrtho.left = -width / 2;
+                    this.cameraOrtho.right = width / 2;
+                    this.cameraOrtho.top = height / 2;
+                    this.cameraOrtho.bottom = -height / 2;
+                    this.cameraOrtho.updateProjectionMatrix();
                 }
-            }
-            if (this._materials.tempOverlay) {
-                this._materials.tempOverlay.uniforms.offset.value.set(0, yOffset, 2);
-                this._materials.tempOverlay.uniforms.scale.value.set(imgWidth, imgHeight, 1);
-            }
-            if (this._materials.backgroundRender && this._materials.foregroundRender) {
-                this._materials.backgroundRender.uniforms.offset.value.set(0, (height-renderedLayerHeight) / 2.0, 2);
-                this._materials.backgroundRender.uniforms.scale.value.set(width*2, height*2, 1);
-                this._materials.foregroundRender.uniforms.offset.value.set(0, (height-renderedLayerHeight) / 2.0, 2);
-                this._materials.foregroundRender.uniforms.scale.value.set(width, height, 1);
-            }
 
-            this.updateThingSprites(yOffset);
+                for (var key in this._images) {
+                    if (this._images[key].material) {
+                        this._images[key].material.uniforms.offset.value.set(0, 0, 1);
+                        this._images[key].material.uniforms.scale.value.set(imgWidth, imgHeight, 1);
+                        // this._images[key].sprite.scale.set(imgWidth, imgHeight, 1);
+                        // this._images[key].sprite.position.set(0, 0, 1); // center
+                    }
+                }
+                if (this._materials.tempOverlay) {
+                    this._materials.tempOverlay.uniforms.offset.value.set(0, 0, 2);
+                    this._materials.tempOverlay.uniforms.scale.value.set(imgWidth, imgHeight, 1);
+                }
+                if (this._materials.backgroundRender && this._materials.foregroundRender) {
+                    var yOffset = (height-renderedLayerHeight) / 2.0 - this.props.navbarHeight;
+                    var scaler = Math.max(width / renderedLayerWidth, height / renderedLayerHeight);
+                    this._materials.backgroundRender.uniforms.offset.value.set(0, 0, 2);
+                    this._materials.backgroundRender.uniforms.scale.value.set(width * scaler, height * scaler, 1);
+                    this._materials.foregroundRender.uniforms.offset.value.set(0, yOffset, 2);
+                    this._materials.foregroundRender.uniforms.scale.value.set(width, height, 1);
+                }
 
-            this.renderer.render(this.sceneOrtho, this.cameraOrtho, this._textures.renderBuffer, true);
-            this.composer.render();
-            this.renderer.render(this.compositionScene, this.cameraOrtho);
+                this.updateThingSprites(imgWidth, imgHeight);
+
+                this.renderer.render(this.sceneOrtho, this.cameraOrtho, this._textures.renderBuffer, true);
+                this.composer.render();
+                this.renderer.render(this.compositionScene, this.cameraOrtho);
+            }
         }
     }
 
@@ -674,7 +747,7 @@ class RoomState extends React.Component<PropsType, StateType> {
             }
         }
 
-        if (Object.keys(totalUpdate).length > 0)
+        if (Object.keys(totalUpdate).length > 0 && this.renderer)
             this.setState(totalUpdate);
     }
 
@@ -690,7 +763,7 @@ class RoomState extends React.Component<PropsType, StateType> {
         if (loadingProgress < 1)
             progress = <Progress style={styles.progress} size={"medium"} percent={Math.floor(loadingProgress * 100)} progress indicating />
 
-        requestAnimationFrame(this.renderLayers.bind(this));
+        this.renderLayers();
         return (
             <div style={{...styles.container, ...dimensions}}>
                 <Grid style={styles.progressContainer} centered columns={1} verticalAlign='middle'>
