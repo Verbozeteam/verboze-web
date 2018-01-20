@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 
 import os
 import dj_database_url
+from verboze.whitenoise_utils import add_gzip_encoding
 
 DB_NAME = os.environ.get('DB_NAME', '')
 DB_USER = os.environ.get('DB_USER', '')
@@ -74,6 +75,10 @@ MIDDLEWARE = [
     # WHITENOISE STATICFILE SERVING
     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
+
+
+WHITENOISE_ADD_HEADERS_FUNCTION = add_gzip_encoding
+
 
 ROOT_URLCONF = 'verboze.urls'
 
@@ -201,3 +206,9 @@ EMAIL_HOST_PASSWORD = VERBOZE_EMAIL_PASSWORD
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+
+# SPECIFIED TO DETERMINE IF DEBUG OR PRODUCTION IN DJANGO TEMPLATES
+INTERNAL_IPS = (
+    '127.0.0.1',
+)

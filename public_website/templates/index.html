@@ -4,6 +4,16 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-112092965-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-112092965-1');
+  </script>
+
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.12/semantic.min.css"></link>
   <link rel="stylesheet" href="{% static 'public_website/css/video-react.css' %}"></link>
   <title>Verboze</title>
@@ -20,6 +30,12 @@
 </head>
 <body>
   <div id="react-app" style="height: 100%; width: 100%"></div>
-  {% render_bundle 'public_website' %}
+
+  {% if debug %}
+    {% render_bundle 'public_website' 'js' %}
+  {% else %}
+    {% render_bundle 'public_website' 'js.jgz' %}
+  {% endif %}
+
 </body>
 </html>
