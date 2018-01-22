@@ -3,10 +3,6 @@
 import * as React from 'react';
 import { Player, ControlBar, BigPlayButton } from 'video-react';
 import PropTypes from 'prop-types';
-import {
-    Button,
-    Header,
-} from 'semantic-ui-react';
 
 type StateType = {
     width: number,
@@ -18,12 +14,6 @@ class PromoVideoComponent extends React.Component<any, StateType> {
         width: 1,
         height: 1,
     };
-
-    constructor(props) {
-        super(props);
-        this.state = { width: 0, height: 0 };
-        this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
-    }
 
     componentDidMount() {
         this.updateWindowDimensions();

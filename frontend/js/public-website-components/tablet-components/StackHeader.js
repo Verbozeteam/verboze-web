@@ -30,10 +30,11 @@ const styles = {
         fontSize: 17,
         color: '#FFFFFF',
         height: 50,
+        fontWeight: 'lighter',
     },
     bar: {
-        height: 2,
-        marginTop: 7,
+        height: 1,
+        marginTop: 5,
         backgroundColor: '#D04F4C',
         width: 50,
     },

@@ -149,7 +149,7 @@ class RoomDemoComponent extends React.Component<PropsType, StateType> {
 
         return (
             <div style={{...styles.roomContainer, ...dimensions}}>
-                <RoomState navbarHeight={100} opacity={currentStage === 3 ? 1.0 : 0.2} dimensions={dimensions} />
+                <RoomState navbarHeight={66} opacity={currentStage === 3 ? 1.0 : 0.2} dimensions={dimensions} />
                 <RoomDemoControls dimensions={dimensions} />
             </div>
         );
