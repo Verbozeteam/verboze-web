@@ -253,7 +253,7 @@ class RoomState extends React.Component<PropsType, StateType> {
         }
     } = {
         background: {
-            image: require('../../../assets/images/room_state/empty_room.png'),
+            image: require('../../../assets/images/room_state/cool_room.jpg'),
             z: 5,
         },
         window: {
