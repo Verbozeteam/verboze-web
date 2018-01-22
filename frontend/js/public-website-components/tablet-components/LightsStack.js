@@ -27,6 +27,10 @@ class LightsStack extends React.Component<PropsType, StateType> {
         return (
             <FeatureStack height={height} width={width} slopeX={slopeX} backgroundColor={backgroundColor} image={this._lightsImage}>
                 <StackHeader style={{height: 50}} text={"Lights"} />
+                <div style={{width:30, height:30, marginLeft: width-slopeX-60, marginTop:  0, backgroundColor:'red'}}></div>
+                <div style={{width:30, height:30, marginLeft: width-slopeX-60, marginTop: 10, backgroundColor:'red'}}></div>
+                <div style={{width:30, height:30, marginLeft: width-slopeX-60, marginTop: 10, backgroundColor:'red'}}></div>
+                <div style={{width:30, height:30, marginLeft: width-slopeX-60, marginTop: 10, backgroundColor:'red'}}></div>
             </FeatureStack>
         );
     }

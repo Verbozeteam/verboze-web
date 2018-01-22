@@ -35,7 +35,7 @@ const styles = {
         height: 2,
         marginTop: 7,
         backgroundColor: '#D04F4C',
-        width: '100%',
+        width: 50,
     },
 };
 

@@ -89,6 +89,8 @@ class RoomState extends React.Component<PropsType, StateType> {
             material?: Object,
             sprite?: Object,
             blending?: Object,
+            isHelper?: boolean,
+            isCurtain?: boolean,
         }
     } = {
         base: {
@@ -467,21 +469,11 @@ class RoomState extends React.Component<PropsType, StateType> {
                         this._images[key+"-2"].sprite.position.x += -opening;
                         this._images[key+"-2"].sprite.scale.x *= 1 - (opening/1.8);
                         this._images[key+"-2"].material.uniforms.brightness.value = curtainBrightness;
-                        // this._images[key+"-1"].material.uniforms.offset.value.x = (-opening * (imgWidth/2)) / 3;
-                        // this._images[key+"-1"].material.uniforms.scale.value.x *= 1-opening*(1/3);
-                        // this._images[key+"-1"].material.uniforms.brightness.value = curtainBrightness;
-
-                        // this._images[key+"-2"].material.uniforms.offset.value.x = (opening * (imgWidth/2)) / 3;
-                        // this._images[key+"-2"].material.uniforms.scale.value.x *= 1-opening*(1/3);
-                        // this._images[key+"-2"].material.uniforms.brightness.value = curtainBrightness;
                         if (thing.curtain != 0)
                             needAnimation = true;
                     } else if (key in this._images && this._images[key].material) {
                         var opening = (curtainOpenings[thing.id] || 0) / 100;
                         this._images[key].sprite.position.y += opening * 1.3;
-                        // this._images[key].material.uniforms.offset.value.y = (opening * (imgHeight/2)) / 3;
-                        // this._images[key].material.uniforms.scale.value.y *= 1-opening*(1/2);
-                        // this._images[key].material.uniforms.brightness.value = curtainBrightness;
                         if (thing.curtain != 0)
                             needAnimation = true;
                     }

@@ -75,7 +75,6 @@ class FeatureStack extends React.Component<PropsType, StateType> {
         var curHeight = this._marginTop;
         if (children && index > 0) {
             for (var i = 0; i < index; i++) {
-                console.log(index, i, children[i])
                 curHeight += children[i].props.style.height +
                             (children[i].props.style.marginTop || 0) +
                             (children[i].props.style.paddingTop || 0);
