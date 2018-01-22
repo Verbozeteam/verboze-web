@@ -13,10 +13,6 @@ type StateType = {
 };
 
 export default class Company extends Component<PropsType, StateType> {
-    // state = {
-    //     width: 1,
-    //     height: 1,
-    // };
 
     constructor(props: PropsType) {
         super(props);
