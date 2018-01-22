@@ -57,14 +57,16 @@ class RoomStacksCanvas extends React.Component<PropsType, StateType> {
                 var stackWidth = stackWidths[i];
 
                 this.ctx.save();
-                this.ctx.beginPath();
-                this.ctx.moveTo(curOffset + slopeX, 0);
-                this.ctx.lineTo(curOffset + stackWidth, 0);
-                this.ctx.lineTo(curOffset + stackWidth-slopeX, tabletHeight);
-                this.ctx.lineTo(curOffset, tabletHeight);
-                this.ctx.lineTo(curOffset + slopeX, 0);
-                this.ctx.closePath();
-                this.ctx.clip();
+                if(i !== 0) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(curOffset + slopeX, 0);
+                    this.ctx.lineTo(curOffset + stackWidth, 0);
+                    this.ctx.lineTo(curOffset + stackWidth-slopeX, tabletHeight);
+                    this.ctx.lineTo(curOffset, tabletHeight);
+                    this.ctx.lineTo(curOffset + slopeX, 0);
+                    this.ctx.closePath();
+                    this.ctx.clip();
+                }
 
                 this.ctx.fillStyle = this._images[i].fillStyle;
                 this.ctx.clearRect(curOffset, 0, curOffset + stackWidth, tabletHeight);

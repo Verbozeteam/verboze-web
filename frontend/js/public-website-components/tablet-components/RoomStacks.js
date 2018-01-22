@@ -135,7 +135,7 @@ class RoomStacks extends React.Component<PropsType, StateType> {
             if (Math.abs(diff) < 1)
                 newWidths[i] = targetWidths[i];
             else
-                newWidths[i] += diff * 0.1;
+                newWidths[i] += diff * 0.2;
         }
 
         if (isSelected)
