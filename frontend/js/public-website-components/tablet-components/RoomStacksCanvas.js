@@ -22,21 +22,25 @@ class RoomStacksCanvas extends React.Component<PropsType, StateType> {
     }, {
         src: require('../../../assets/images/lightbulb.jpg'),
         offsetX: -200,
+        offsetY: 0,
         obj: undefined,
         fillStyle: "red",
     }, {
         src: require('../../../assets/images/curtain_back.jpg'),
         offsetX: -80,
+        offsetY: 0,
         obj: undefined,
         fillStyle: "red",
     }, {
         src: require('../../../assets/images/snowflake.jpg'),
         offsetX: 50,
+        offsetY: -30,
         obj: undefined,
         fillStyle: "red",
     }, {
         src: require('../../../assets/images/service_back.jpg'),
         offsetX: 100,
+        offsetY: 0,
         obj: undefined,
         fillStyle: "red",
     }, {
@@ -73,7 +77,7 @@ class RoomStacksCanvas extends React.Component<PropsType, StateType> {
                 if (this._images[i].obj) {
                     this.ctx.drawImage(this._images[i].obj,
                         tabletWidth / 2 - this._images[i].obj.width / 2 + this._images[i].offsetX,
-                        tabletHeight / 2 - this._images[i].obj.height / 2,
+                        tabletHeight / 2 - this._images[i].obj.height / 2 + this._images[i].offsetY,
                         this._images[i].obj.width,
                         this._images[i].obj.height);
                 }

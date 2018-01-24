@@ -218,6 +218,27 @@ class RoomState extends React.Component<PropsType, StateType> {
         }
     }
 
+    runInitialAnimation() {
+        this.context.store.dispatch(connectionActions.setThingsPartialStates({
+            'lightswitch-1': {intensity: 0},
+            'lightswitch-2': {intensity: 0},
+            'lightswitch-3': {intensity: 0},
+            'dimmer-1': {intensity: 0},
+        }));
+        setTimeout(() => {
+            this.context.store.dispatch(connectionActions.setThingPartialState('lightswitch-1', {intensity: 1}));
+            setTimeout(() => {
+                this.context.store.dispatch(connectionActions.setThingPartialState('dimmer-1', {intensity: 100}));
+                setTimeout(() => {
+                    this.context.store.dispatch(connectionActions.setThingPartialState('lightswitch-2', {intensity: 1}));
+                    setTimeout(() => {
+                        this.context.store.dispatch(connectionActions.setThingPartialState('lightswitch-3', {intensity: 1}));
+                    }, 1500);
+                }, 1500);
+            }, 1500);
+        }, 3000);
+    }
+
     loadGeometries() {
         this._geometries.paddedPlane = new THREE.Geometry();
         var heightOverWidth = this._imageInnerDimensions.height / this._imageInnerDimensions.width;
@@ -406,6 +427,7 @@ class RoomState extends React.Component<PropsType, StateType> {
                 }
             }
             this.loadTemperatureOverlay();
+            this.runInitialAnimation();
             if (this.renderer)
                 this.forceUpdate();
         }).bind(this)).catch(((reason) => {

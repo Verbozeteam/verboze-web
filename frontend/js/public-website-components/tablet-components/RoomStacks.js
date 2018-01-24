@@ -10,6 +10,8 @@ import { CentralACStack } from './CentralACStack';
 import { RoomServiceStack } from './RoomServiceStack';
 import { RoomStacksCanvas } from './RoomStacksCanvas';
 
+import { StackHeader } from './StackHeader';
+
 type PropsType = {
     width: number,
     height: number,
@@ -57,7 +59,7 @@ class RoomStacks extends React.Component<PropsType, StateType> {
         const { width, height } = this.props;
         const { currentStack, isSelected } = this.state;
 
-        if (currentStack > 0 && !isSelected) {
+        if (currentStack > 0 && currentStack < this._numStacks+1 && !isSelected) {
             e.preventDefault();
             this.setState({
                 currentStack: currentStack,
@@ -92,9 +94,15 @@ class RoomStacks extends React.Component<PropsType, StateType> {
     }
 
     onLeave(e: Object) {
-        const { isSelected } = this.state;
-        if (!isSelected)
+        if (!this.state.isSelected)
             this.setState({currentStack: -1});
+    }
+
+    onCloseStack(e: Object) {
+        this.setState({
+            currentStack: -1,
+            isSelected: false,
+        });
     }
 
     getDefaultWidths() {
@@ -158,6 +166,9 @@ class RoomStacks extends React.Component<PropsType, StateType> {
         if (currentWidths.length === 0)
             currentWidths = this.getDefaultWidths();
 
+        var headerPadding = 20*(this._slopeX-currentSlope)/this._slopeX;
+        var headersPadding = currentWidths.map((w, i) => (i === currentStack ? headerPadding : 0));
+
         return (
             <div    style={styles.container}
                     onClick={this.onClick.bind(this)}
@@ -172,13 +183,29 @@ class RoomStacks extends React.Component<PropsType, StateType> {
                     slopeX={currentSlope} />
 
                 <div style={styles.dataContainer}>
-                    <div style={{minWidth: currentWidths[0]}} />
+                    <div style={{minWidth: currentWidths[0], marginLeft: -currentSlope}} />
                     <LightsStack width={currentWidths[1]} height={height} slopeX={currentSlope} isFullscreen={currentStack === 1 && isSelected} />
                     <CurtainsStack width={currentWidths[2]} height={height} slopeX={currentSlope} isFullscreen={currentStack === 2 && isSelected} />
                     <CentralACStack width={currentWidths[3]} height={height} slopeX={currentSlope} isFullscreen={currentStack === 3 && isSelected} />
                     <RoomServiceStack width={currentWidths[4]} height={height} slopeX={currentSlope} isFullscreen={currentStack === 4 && isSelected} />
                 </div>
 
+                <div style={styles.dataContainer}>
+                    <div style={{...styles.header, marginLeft: currentWidths[0] + headersPadding[1], width: currentWidths[1]-currentSlope}}>
+                        <StackHeader text={"Lights"} />
+                    </div>
+                    <div style={{...styles.header, marginLeft: headersPadding[2], width: currentWidths[2]-currentSlope}}>
+                        <StackHeader text={"Curtains"} />
+                    </div>
+                    <div style={{...styles.header, marginLeft: headersPadding[3], width: currentWidths[3]-currentSlope}}>
+                        <StackHeader text={"Thermostat"} />
+                    </div>
+                    <div style={{...styles.header, marginLeft: headersPadding[4], width: currentWidths[4]-currentSlope}}>
+                        <StackHeader text={"Services"} />
+                    </div>
+                    <div style={{...styles.header, ...styles.xButton, marginLeft: -headerPadding*2-styles.xButton.width, opacity: isSelected ? 1 : 0}} onClick={this.onCloseStack.bind(this)}>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -198,6 +225,18 @@ const styles = {
         flexDirection: 'row',
         overflowX: 'hidden',
         overflowY: 'hidden',
+    },
+    header: {
+        marginTop: 20,
+        overflowX: 'hidden',
+        overflowY: 'hidden',
+    },
+    xButton: {
+        width: 25,
+        height: 25,
+        background: 'url('+require('../../../assets/images/close.png')+')',
+        backgroundSize: 'cover',
+        transition: 'opacity 500ms',
     }
 };
 
