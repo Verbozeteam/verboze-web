@@ -6,6 +6,9 @@ import PropTypes from 'prop-types';
 import * as connectionActions from '../redux/actions/connection';
 const { WebSocketCommunication } = require('../../js-api-utils/WebSocketCommunication');
 
+import { MagicCircle } from './MagicCircle';
+import { DimmerSlider } from './DimmerSlider';
+
 type PropsType = {
     width: number,
     height: number,
@@ -15,13 +18,18 @@ type PropsType = {
 
 type StateType = {
     things: Array<Object>,
+    presets: Array<Object>,
+    currentPresetIndex: number,
 };
 
 class LightsStack extends React.Component<PropsType, StateType> {
     _unsubscribe: () => null = () => null;
 
+    _accentColor: string = "#D04F4C";
+
     state: StateType = {
         things: [],
+        presets: [],
     };
 
     componentWillMount() {
@@ -38,7 +46,10 @@ class LightsStack extends React.Component<PropsType, StateType> {
         const { store } = this.context;
         const reduxState = store.getState();
 
-        const { things } = this.state;
+        const { things, currentPresetIndex } = this.state;
+        var { presets } = this.state;
+
+        var stateUpdate = {};
 
         if (reduxState && reduxState.connection && reduxState.connection.roomState) {
             var my_things = [];
@@ -48,8 +59,52 @@ class LightsStack extends React.Component<PropsType, StateType> {
                     my_things.push(thing);
             }
             if (JSON.stringify(my_things) !== JSON.stringify(things))
-                this.setState({things: my_things});
+                stateUpdate = {...stateUpdate, things: my_things};
         }
+
+        if (reduxState && reduxState.connection && reduxState.connection.roomConfig) {
+            var reduxPresets = reduxState.connection.roomConfig.rooms[0].grid[0].panels[0].presets; // HACK
+            if (JSON.stringify(reduxPresets) !== JSON.stringify(presets)) {
+                stateUpdate = {...stateUpdate, presets: reduxPresets};
+                presets = reduxPresets;
+            }
+        }
+
+        var newPreset = this.getCurrentPresetSwitchFromReduxState(reduxState, presets);
+        if (newPreset != currentPresetIndex)
+            stateUpdate = {...stateUpdate, currentPresetIndex: newPreset};
+
+        if (Object.keys(stateUpdate).length > 0)
+            this.setState(stateUpdate);
+    }
+
+    computeDistanceToPreset(preset: Object, state: Object) {
+        for (var k in preset)
+            if (state[k] == undefined)
+                delete preset[k];
+        var preset_intensity = Object.keys(preset).map((tid) => !preset[tid].intensity ? 0 : (state[tid].category == 'dimmers' ? preset[tid].intensity / 100 : preset[tid].intensity)).reduce((a, b) => a + b);
+        var state_intensity = Object.keys(state).filter((k) => k in preset).map((tid) => !state[tid].intensity ? 0 : (state[tid].category == 'dimmers' ? state[tid].intensity / 100 : state[tid].intensity)).reduce((a, b) => a + b);
+        return Math.abs(preset_intensity - state_intensity);
+    }
+
+    getCurrentPresetSwitchFromReduxState(reduxState: Object, presets: Array<Object>) {
+        var distances = [];
+        var lowest_dist = 100000;
+        var lowest_dist_index = -1;
+        for (var i = 0; i < presets.length; i++) {
+            distances.push(this.computeDistanceToPreset(presets[i], reduxState.connection.roomState));
+            if (distances[i] < lowest_dist) {
+                lowest_dist = distances[i];
+                lowest_dist_index = i;
+            }
+        }
+
+        if (lowest_dist_index == 0 && distances[0] > 0.01)
+            lowest_dist_index++;
+        else if (lowest_dist_index == distances.length - 1 && distances[distances.length-1] > 0.01)
+            lowest_dist_index--;
+
+        return lowest_dist_index;
     }
 
     setLightIntensity(id: string, intensity: number) {
@@ -62,11 +117,112 @@ class LightsStack extends React.Component<PropsType, StateType> {
         this.context.store.dispatch(connectionActions.setThingPartialState(id, {intensity}));
     }
 
-    renderFullscreen() {
-        var { width, height, slopeX } = this.props;
+    changePreset(new_preset: number) {
+        const { presets } = this.state;
+
+        var ws_msg = {};
+        for (var k in presets[new_preset]) {
+            ws_msg[k] = {
+                ...this.context.store.getState().connection.roomState[k],
+                ...presets[new_preset][k],
+            };
+        }
+        WebSocketCommunication.sendMessage(ws_msg);
+
+        this.context.store.dispatch(connectionActions.setThingsPartialStates(presets[new_preset]));
+    }
+
+    renderDimmer(d: Object) {
+        var w = (this.props.width-tabStyles.container.margin*2)/2;
+        var h = 40;
 
         return (
-            <div style={{...styles.container, width: width-slopeX, height}}>
+            <div key={"l-"+d.id} style={dimmerStyles.container}>
+                <div style={tabStyles.texts}>{d.id}</div>
+                <DimmerSlider width={w}
+                              height={h}
+                              value={d.intensity}
+                              maxValue={100}
+                              glowColor={this._accentColor}
+                              increment={10}
+                              onChange={(v => this.setLightIntensity(d.id, v)).bind(this)}/>
+            </div>
+        );
+    }
+
+    renderSwitch(s: Object) {
+        return (
+            <div key={"s-"+s.id} style={switchStyles.container}>
+                <MagicCircle width={35}
+                             height={35}
+                             extraStyle={{marginRight: 10}}
+                             isOn={s.intensity > 0}
+                             text={s.intensity ? "On" : ""}
+                             textColor={'#ffffff'}
+                             glowColor={this._accentColor}
+                             onClick={(() => this.setLightIntensity(s.id, 1-s.intensity)).bind(this)}
+                             sideText={s.id}
+                             sideTextStyle={{...tabStyles.texts, marginLeft: 10, lineHeight: '35px'}} />
+            </div>
+        );
+    }
+
+    renderSeparator(index: number) {
+        return (
+            <div key={"lights-separator-"+index} style={tabStyles.separatorContainer}>
+                <div style={tabStyles.separator} />
+            </div>
+        );
+    }
+
+    renderFullscreen() {
+        const { things, presets, currentPresetIndex } = this.state;
+        var { width, height, slopeX } = this.props;
+
+        var presetsView = null;
+        if (presets.length > 0) {
+            var presetButtons = [];
+            for (var i = 0; i < presets.length; i++) {
+                const index = i;
+                presetButtons.push(
+                    <MagicCircle key={"preset-key-"+i}
+                                 width={40}
+                                 height={40}
+                                 extraStyle={{marginLeft: 10}}
+                                 isOn={i === currentPresetIndex}
+                                 text={i === 0 ? "Off" : i}
+                                 textColor={'#ffffff'}
+                                 glowColor={this._accentColor}
+                                 onClick={(() => this.changePreset(index)).bind(this)} />
+                );
+            }
+            presetsView = (
+                <div style={tabStyles.presetsContainer}>
+                    <div style={{...tabStyles.texts, marginBottom: 10}}>{"Presets"}</div>
+                    <div style={tabStyles.rowFlexer}>
+                        {presetButtons}
+                    </div>
+                </div>
+            );
+        }
+
+        var thingsView = null;
+        if (things.length > 0) {
+            var dimmers = things.filter(t => t.category === 'dimmers').map((t => this.renderDimmer(t)).bind(this));
+            var switches = things.filter(t => t.category === 'light_switches').map((t => this.renderSwitch(t)).bind(this));
+            thingsView = (
+                <div style={tabStyles.columnFlexer}>
+                {dimmers}
+                {this.renderSeparator()}
+                {switches}
+                </div>
+            );
+        }
+
+        return (
+            <div style={{...tabStyles.container, width: width-slopeX-tabStyles.container.margin*2, height: height-80}}>
+                <div style={tabStyles.tab}>{presetsView}</div>
+                <div style={tabStyles.tab}>{thingsView}</div>
             </div>
         );
     }
@@ -84,18 +240,18 @@ class LightsStack extends React.Component<PropsType, StateType> {
             var bars = [];
             for (var i = 0; i < numBars; i++) {
                 if (things[i].intensity)
-                    bars.push(<div key={"bar-"+i} style={{...styles.onBar, width: barWidth}} />);
+                    bars.push(<div key={"bar-"+i} style={{...stackStyles.onBar, width: barWidth}} />);
                 else
-                    bars.push(<div key={"bar-"+i} style={{...styles.offBar, width: barWidth}} />);
+                    bars.push(<div key={"bar-"+i} style={{...stackStyles.offBar, width: barWidth}} />);
                 if (i !== numBars - 1)
                     bars.push(<div key={"ebar-"+i} style={{width: barWidth}} />);
             }
-            intensitiesIndicators = <div style={styles.intensitiesContainer}>{bars}</div>;
+            intensitiesIndicators = <div style={stackStyles.intensitiesContainer}>{bars}</div>;
         }
 
         return (
-            <div style={{...styles.container, width: width-slopeX, height}}>
-                <div style={styles.stackContent}>
+            <div style={{...stackStyles.container, width: width-slopeX, height}}>
+                <div style={stackStyles.stackContent}>
                     {intensitiesIndicators}
                 </div>
             </div>
@@ -112,7 +268,71 @@ LightsStack.contextTypes = {
     store: PropTypes.object
 };
 
-const styles = {
+const dimmerStyles = {
+    container: {
+        flex: 3,
+    },
+};
+
+const switchStyles = {
+    container: {
+        flex: 2,
+        display: 'flex',
+        flexDirection: 'row',
+    },
+};
+
+const tabStyles = {
+    container: {
+        position: 'relative',
+        overflowX: 'hidden',
+        overflowY: 'hidden',
+        margin: 15,
+        marginTop: 60,
+        display: 'flex',
+        flexDirection: 'row',
+    },
+    tab: {
+        flex: 1,
+        position: 'relative',
+        height: '100%',
+    },
+    presetsContainer: {
+        width: 160,
+        height: 80,
+        position: 'absolute',
+        bottom: 0,
+    },
+    separatorContainer: {
+        display: 'flex',
+        flexDirection: 'column',
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    separator: {
+        height: 1,
+        width: '100%',
+        backgroundColor: '#444444',
+    },
+    texts: {
+        fontWeight: 'lighter',
+        color: '#ffffff',
+        fontSize: 16,
+    },
+    rowFlexer: {
+        display: 'flex',
+        flexDirection: 'row',
+        width: '100%',
+    },
+    columnFlexer: {
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+    },
+};
+
+const stackStyles = {
     container: {
         position: 'relative',
         overflowX: 'hidden',

@@ -86,17 +86,31 @@ class RoomServiceStack extends React.Component<PropsType, StateType> {
         var toggler = b => (() => this.toggle(things[0].id, b)).bind(this);
 
         return (
-            <div style={{...styles.container, width: width-slopeX, height}}>
-                <div style={styles.buttonsContainer}>
-                    <div style={styles.buttonContainer} onClick={toggler(false)}>
-                        <MagicCircle width={40} height={40} isOn={things[0].room_service} text={things[0].room_service ? "On" : ""} textColor={'#ffffff'} glowColor={this._rsColor} />
-                        <div style={styles.buttonText}>{"Room Service"}</div>
-                    </div>
-                    <div style={styles.buttonContainer} onClick={toggler(true)}>
-                        <MagicCircle width={40} height={40} isOn={things[0].do_not_disturb} text={things[0].do_not_disturb ? "On" : ""} textColor={'#ffffff'} glowColor={this._dndColor} />
-                        <div style={styles.buttonText}>{"Do not disturb"}</div>
+            <div style={{...tabStyles.container, width: width-slopeX-30, height: height-80}}>
+                <div style={tabStyles.buttonsContainer}>
+                    <div style={tabStyles.buttonsInnerContainer}>
+                        <MagicCircle width={40}
+                                     height={40}
+                                     onClick={toggler(false)}
+                                     isOn={things[0].room_service}
+                                     text={things[0].room_service ? "On" : ""}
+                                     textColor={'#ffffff'}
+                                     glowColor={this._rsColor}
+                                     sideText={"Room Service"}
+                                     sideTextStyle={tabStyles.buttonText} />
+                        <MagicCircle width={40}
+                                     height={40}
+                                     onClick={toggler(true)}
+                                     isOn={things[0].do_not_disturb}
+                                     text={things[0].do_not_disturb ? "On" : ""}
+                                     textColor={'#ffffff'}
+                                     glowColor={this._dndColor}
+                                     sideText={"Do Not Disturb"}
+                                     sideTextStyle={tabStyles.buttonText}
+                                     extraStyle={{marginTop: 20}} />
                     </div>
                 </div>
+                <div style={tabStyles.buttonsContainer} />
             </div>
         );
     }
@@ -110,10 +124,10 @@ class RoomServiceStack extends React.Component<PropsType, StateType> {
             var numBars = 3;
             var totalWidth = 50;
             var barWidth = totalWidth / numBars;
-            var rsStyle = things[0].room_service ? {...styles.onBar, ...{backgroundColor: this._rsColor}} : styles.offBar;
-            var dndStyle = things[0].do_not_disturb ? {...styles.onBar, ...{backgroundColor: this._dndColor}} : styles.offBar;
+            var rsStyle = things[0].room_service ? {...stackStyles.onBar, ...{backgroundColor: this._rsColor}} : stackStyles.offBar;
+            var dndStyle = things[0].do_not_disturb ? {...stackStyles.onBar, ...{backgroundColor: this._dndColor}} : stackStyles.offBar;
             statusIndicator = (
-                <div style={styles.intensitiesContainer}>
+                <div style={stackStyles.intensitiesContainer}>
                     <div style={{...rsStyle, width: barWidth}} />
                     <div style={{width: barWidth}} />
                     <div style={{...dndStyle, width: barWidth}} />
@@ -122,8 +136,8 @@ class RoomServiceStack extends React.Component<PropsType, StateType> {
         }
 
         return (
-            <div style={{...styles.container, width: width-slopeX, height}}>
-                <div style={styles.stackContent}>
+            <div style={{...stackStyles.container, width: width-slopeX, height}}>
+                <div style={stackStyles.stackContent}>
                     {statusIndicator}
                 </div>
             </div>
@@ -140,7 +154,38 @@ RoomServiceStack.contextTypes = {
     store: PropTypes.object
 };
 
-const styles = {
+const tabStyles = {
+    container: {
+        position: 'relative',
+        overflowX: 'hidden',
+        overflowY: 'hidden',
+        margin: 15,
+        marginTop: 60,
+        display: 'flex',
+        flexDirection: 'row',
+    },
+    buttonsContainer: {
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    buttonsInnerContainer: {
+        width: 180,
+        height: 100,
+    },
+    buttonText: {
+        marginLeft: 10,
+        fontSize: 18,
+        width: 130,
+        fontWeight: 'lighter',
+        color: '#ffffff',
+        lineHeight: '40px',
+    },
+};
+
+const stackStyles = {
     container: {
         position: 'relative',
         overflowX: 'hidden',
@@ -150,22 +195,6 @@ const styles = {
         position: 'absolute',
         bottom: 30,
         left: 45,
-    },
-    buttonsContainer: {
-        marginLeft: 50,
-        marginTop: 100,
-    },
-    buttonContainer: {
-        margin: 20,
-        display: 'flex',
-        flexDirection: 'row',
-    },
-    buttonText: {
-        marginLeft: 10,
-        fontSize: 18,
-        fontWeight: 'lighter',
-        color: '#ffffff',
-        lineHeight: '40px',
     },
     intensitiesContainer: {
         display: 'flex',

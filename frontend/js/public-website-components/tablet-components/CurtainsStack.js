@@ -6,6 +6,8 @@ import PropTypes from 'prop-types';
 import * as connectionActions from '../redux/actions/connection';
 const { WebSocketCommunication } = require('../../js-api-utils/WebSocketCommunication');
 
+import { MagicCircle } from './MagicCircle';
+
 type PropsType = {
     width: number,
     height: number,
@@ -19,6 +21,8 @@ type StateType = {
 
 class CurtainsStack extends React.Component<PropsType, StateType> {
     _unsubscribe: () => null = () => null;
+
+    _accentColor: string = "#D04F4C";
 
     state: StateType = {
         things: [],
@@ -52,11 +56,66 @@ class CurtainsStack extends React.Component<PropsType, StateType> {
         }
     }
 
+    renderCurtainView(index: number) {
+        var curtain = this.state.things[index];
+        var text = index === -1 ? "All" : curtain.id;
+        return (
+            <div key={"curtain-"+index}>
+                <div style={tabStyles.texts}>{text}</div>
+                <div style={tabStyles.controlsContainer}>
+                    <MagicCircle
+                                 width={40}
+                                 height={40}
+                                 extraStyle={{marginLeft: 0}}
+                                 glowColor={this._accentColor} />
+                    <MagicCircle
+                                 width={40}
+                                 height={40}
+                                 extraStyle={{marginLeft: 20}}
+                                 glowColor={this._accentColor} />
+                    <MagicCircle
+                                 width={40}
+                                 height={40}
+                                 extraStyle={{marginLeft: 20}}
+                                 glowColor={this._accentColor} />
+                </div>
+            </div>
+        );
+    }
+
+    renderSeparator(index: number) {
+        return (
+            <div key={"curtains-separator-"+index} style={tabStyles.separatorContainer}>
+                <div style={tabStyles.separator} />
+            </div>
+        );
+    }
+
     renderFullscreen() {
-        const { width, height, slopeX } = this.props;
+        const { things } = this.state;
+        var { width, height, slopeX } = this.props;
+
+        var allView = null;
+        if (things.length > 0) {
+            allView = (
+                <div style={tabStyles.allContainer}>
+                    {this.renderCurtainView(-1)}
+                </div>
+            );
+        }
+
+        var thingsView = null;
+        if (things.length > 0) {
+            thingsView = things.map(((t, i) => this.renderCurtainView(i)).bind(this));
+            for (var i = 1; i < things.length; i++)
+                thingsView.splice(i, 0, this.renderSeparator(i));
+        }
 
         return (
-            <div style={{...styles.container, width: width-slopeX, height}}>
+            <div style={{...tabStyles.container, width: width-slopeX-tabStyles.container.margin*2, height: height-80}}>
+                <div style={tabStyles.tab}>{allView}</div>
+                <div style={tabStyles.tab} />
+                <div style={tabStyles.tab}>{thingsView}</div>
             </div>
         );
     }
@@ -66,8 +125,8 @@ class CurtainsStack extends React.Component<PropsType, StateType> {
         const { width, height, slopeX } = this.props;
 
         return (
-            <div style={{...styles.container, width: width-slopeX, height}}>
-                <div style={styles.stackContent}>
+            <div style={{...stackStyles.container, width: width-slopeX, height}}>
+                <div style={stackStyles.stackContent}>
                 </div>
             </div>
         );
@@ -83,7 +142,51 @@ CurtainsStack.contextTypes = {
     store: PropTypes.object
 };
 
-const styles = {
+const tabStyles = {
+    container: {
+        position: 'relative',
+        overflowX: 'hidden',
+        overflowY: 'hidden',
+        margin: 15,
+        marginTop: 60,
+        display: 'flex',
+        flexDirection: 'row',
+    },
+    tab: {
+        flex: 1,
+        position: 'relative',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+    },
+    allContainer: {
+        position: 'absolute',
+        bottom: 0,
+    },
+    separatorContainer: {
+        display: 'flex',
+        flexDirection: 'column',
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    separator: {
+        height: 1,
+        width: '100%',
+        backgroundColor: '#444444',
+    },
+    texts: {
+        fontWeight: 'lighter',
+        color: '#ffffff',
+        fontSize: 16,
+    },
+    controlsContainer: {
+        display: 'flex',
+        flexDirection: 'row',
+    },
+};
+
+const stackStyles = {
     container: {
         position: 'relative',
         overflowX: 'hidden',

@@ -8,14 +8,17 @@ type PropsType = {
     height: number,
     glowColor?: string,
     offColor?: string,
-    opacity?: number,
     isOn?: boolean,
     text?: string,
     textColor?: string,
     onClick?: () => null,
+    extraStyle?: Object,
+    sideText?: string,
+    sideTextStyle?: Object,
 };
 
 type StateType = {
+    hover: boolean,
 };
 
 class MagicCircle extends React.Component<PropsType, StateType> {
@@ -27,10 +30,37 @@ class MagicCircle extends React.Component<PropsType, StateType> {
         text: "",
         textColor: '#000000',
         onClick: () => null,
+        extraStyle: {},
+        sideTextStyle: {},
     };
 
+    state: StateType = {
+        hover: false,
+    };
+
+    onMouseEnter(e: Object) {
+        this.setState({hover: true});
+    }
+
+    onMouseLeave(e: Object) {
+        this.setState({hover: false});
+    }
+
     render() {
-        const { width, height, glowColor, offColor, opacity, isOn, text, textColor, onClick } = this.props;
+        const {
+            width,
+            height,
+            glowColor,
+            offColor,
+            isOn,
+            text,
+            textColor,
+            onClick,
+            extraStyle,
+            sideText,
+            sideTextStyle
+        } = this.props;
+        const { hover } = this.state;
 
         var style = {
             borderRadius: 100000,
@@ -42,19 +72,30 @@ class MagicCircle extends React.Component<PropsType, StateType> {
             lineHeight: height + 'px',
             width,
             height,
-            opacity,
         };
 
-        if (isOn) {
-            style.boxShadow = '0 0 8px 2px' + glowColor;
+        if (isOn || hover) {
+            style.boxShadow = '0 0 16px 1px' + glowColor;
             style.backgroundColor = glowColor;
         } else {
             style.border = '2px solid ' + offColor;
         }
 
+        var sideTextView = null;
+        if (sideText) {
+            sideTextView = <div style={sideTextStyle}>{sideText}</div>
+        }
+
         return (
-            <div style={style} onClick={onClick}>
-                {text}
+            <div style={{display: 'flex', flexDirection: 'row', ...extraStyle}}
+                 onClick={onClick}
+                 onMouseEnter={this.onMouseEnter.bind(this)}
+                 onMouseLeave={this.onMouseLeave.bind(this)}
+                 ref={r => this._container_ref = r}>
+                <div style={style}>
+                    {text}
+                </div>
+                {sideTextView}
             </div>
         );
     }
