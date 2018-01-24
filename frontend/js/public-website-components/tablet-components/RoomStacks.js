@@ -169,6 +169,18 @@ class RoomStacks extends React.Component<PropsType, StateType> {
         var headerPadding = 20*(this._slopeX-currentSlope)/this._slopeX;
         var headersPadding = currentWidths.map((w, i) => (i === currentStack ? headerPadding : 0));
 
+        var xButton = null;
+        if (isSelected) {
+            xButton = (
+                <div style={{...styles.header, ...styles.xButton, marginLeft: -headerPadding*2-styles.xButton.width}} onClick={this.onCloseStack.bind(this)}>
+                    <svg width={25} height={25}>
+                        <line x1={0} y1={0} x2={25} y2={25} style={{strokeWidth: 1, stroke: '#ffffff'}} />
+                        <line x1={25} y1={0} x2={0} y2={25} style={{strokeWidth: 1, stroke: '#ffffff'}} />
+                    </svg>
+                </div>
+            );
+        }
+
         return (
             <div    style={styles.container}
                     onClick={this.onClick.bind(this)}
@@ -203,8 +215,7 @@ class RoomStacks extends React.Component<PropsType, StateType> {
                     <div style={{...styles.header, marginLeft: headersPadding[4], width: currentWidths[4]-currentSlope}}>
                         <StackHeader text={"Services"} />
                     </div>
-                    <div style={{...styles.header, ...styles.xButton, marginLeft: -headerPadding*2-styles.xButton.width, opacity: isSelected ? 1 : 0}} onClick={this.onCloseStack.bind(this)}>
-                    </div>
+                    {xButton}
                 </div>
             </div>
         );
@@ -234,9 +245,8 @@ const styles = {
     xButton: {
         width: 25,
         height: 25,
-        background: 'url('+require('../../../assets/images/close.png')+')',
-        backgroundSize: 'cover',
         transition: 'opacity 500ms',
+        color: 'white',
     }
 };
 
