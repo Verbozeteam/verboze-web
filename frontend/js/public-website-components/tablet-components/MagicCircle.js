@@ -17,6 +17,7 @@ type PropsType = {
     extraStyle?: Object,
     sideText?: string,
     sideTextStyle?: Object,
+    icon?: string,
 };
 
 type StateType = {
@@ -65,6 +66,7 @@ class MagicCircle extends React.Component<PropsType, StateType> {
             sideTextStyle,
             onPressIn,
             onPressOut,
+            icon,
         } = this.props;
         const { hover } = this.state;
 
@@ -85,6 +87,11 @@ class MagicCircle extends React.Component<PropsType, StateType> {
             style.backgroundColor = glowColor;
         } else {
             style.border = '2px solid ' + offColor;
+        }
+
+        if (icon) {
+            style.background = 'url(' + icon + ')';
+            style.backgroundSize = 'cover';
         }
 
         var sideTextView = null;

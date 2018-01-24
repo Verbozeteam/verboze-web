@@ -4,7 +4,6 @@ import * as React from 'react';
 import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 
-
 const EventListenerMode = {capture: true};
 var global_lsiteners = {};
 
@@ -26,7 +25,6 @@ function captureMouseEvents (e, onmove, onup) {
     e.preventDefault ();
     e.stopPropagation ();
 }
-
 
 type PropsType = {
     width: number,
@@ -62,6 +60,7 @@ class DimmerSlider extends React.Component<PropsType, StateType> {
         hoverState: -1,
         dragging: false,
         currentValue: 0,
+        lastValue: 0,
     };
 
     _sizes = {
@@ -185,11 +184,11 @@ class DimmerSlider extends React.Component<PropsType, StateType> {
             left: this._sizes.valueWidth-this._sizes.knobSize/2,
         };
         if (hoverState === 0)
-            minusStyle.fontWeight = 'bold';
+            minusStyle.color = '#ffffff';
         else if (hoverState === 1)
             knobStyle.backgroundColor = '#ffffff';
         else if (hoverState === 2)
-            plusStyle.fontWeight = 'bold';
+            plusStyle.color = '#ffffff';
 
         return (
             <div style={{...styles.container, width, height}}
@@ -217,7 +216,7 @@ const styles = {
     },
     signs: {
         fontWeight: 'lighter',
-        color: '#ffffff',
+        color: '#aaaaaa',
         textAlign: 'center',
     },
     sliderContainer: {

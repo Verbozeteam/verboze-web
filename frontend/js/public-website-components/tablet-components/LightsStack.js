@@ -20,6 +20,7 @@ type StateType = {
     things: Array<Object>,
     presets: Array<Object>,
     currentPresetIndex: number,
+    idToName: Object;
 };
 
 class LightsStack extends React.Component<PropsType, StateType> {
@@ -30,6 +31,8 @@ class LightsStack extends React.Component<PropsType, StateType> {
     state: StateType = {
         things: [],
         presets: [],
+        currentPresetIndex: -1,
+        idToName: {},
     };
 
     componentWillMount() {
@@ -47,11 +50,18 @@ class LightsStack extends React.Component<PropsType, StateType> {
         const reduxState = store.getState();
 
         const { things, currentPresetIndex } = this.state;
-        var { presets } = this.state;
+        var { presets, idToName } = this.state;
 
         var stateUpdate = {};
 
         if (reduxState && reduxState.connection && reduxState.connection.roomState) {
+            if (Object.keys(idToName).length === 0) {
+                var tings = reduxState.connection.roomConfig.rooms[0].grid[0].panels[0].things; // HACK
+                stateUpdate.idToName = {};
+                for (var t in tings)
+                    stateUpdate.idToName[tings[t].id] = tings[t].name.en;
+            }
+
             var my_things = [];
             for (var key in reduxState.connection.roomState) {
                 var thing = reduxState.connection.roomState[key];
@@ -133,12 +143,13 @@ class LightsStack extends React.Component<PropsType, StateType> {
     }
 
     renderDimmer(d: Object) {
+        const { idToName } = this.state;
         var w = (this.props.width-tabStyles.container.margin*2)/2;
         var h = 40;
 
         return (
             <div key={"l-"+d.id} style={dimmerStyles.container}>
-                <div style={tabStyles.texts}>{d.id}</div>
+                <div style={tabStyles.texts}>{idToName[d.id]}</div>
                 <DimmerSlider width={w}
                               height={h}
                               value={d.intensity}
@@ -151,6 +162,8 @@ class LightsStack extends React.Component<PropsType, StateType> {
     }
 
     renderSwitch(s: Object) {
+        const { idToName } = this.state;
+
         return (
             <div key={"s-"+s.id} style={switchStyles.container}>
                 <MagicCircle width={35}
@@ -161,7 +174,7 @@ class LightsStack extends React.Component<PropsType, StateType> {
                              textColor={'#ffffff'}
                              glowColor={this._accentColor}
                              onClick={(() => this.setLightIntensity(s.id, 1-s.intensity)).bind(this)}
-                             sideText={s.id}
+                             sideText={idToName[s.id]}
                              sideTextStyle={{...tabStyles.texts, marginLeft: 10, lineHeight: '35px'}} />
             </div>
         );
@@ -186,8 +199,8 @@ class LightsStack extends React.Component<PropsType, StateType> {
                 const index = i;
                 presetButtons.push(
                     <MagicCircle key={"preset-key-"+i}
-                                 width={40}
-                                 height={40}
+                                 width={35}
+                                 height={35}
                                  extraStyle={{marginLeft: 10}}
                                  isOn={i === currentPresetIndex}
                                  text={i === 0 ? "Off" : i}
@@ -198,7 +211,7 @@ class LightsStack extends React.Component<PropsType, StateType> {
             }
             presetsView = (
                 <div style={tabStyles.presetsContainer}>
-                    <div style={{...tabStyles.texts, marginBottom: 10}}>{"Presets"}</div>
+                    <div style={{...tabStyles.texts, marginBottom: 10, marginLeft: 10}}>{"Presets"}</div>
                     <div style={tabStyles.rowFlexer}>
                         {presetButtons}
                     </div>

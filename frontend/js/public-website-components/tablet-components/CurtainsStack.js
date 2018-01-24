@@ -18,12 +18,17 @@ type PropsType = {
 
 type StateType = {
     curtains: {[string]: Object},
+    idToName: Object;
 };
 
 class CurtainsStack extends React.Component<PropsType, StateType> {
     _unsubscribe: () => null = () => null;
 
     _accentColor: string = "#D04F4C";
+
+    _openIcon: string = require('../../../assets/images/open_arrow.png');
+    _closeIcon: string = require('../../../assets/images/close_arrow.png');
+    _pauseIcon:string = require('../../../assets/images/stop_button.png');
 
     // curtain-id -> max time needed for curtain to fully open or close
     _curtainMoveMaxTimes : {[string]: number} = {};
@@ -32,6 +37,7 @@ class CurtainsStack extends React.Component<PropsType, StateType> {
 
     state: StateType = {
         curtains: {},
+        idToName: {},
     };
 
     componentWillMount() {
@@ -47,11 +53,18 @@ class CurtainsStack extends React.Component<PropsType, StateType> {
     onReduxStateChanged() {
         const { store } = this.context;
         const reduxState = store.getState();
-        const { curtains } = this.state;
+        const { curtains, idToName } = this.state;
 
         var stateUpdate = {};
 
         if (reduxState && reduxState.connection && reduxState.connection.roomState) {
+            if (Object.keys(idToName).length === 0) {
+                var tings = reduxState.connection.roomConfig.rooms[0].grid[0].panels[1].things; // HACK
+                stateUpdate.idToName = {};
+                for (var t in tings)
+                    stateUpdate.idToName[tings[t].id] = tings[t].name.en;
+            }
+
             var my_things = [];
             for (var key in reduxState.connection.roomState) {
                 var thing = reduxState.connection.roomState[key];
@@ -90,7 +103,7 @@ class CurtainsStack extends React.Component<PropsType, StateType> {
                         TimeoutHandler.createTimeout(
                             curtains[i].id,
                             this._curtainMoveMaxTimes[curtains[i].id],
-                            (() => this.setCurtainValue(c)(v)).bind(this));
+                            (() => this.setCurtainValue(c)(0)).bind(this));
                         continue; // don't perform the update on this curtain, auto update will do it
                     }
                 }
@@ -107,8 +120,10 @@ class CurtainsStack extends React.Component<PropsType, StateType> {
     }
 
     renderCurtainView(id: string) {
+        const { idToName } = this.state;
+
         var curtain = this.state.curtains[id];
-        var text = id === "" ? "All" : curtain.id;
+        var text = id === "" ? "All" : idToName[curtain.id];
         var isOpening = curtain ? curtain.curtain === 1 : Object.keys(this.state.curtains).map(c => this.state.curtains[c].curtain).reduce((a, b) => a === 1 && b === 1);
         var isClosing = curtain ? curtain.curtain === 2 : Object.keys(this.state.curtains).map(c => this.state.curtains[c].curtain).reduce((a, b) => a === 2 && b === 2);
 
@@ -123,13 +138,15 @@ class CurtainsStack extends React.Component<PropsType, StateType> {
                                  isOn={isOpening}
                                  glowColor={this._accentColor}
                                  onPressIn={() => this.setCurtainValue(curtain)(1)}
-                                 onPressOut={() => this.setCurtainValue(curtain)(0)} />
+                                 onPressOut={() => this.setCurtainValue(curtain)(0)}
+                                 icon={this._openIcon} />
                     <MagicCircle
                                  width={40}
                                  height={40}
                                  extraStyle={{marginLeft: 20}}
                                  glowColor={this._accentColor}
-                                 onPressIn={() => this.setCurtainValue(curtain)(0)} />
+                                 onPressIn={() => this.setCurtainValue(curtain)(0)}
+                                 icon={this._pauseIcon} />
                     <MagicCircle
                                  width={40}
                                  height={40}
@@ -137,7 +154,8 @@ class CurtainsStack extends React.Component<PropsType, StateType> {
                                  isOn={isClosing}
                                  glowColor={this._accentColor}
                                  onPressIn={() => this.setCurtainValue(curtain)(2)}
-                                 onPressOut={() => this.setCurtainValue(curtain)(0)} />
+                                 onPressOut={() => this.setCurtainValue(curtain)(0)}
+                                 icon={this._closeIcon} />
                 </div>
             </div>
         );

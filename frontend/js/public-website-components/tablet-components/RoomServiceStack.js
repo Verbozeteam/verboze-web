@@ -89,8 +89,8 @@ class RoomServiceStack extends React.Component<PropsType, StateType> {
             <div style={{...tabStyles.container, width: width-slopeX-30, height: height-80}}>
                 <div style={tabStyles.buttonsContainer}>
                     <div style={tabStyles.buttonsInnerContainer}>
-                        <MagicCircle width={40}
-                                     height={40}
+                        <MagicCircle width={35}
+                                     height={35}
                                      onClick={toggler(false)}
                                      isOn={things[0].room_service}
                                      text={things[0].room_service ? "On" : ""}
@@ -98,8 +98,8 @@ class RoomServiceStack extends React.Component<PropsType, StateType> {
                                      glowColor={this._rsColor}
                                      sideText={"Room Service"}
                                      sideTextStyle={tabStyles.buttonText} />
-                        <MagicCircle width={40}
-                                     height={40}
+                        <MagicCircle width={35}
+                                     height={35}
                                      onClick={toggler(true)}
                                      isOn={things[0].do_not_disturb}
                                      text={things[0].do_not_disturb ? "On" : ""}
