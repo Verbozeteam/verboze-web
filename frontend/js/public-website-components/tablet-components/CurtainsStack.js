@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 
 import * as connectionActions from '../redux/actions/connection';
 const { WebSocketCommunication } = require('../../js-api-utils/WebSocketCommunication');
+import { TimeoutHandler } from '../../js-api-utils/TimeoutHandler';
 
 import { MagicCircle } from './MagicCircle';
 
@@ -16,7 +17,7 @@ type PropsType = {
 };
 
 type StateType = {
-    things: Array<Object>,
+    curtains: {[string]: Object},
 };
 
 class CurtainsStack extends React.Component<PropsType, StateType> {
@@ -24,8 +25,13 @@ class CurtainsStack extends React.Component<PropsType, StateType> {
 
     _accentColor: string = "#D04F4C";
 
+    // curtain-id -> max time needed for curtain to fully open or close
+    _curtainMoveMaxTimes : {[string]: number} = {};
+    // curtain-id -> time it was clicked
+    _curtainClickTimes : {[string]: number} = {};
+
     state: StateType = {
-        things: [],
+        curtains: {},
     };
 
     componentWillMount() {
@@ -41,8 +47,9 @@ class CurtainsStack extends React.Component<PropsType, StateType> {
     onReduxStateChanged() {
         const { store } = this.context;
         const reduxState = store.getState();
+        const { curtains } = this.state;
 
-        const { things } = this.state;
+        var stateUpdate = {};
 
         if (reduxState && reduxState.connection && reduxState.connection.roomState) {
             var my_things = [];
@@ -51,33 +58,86 @@ class CurtainsStack extends React.Component<PropsType, StateType> {
                 if (thing.category === 'curtains')
                     my_things.push(thing);
             }
-            if (JSON.stringify(my_things) !== JSON.stringify(things))
-                this.setState({things: my_things});
+
+            for (var i = 0; i < my_things.length; i++) {
+                if (!(my_things[i].id in curtains) || JSON.stringify(curtains[my_things[i].id]) !== JSON.stringify(my_things[i])) {
+                    TimeoutHandler.clearTimeout(my_things[i].id);
+                    this._curtainMoveMaxTimes[my_things[i].id] = my_things[i].moveMaxTime || 2000;
+                    if (!stateUpdate.curtains)
+                        stateUpdate.curtains = curtains;
+                    stateUpdate.curtains = {...stateUpdate.curtains, [my_things[i].id]: my_things[i]};
+                }
+            }
         }
+
+        if (Object.keys(stateUpdate).length > 0)
+            this.setState(stateUpdate);
     }
 
-    renderCurtainView(index: number) {
-        var curtain = this.state.things[index];
-        var text = index === -1 ? "All" : curtain.id;
+    setCurtainValue(curtain: Object) {
+        const curtains = curtain === undefined ? Object.keys(this.state.curtains).map(c => this.state.curtains[c]) : [curtain];
+
+        return ((value: number) => {
+            var totalUpdate = {};
+            var curTime = (new Date()).getTime();
+            for (var i = 0; i < curtains.length; i++) {
+                if (value !== 0) { // first click, record the time
+                    this._curtainClickTimes[curtains[i].id] = curTime;
+                } else { // ending the click, if too short, then let the curtain auto move
+                    if (curTime - this._curtainClickTimes[curtains[i].id] < 500) {
+                        const c = curtains[i];
+                        const v = value;
+                        TimeoutHandler.createTimeout(
+                            curtains[i].id,
+                            this._curtainMoveMaxTimes[curtains[i].id],
+                            (() => this.setCurtainValue(c)(v)).bind(this));
+                        continue; // don't perform the update on this curtain, auto update will do it
+                    }
+                }
+                totalUpdate[curtains[i].id] = {curtain: value};
+                this.state.curtains[curtains[i].id].curtain = value;
+            }
+
+            if (Object.keys(totalUpdate).length > 0) {
+                this.forceUpdate();
+                WebSocketCommunication.sendMessage(totalUpdate);
+                this.context.store.dispatch(connectionActions.setThingsPartialStates(totalUpdate));
+            }
+        }).bind(this);
+    }
+
+    renderCurtainView(id: string) {
+        var curtain = this.state.curtains[id];
+        var text = id === "" ? "All" : curtain.id;
+        var isOpening = curtain ? curtain.curtain === 1 : Object.keys(this.state.curtains).map(c => this.state.curtains[c].curtain).reduce((a, b) => a === 1 && b === 1);
+        var isClosing = curtain ? curtain.curtain === 2 : Object.keys(this.state.curtains).map(c => this.state.curtains[c].curtain).reduce((a, b) => a === 2 && b === 2);
+
         return (
-            <div key={"curtain-"+index}>
+            <div key={"curtain-"+id}>
                 <div style={tabStyles.texts}>{text}</div>
                 <div style={tabStyles.controlsContainer}>
                     <MagicCircle
                                  width={40}
                                  height={40}
                                  extraStyle={{marginLeft: 0}}
-                                 glowColor={this._accentColor} />
+                                 isOn={isOpening}
+                                 glowColor={this._accentColor}
+                                 onPressIn={() => this.setCurtainValue(curtain)(1)}
+                                 onPressOut={() => this.setCurtainValue(curtain)(0)} />
                     <MagicCircle
                                  width={40}
                                  height={40}
                                  extraStyle={{marginLeft: 20}}
-                                 glowColor={this._accentColor} />
+                                 glowColor={this._accentColor}
+                                 onPressIn={() => this.setCurtainValue(curtain)(0)} />
                     <MagicCircle
                                  width={40}
                                  height={40}
                                  extraStyle={{marginLeft: 20}}
-                                 glowColor={this._accentColor} />
+                                 isOn={isClosing}
+                                 glowColor={this._accentColor}
+                                 onPressIn={() => this.setCurtainValue(curtain)(2)}
+                                 onPressOut={() => this.setCurtainValue(curtain)(0)} />
                 </div>
             </div>
         );
@@ -92,23 +152,27 @@ class CurtainsStack extends React.Component<PropsType, StateType> {
     }
 
     renderFullscreen() {
-        const { things } = this.state;
+        const { curtains } = this.state;
         var { width, height, slopeX } = this.props;
+        var curtainIds = Object.keys(curtains).sort();
+        var numCurtains = curtainIds.length;
 
         var allView = null;
-        if (things.length > 0) {
+        if (numCurtains > 0) {
             allView = (
                 <div style={tabStyles.allContainer}>
-                    {this.renderCurtainView(-1)}
+                    {this.renderCurtainView("")}
                 </div>
             );
         }
 
-        var thingsView = null;
-        if (things.length > 0) {
-            thingsView = things.map(((t, i) => this.renderCurtainView(i)).bind(this));
-            for (var i = 1; i < things.length; i++)
-                thingsView.splice(i, 0, this.renderSeparator(i));
+        var thingsView = [];
+        if (numCurtains > 0) {
+            for (var i = 0; i < numCurtains; i++) {
+                thingsView.push(this.renderCurtainView(curtainIds[i]));
+                if (i !== numCurtains - 1)
+                    thingsView.push(this.renderSeparator(i));
+            }
         }
 
         return (
@@ -121,7 +185,6 @@ class CurtainsStack extends React.Component<PropsType, StateType> {
     }
 
     renderStack() {
-        const { things } = this.state;
         const { width, height, slopeX } = this.props;
 
         return (

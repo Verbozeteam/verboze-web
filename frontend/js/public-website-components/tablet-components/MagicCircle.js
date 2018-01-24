@@ -12,6 +12,8 @@ type PropsType = {
     text?: string,
     textColor?: string,
     onClick?: () => null,
+    onPressIn?: () => null,
+    onPressOut?: () => null,
     extraStyle?: Object,
     sideText?: string,
     sideTextStyle?: Object,
@@ -30,6 +32,8 @@ class MagicCircle extends React.Component<PropsType, StateType> {
         text: "",
         textColor: '#000000',
         onClick: () => null,
+        onPressIn: () => null,
+        onPressOut: () => null,
         extraStyle: {},
         sideTextStyle: {},
     };
@@ -58,7 +62,9 @@ class MagicCircle extends React.Component<PropsType, StateType> {
             onClick,
             extraStyle,
             sideText,
-            sideTextStyle
+            sideTextStyle,
+            onPressIn,
+            onPressOut,
         } = this.props;
         const { hover } = this.state;
 
@@ -89,6 +95,8 @@ class MagicCircle extends React.Component<PropsType, StateType> {
         return (
             <div style={{display: 'flex', flexDirection: 'row', ...extraStyle}}
                  onClick={onClick}
+                 onMouseDown={onPressIn}
+                 onMouseUp={onPressOut}
                  onMouseEnter={this.onMouseEnter.bind(this)}
                  onMouseLeave={this.onMouseLeave.bind(this)}
                  ref={r => this._container_ref = r}>
