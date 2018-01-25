@@ -3,8 +3,7 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 
-import * as connectionActions from '../redux/actions/connection';
-const { WebSocketCommunication } = require('../../js-api-utils/WebSocketCommunication');
+import { RoomStateUpdater } from '../utilities/RoomStateUpdater';
 
 import { MagicCircle } from './MagicCircle';
 
@@ -66,14 +65,7 @@ class RoomServiceStack extends React.Component<PropsType, StateType> {
             do_not_disturb = 0;
         }
 
-        WebSocketCommunication.sendMessage({
-            [id]: {
-                ...this.context.store.getState().connection.roomState[id],
-                room_service,
-                do_not_disturb
-            }
-        });
-        this.context.store.dispatch(connectionActions.setThingPartialState(id, {room_service, do_not_disturb}));
+        RoomStateUpdater.update(this.context.store, id, {room_service, do_not_disturb});
     }
 
     renderFullscreen() {

@@ -3,8 +3,7 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 
-import * as connectionActions from '../redux/actions/connection';
-const { WebSocketCommunication } = require('../../js-api-utils/WebSocketCommunication');
+import { RoomStateUpdater } from '../utilities/RoomStateUpdater';
 
 import { MagicCircle } from './MagicCircle';
 import { ACSlider } from './ACSlider';
@@ -61,23 +60,11 @@ class CentralACStack extends React.Component<PropsType, StateType> {
     }
 
     setACFan(id: string, fan: number) {
-        WebSocketCommunication.sendMessage({
-            [id]: {
-                ...this.context.store.getState().connection.roomState[id],
-                fan,
-            }
-        });
-        this.context.store.dispatch(connectionActions.setThingPartialState(id, {fan}));
+        RoomStateUpdater.update(this.context.store, id, {fan});
     }
 
     setACTemp(id: string, temp: number) {
-        WebSocketCommunication.sendMessage({
-            [id]: {
-                ...this.context.store.getState().connection.roomState[id],
-                set_pt: temp,
-            }
-        });
-        this.context.store.dispatch(connectionActions.setThingPartialState(id, {set_pt: temp}));
+        RoomStateUpdater.update(this.context.store, id, {set_pt: temp});
     }
 
     renderFullscreen() {

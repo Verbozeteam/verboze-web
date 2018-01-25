@@ -3,8 +3,7 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 
-import * as connectionActions from '../redux/actions/connection';
-const { WebSocketCommunication } = require('../../js-api-utils/WebSocketCommunication');
+import { RoomStateUpdater } from '../utilities/RoomStateUpdater';
 import { TimeoutHandler } from '../../js-api-utils/TimeoutHandler';
 
 import { MagicCircle } from './MagicCircle';
@@ -113,8 +112,7 @@ class CurtainsStack extends React.Component<PropsType, StateType> {
 
             if (Object.keys(totalUpdate).length > 0) {
                 this.forceUpdate();
-                WebSocketCommunication.sendMessage(totalUpdate);
-                this.context.store.dispatch(connectionActions.setThingsPartialStates(totalUpdate));
+                RoomStateUpdater.updateMany(this.context.store, totalUpdate);
             }
         }).bind(this);
     }

@@ -3,8 +3,7 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 
-import * as connectionActions from '../redux/actions/connection';
-const { WebSocketCommunication } = require('../../js-api-utils/WebSocketCommunication');
+import { RoomStateUpdater } from '../utilities/RoomStateUpdater';
 
 import { MagicCircle } from './MagicCircle';
 import { DimmerSlider } from './DimmerSlider';
@@ -118,28 +117,13 @@ class LightsStack extends React.Component<PropsType, StateType> {
     }
 
     setLightIntensity(id: string, intensity: number) {
-        WebSocketCommunication.sendMessage({
-            [id]: {
-                ...this.context.store.getState().connection.roomState[id],
-                intensity,
-            }
-        });
-        this.context.store.dispatch(connectionActions.setThingPartialState(id, {intensity}));
+        RoomStateUpdater.update(this.context.store, id, {intensity});
     }
 
     changePreset(new_preset: number) {
         const { presets } = this.state;
 
-        var ws_msg = {};
-        for (var k in presets[new_preset]) {
-            ws_msg[k] = {
-                ...this.context.store.getState().connection.roomState[k],
-                ...presets[new_preset][k],
-            };
-        }
-        WebSocketCommunication.sendMessage(ws_msg);
-
-        this.context.store.dispatch(connectionActions.setThingsPartialStates(presets[new_preset]));
+        RoomStateUpdater.updateMany(this.context.store, presets[new_preset]);
     }
 
     renderDimmer(d: Object) {

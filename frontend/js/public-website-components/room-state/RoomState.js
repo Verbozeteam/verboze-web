@@ -10,9 +10,10 @@ import ReactResizeDetector from 'react-resize-detector';
 
 import { connect as ReduxConnect } from 'react-redux';
 
+import { RoomStateUpdater } from '../utilities/RoomStateUpdater';
 const connectionActions = require('../redux/actions/connection');
 import * as tabletActions from '../redux/actions/tabletstate';
-import { WebSocketCommunication } from '../../js-api-utils/WebSocketCommunication';
+const { WebSocketCommunication } = require('../../js-api-utils/WebSocketCommunication');
 
 function mapStateToProps(state) {
     return {
@@ -219,20 +220,21 @@ class RoomState extends React.Component<PropsType, StateType> {
     }
 
     runInitialAnimation() {
-        this.context.store.dispatch(connectionActions.setThingsPartialStates({
+        RoomStateUpdater.resetDemo();
+        RoomStateUpdater.updateMany(this.context.store, {
             'lightswitch-1': {intensity: 0},
             'lightswitch-2': {intensity: 0},
             'lightswitch-3': {intensity: 0},
             'dimmer-1': {intensity: 0},
-        }));
+        }, true);
         setTimeout(() => {
-            this.context.store.dispatch(connectionActions.setThingPartialState('lightswitch-1', {intensity: 1}));
+            RoomStateUpdater.update(this.context.store, 'lightswitch-1', {intensity: 1}, true);
             setTimeout(() => {
-                this.context.store.dispatch(connectionActions.setThingPartialState('dimmer-1', {intensity: 100}));
+                RoomStateUpdater.update(this.context.store, 'dimmer-1', {intensity: 100}, true);
                 setTimeout(() => {
-                    this.context.store.dispatch(connectionActions.setThingPartialState('lightswitch-2', {intensity: 1}));
+                    RoomStateUpdater.update(this.context.store, 'lightswitch-2', {intensity: 1}, true);
                     setTimeout(() => {
-                        this.context.store.dispatch(connectionActions.setThingPartialState('lightswitch-3', {intensity: 1}));
+                        RoomStateUpdater.update(this.context.store, 'lightswitch-3', {intensity: 1}, true);
                     }, 1500);
                 }, 1500);
             }, 1500);
@@ -505,7 +507,7 @@ class RoomState extends React.Component<PropsType, StateType> {
                     var a = 0, r = 0, g = 0, b = 0;
                     if (Math.abs(tempDiff) > 0.01) {
                         needAnimation = true;
-                        a =  Math.min(Math.max(Math.abs(tempDiff) / 30, 0), 0.1);
+                        a =  Math.min(Math.max(Math.abs(tempDiff) / 40, 0), 0.04);
                         if (tempDiff > 0)
                             r = 1;
                         else
