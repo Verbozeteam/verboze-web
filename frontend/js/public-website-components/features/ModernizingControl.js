@@ -50,7 +50,14 @@ export default class ModernizingControl extends Component<PropsType, StateType> 
                             SOME CONTENT HERE ABOUT MODERNIZING CONTROL
                             <br/>
                             <br/>
+                            <br/>
+                            <br/>
+                            <br/>
 
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
                             <br/>
                             <br/>
                         </div>
@@ -69,12 +76,63 @@ export default class ModernizingControl extends Component<PropsType, StateType> 
                             <br/>
                             <br/>
                             <br/>
-
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
                             <br/>
                             <br/>
                         </div>
                         <div id="voice-info" style={ styles.textDivStyle } >
                             SOME CONTENT ABOUT VOICE HERE
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
                             <br/>
                             <br/>
                             <br/>

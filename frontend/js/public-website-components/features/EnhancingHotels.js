@@ -3,7 +3,7 @@
 import React, { Component } from 'react';
 
 import PageTopBanner from '../PageTopBanner';
-import SideNavBar from '../features/components/sideNavBar'
+import SideNavBar from '../features/components/SideNavBar'
 const FeaturesPanels = require('../FeaturesPanels');
 
 
