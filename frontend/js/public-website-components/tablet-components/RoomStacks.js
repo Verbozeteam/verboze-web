@@ -23,6 +23,7 @@ type StateType = {
     targetWidth: number,
     currentWidths: Array<number>,
     currentSlope: number,
+    xHover: boolean, // whether or not the X button is hovered over
 };
 
 class RoomStacks extends React.Component<PropsType, StateType> {
@@ -159,7 +160,7 @@ class RoomStacks extends React.Component<PropsType, StateType> {
 
     render() {
         const { width, height } = this.props;
-        var { currentStack, targetWidth, isSelected, currentWidths, currentSlope } = this.state;
+        var { currentStack, targetWidth, isSelected, currentWidths, currentSlope, xHover } = this.state;
 
         requestAnimationFrame(this.animateWidth.bind(this));
 
@@ -171,11 +172,15 @@ class RoomStacks extends React.Component<PropsType, StateType> {
 
         var xButton = null;
         if (isSelected) {
+            var sw = xHover ? 2 : 1;
             xButton = (
-                <div style={{...styles.header, ...styles.xButton, marginLeft: -headerPadding*2-styles.xButton.width}} onClick={this.onCloseStack.bind(this)}>
+                <div style={{...styles.header, ...styles.xButton, marginLeft: -headerPadding*2-styles.xButton.width}}
+                     onClick={this.onCloseStack.bind(this)}
+                     onMouseEnter={(() => this.setState({xHover: true})).bind(this)}
+                     onMouseLeave={(() => this.setState({xHover: false})).bind(this)}>
                     <svg width={25} height={25}>
-                        <line x1={0} y1={0} x2={25} y2={25} style={{strokeWidth: 1, stroke: '#ffffff'}} />
-                        <line x1={25} y1={0} x2={0} y2={25} style={{strokeWidth: 1, stroke: '#ffffff'}} />
+                        <line x1={0} y1={0} x2={25} y2={25} style={{strokeWidth: sw, stroke: '#ffffff'}} />
+                        <line x1={25} y1={0} x2={0} y2={25} style={{strokeWidth: sw, stroke: '#ffffff'}} />
                     </svg>
                 </div>
             );
