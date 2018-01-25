@@ -252,7 +252,8 @@ const tabStyles = {
         textAlign: 'center',
     },
     signsButtonsContainer: {
-        fontSize: 24,
+        fontSize: 28,
+        lineHeight: 2,
         color: '#aaaaaa',
         flex: 1,
     },
