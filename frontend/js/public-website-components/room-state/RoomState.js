@@ -220,25 +220,29 @@ class RoomState extends React.Component<PropsType, StateType> {
     }
 
     runInitialAnimation() {
-        RoomStateUpdater.resetDemo();
-        RoomStateUpdater.updateMany(this.context.store, {
-            'lightswitch-1': {intensity: 0},
-            'lightswitch-2': {intensity: 0},
-            'lightswitch-3': {intensity: 0},
-            'dimmer-1': {intensity: 0},
-        }, true);
+        const store = this.context.store;
+
         setTimeout(() => {
-            RoomStateUpdater.update(this.context.store, 'lightswitch-1', {intensity: 1}, true);
+            RoomStateUpdater.resetDemo();
+            RoomStateUpdater.updateMany(store, {
+                'lightswitch-1': {intensity: 0},
+                'lightswitch-2': {intensity: 0},
+                'lightswitch-3': {intensity: 0},
+                'dimmer-1': {intensity: 0},
+            }, true);
             setTimeout(() => {
-                RoomStateUpdater.update(this.context.store, 'dimmer-1', {intensity: 100}, true);
+                RoomStateUpdater.update(store, 'lightswitch-1', {intensity: 1}, true);
                 setTimeout(() => {
-                    RoomStateUpdater.update(this.context.store, 'lightswitch-2', {intensity: 1}, true);
+                    RoomStateUpdater.update(store, 'dimmer-1', {intensity: 100}, true);
                     setTimeout(() => {
-                        RoomStateUpdater.update(this.context.store, 'lightswitch-3', {intensity: 1}, true);
+                        RoomStateUpdater.update(store, 'lightswitch-2', {intensity: 1}, true);
+                        setTimeout(() => {
+                            RoomStateUpdater.update(store, 'lightswitch-3', {intensity: 1}, true);
+                        }, 1500);
                     }, 1500);
                 }, 1500);
-            }, 1500);
-        }, 3000);
+            }, 2000);
+        }, 1000);
     }
 
     loadGeometries() {

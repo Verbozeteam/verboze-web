@@ -91,7 +91,9 @@ class MagicCircle extends React.Component<PropsType, StateType> {
 
         if (icon) {
             style.background = 'url(' + icon + ')';
-            style.backgroundSize = 'cover';
+            style.backgroundSize = Math.max(width/2, height/2);
+            style.backgroundPosition = 'center';
+            style.backgroundRepeat = 'no-repeat';
         }
 
         var sideTextView = null;
