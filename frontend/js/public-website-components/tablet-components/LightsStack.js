@@ -233,7 +233,7 @@ class LightsStack extends React.Component<PropsType, StateType> {
         }
 
         return (
-            <div style={{...tabStyles.container, width: width-slopeX-tabStyles.container.margin*2, height: height-80}}>
+            <div style={{...tabStyles.container, width: width-slopeX-tabStyles.container.margin*2, height: height-60-tabStyles.container.margin}}>
                 <div style={tabStyles.tab}>{presetsView}</div>
                 <div style={tabStyles.tab}>{thingsView}</div>
             </div>
@@ -300,7 +300,7 @@ const tabStyles = {
         position: 'relative',
         overflowX: 'hidden',
         overflowY: 'hidden',
-        margin: 15,
+        margin: 5,
         marginTop: 60,
         display: 'flex',
         flexDirection: 'row',

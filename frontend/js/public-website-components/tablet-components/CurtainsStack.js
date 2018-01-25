@@ -194,7 +194,7 @@ class CurtainsStack extends React.Component<PropsType, StateType> {
         }
 
         return (
-            <div style={{...tabStyles.container, width: width-slopeX-tabStyles.container.margin*2, height: height-80}}>
+            <div style={{...tabStyles.container, width: width-slopeX-tabStyles.container.margin*2, height: height-60-tabStyles.container.margin}}>
                 <div style={tabStyles.tab}>{allView}</div>
                 <div style={tabStyles.tab} />
                 <div style={tabStyles.tab}>{thingsView}</div>
@@ -228,10 +228,12 @@ const tabStyles = {
         position: 'relative',
         overflowX: 'hidden',
         overflowY: 'hidden',
-        margin: 15,
+        margin: 5,
         marginTop: 60,
         display: 'flex',
         flexDirection: 'row',
+        padding: 10,
+        paddingTop: 0,
     },
     tab: {
         flex: 1,
@@ -260,6 +262,7 @@ const tabStyles = {
         fontWeight: 'lighter',
         color: '#ffffff',
         fontSize: 16,
+        marginLeft: 5,
     },
     controlsContainer: {
         display: 'flex',

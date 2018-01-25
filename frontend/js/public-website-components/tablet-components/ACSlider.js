@@ -85,7 +85,7 @@ class ACSlider extends React.Component<PropsType, StateType> {
 
         if (dragging) {
             stateUpdate.currentValue = this.getCurrentValueFromXCoord(x);
-            if (onChange && Math.abs(this.round(stateUpdate.currentValue)-lastValue) >= 0.5) {
+            if (onChange && Math.abs(this.round(stateUpdate.currentValue)-lastValue) >= 0.4) {
                 onChange(this.round(stateUpdate.currentValue));
                 stateUpdate.lastValue = stateUpdate.currentValue;
             }
@@ -114,7 +114,7 @@ class ACSlider extends React.Component<PropsType, StateType> {
         const { dragging, currentValue, lastValue } = this.state;
 
         if (dragging) {
-            if (onChange && Math.abs(this.round(currentValue)-lastValue) >= 0.5)
+            if (onChange && Math.abs(this.round(currentValue)-lastValue) >= 0.4)
                 onChange(this.round(currentValue));
         }
 
@@ -138,12 +138,12 @@ class ACSlider extends React.Component<PropsType, StateType> {
 
         var lines = [];
         for (var i = 0; i < this._numDashes; i++) {
-            var progress = i / this._numDashes;
+            var progress = i / (this._numDashes-1);
             var lerp = (v, c) => (this._coldColor[c]+(this._hotColor[c]-this._coldColor[c])*v).toFixed(0);
             var color = 'rgb(' + lerp(progress, 'r') + ',' + lerp(progress, 'g') + ',' + lerp(progress, 'b') + ')';
             if (!enabled)
                 color = '#666666';
-            var x = progress * (barWidth-1) + 2;
+            var x = progress * (barWidth-2) + 1;
             lines.push(<line key={"svg-line-"+i} x1={x} y1={height*(1/3)} x2={x} y2={height} style={{stroke: color, strokeWidth: 2}} />);
         }
 

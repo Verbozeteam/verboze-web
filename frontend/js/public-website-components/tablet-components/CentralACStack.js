@@ -170,7 +170,7 @@ class CentralACStack extends React.Component<PropsType, StateType> {
         }
 
         return (
-            <div style={{...tabStyles.container, width: tabWidth, height: height-80}}>
+            <div style={{...tabStyles.container, width: tabWidth, height: height-60 - tabStyles.container.margin*2}}>
                 <div style={tabStyles.leftTab}>{settingsView}</div>
                 <div style={tabStyles.rightTab}>{roomTemperatureView}</div>
             </div>
@@ -209,10 +209,11 @@ const tabStyles = {
         position: 'relative',
         overflowX: 'hidden',
         overflowY: 'hidden',
-        margin: 15,
+        margin: 5,
         marginTop: 60,
         display: 'flex',
         flexDirection: 'row',
+        paddingBottom: 10,
     },
     leftTab: {
         flex: 2,
