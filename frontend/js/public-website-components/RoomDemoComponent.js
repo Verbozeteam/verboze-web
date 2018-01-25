@@ -93,7 +93,7 @@ class RoomDemoComponent extends React.Component<PropsType, StateType> {
     }
 
     updateWindowDimensions() {
-        this.setState({ width: document.body.scrollWidth, height: window.innerHeight });
+        this.setState({ width: document.documentElement.clientWidth, height: window.innerHeight });
     }
 
     /* websocket callback on connect event */
