@@ -83,7 +83,7 @@ class MagicCircle extends React.Component<PropsType, StateType> {
         };
 
         if (isOn || hover) {
-            style.boxShadow = '0 0 16px 1px' + glowColor;
+            style.boxShadow = '0 0 10px 1px' + glowColor;
             style.backgroundColor = glowColor;
         } else {
             style.border = '2px solid ' + offColor;

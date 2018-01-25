@@ -144,7 +144,7 @@ class RoomStacks extends React.Component<PropsType, StateType> {
             if (Math.abs(diff) < 1)
                 newWidths[i] = targetWidths[i];
             else
-                newWidths[i] += diff * 0.2;
+                newWidths[i] += diff * 0.3;
         }
 
         if (isSelected)
@@ -162,7 +162,7 @@ class RoomStacks extends React.Component<PropsType, StateType> {
         const { width, height } = this.props;
         var { currentStack, targetWidth, isSelected, currentWidths, currentSlope, xHover } = this.state;
 
-        requestAnimationFrame(this.animateWidth.bind(this));
+        setTimeout((() => requestAnimationFrame(this.animateWidth.bind(this))).bind(this), 10);
 
         if (currentWidths.length === 0)
             currentWidths = this.getDefaultWidths();
