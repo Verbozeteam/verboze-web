@@ -2,7 +2,7 @@
 
 import React, { Component, Fragment } from 'react';
 
-import css from '../../css/public_website/navbar.css';
+import css from '../../css/public_website/NavBar.css';
 
 import {
   NavLink,
@@ -23,6 +23,8 @@ export default class NavBar extends Component<PropsType, StateType> {
     };
 
     _verboze_logo = require('../../assets/images/logo_symbol.png');
+
+    _bound_handleScroll = (e: Event): null => this.handleScroll(e);
 
     renderNavbarContent(navbarTogglerId: string, navbarDropdownId: string) {
         return (
@@ -79,14 +81,14 @@ export default class NavBar extends Component<PropsType, StateType> {
     };
 
     componentDidMount() {
-        window.addEventListener('scroll', this.handleScroll.bind(this));
+        window.addEventListener('scroll', this._bound_handleScroll);
     }
 
     componentWillUnmount() {
-        window.removeEventListener('scroll', this.handleScroll.bind(this));
+        window.removeEventListener('scroll', this._bound_handleScroll)
     }
 
-    handleScroll(e: Event) {
+    handleScroll(e: Event): null {
         let temp1 = document.scrollingElement || document.documentElement;
 
         if (!(temp1 === null)) {
@@ -99,6 +101,8 @@ export default class NavBar extends Component<PropsType, StateType> {
                 }
             }
         }
+
+        return null;
 
     }
 
