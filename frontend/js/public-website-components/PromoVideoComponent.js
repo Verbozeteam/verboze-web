@@ -25,7 +25,7 @@ class PromoVideoComponent extends React.Component<any, StateType> {
     }
 
     updateWindowDimensions() {
-        this.setState({ width: window.innerWidth, height: window.innerHeight });
+        this.setState({ width: document.body.scrollWidth, height: window.innerHeight });
     }
 
     render() {

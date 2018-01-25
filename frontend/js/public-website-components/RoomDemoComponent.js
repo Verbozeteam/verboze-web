@@ -93,7 +93,7 @@ class RoomDemoComponent extends React.Component<PropsType, StateType> {
     }
 
     updateWindowDimensions() {
-        this.setState({ width: window.innerWidth, height: window.innerHeight });
+        this.setState({ width: document.body.scrollWidth, height: window.innerHeight });
     }
 
     /* websocket callback on connect event */
@@ -145,7 +145,7 @@ class RoomDemoComponent extends React.Component<PropsType, StateType> {
     render() {
         const { currentStage, width, height } = this.state;
 
-        var dimensions = {width, height: height};
+        var dimensions = {width, height};
 
         return (
             <div style={{...styles.roomContainer, ...dimensions}}>
