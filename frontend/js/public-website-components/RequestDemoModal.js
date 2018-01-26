@@ -1,6 +1,7 @@
 /* @flow */
 
 import React from 'react';
+import ContactOrDemoForm from './ContactOrDemoForm';
 
 type PropsType = {
   open: boolean,
@@ -105,50 +106,57 @@ class RequestDemoModal extends React.Component<PropsType, StateType> {
 
     return (
       <div style={modal_style}>
-        <div style={styles.modal_header}>
+        <div className="container" style={styles.modal_header}>
           <h2 style={styles.modal_title}>Request Demo</h2>
+          <h5 style={styles.modal_sub_title}>Some sentence describing what a demo means, and how they can benifit from it, being free and all.</h5>
         </div>
         <div style={styles.modal_content}>
-          {this._renderForm()}
+          <ContactOrDemoForm requestDemo={true} toggle={this.props.toggle}/>
         </div>
       </div>
     );
   }
 
-  _renderForm() {
-    const name_field = <input type='text' placeholder='Your Name'
-      style={{...styles.input_field, ...styles.input_field_pull_right}} />;
+  // _renderForm() {
+  //   const name_field = <input type='text' placeholder='Your Name'
+  //     style={{...styles.input_field, ...styles.input_field_pull_right}} />;
 
-    const email_field = <input type='email' placeholder='Your Email'
-      style={{...styles.input_field, ...styles.input_field_pull_left}} />;
+  //   const email_field = <input type='email' placeholder='Your Email'
+  //     style={{...styles.input_field, ...styles.input_field_pull_left}} />;
 
-    const hotel_field = <input type='text' placeholder='Your Hotel'
-      style={{...styles.input_field, ...styles.input_field_pull_right}} />;
+  //   const hotel_field = <input type='text' placeholder='Your Hotel'
+  //     style={{...styles.input_field, ...styles.input_field_pull_right}} />;
 
-    const role_field = <input type='text' placeholder='Your Role'
-      style={{...styles.input_field, ...styles.input_field_pull_left}} />;
+  //   const role_field = <input type='text' placeholder='Your Role'
+  //     style={{...styles.input_field, ...styles.input_field_pull_left}} />;
 
-    return (
-      <form>
-        <div className='row'>
-          <div className='col-sm-6'>
-            {name_field}
-          </div>
-          <div className='col-sm-6'>
-            {email_field}
-          </div>
-        </div>
-        <div className='row'>
-          <div className='col-sm-6'>
-            {hotel_field}
-          </div>
-          <div className='col-sm-6'>
-            {role_field}
-          </div>
-        </div>
-      </form>
-    );
-  }
+  //   return (
+  //     <form>
+  //       <div className='row'>
+  //         <div className='col-sm-6'>
+  //           {name_field}
+  //         </div>
+  //         <div className='col-sm-6'>
+  //           {email_field}
+  //         </div>
+  //       </div>
+  //       <div className='row'>
+  //         <div className='col-sm-6'>
+  //           {hotel_field}
+  //         </div>
+  //         <div className='col-sm-6'>
+  //           {role_field}
+  //         </div>
+  //       </div>
+  //     </form>
+  //   );
+  // }
+
+  // _renderForm() {
+  //   return (
+
+  //   );
+  // }
 
   render() {
     const { open } = this.props;
@@ -212,14 +220,21 @@ const styles = {
   modal: {
     position: 'absolute',
     backgroundColor: '#FFFFFF',
-    transition: '250ms ease-in-out'
+    transition: '250ms ease-in-out',
+    color: 'black'
   },
   modal_header: {
-    padding: 20,
-    textAlign: 'center'
+    paddingTop: 85,
+    textAlign: 'center',
+    width: 850,
+    margin: '0 auto'
   },
   modal_title: {
-
+    fontWeight: 'lighter'
+  },
+  modal_sub_title: {
+    fontWeight: 'lighter',
+    paddingTop: 20
   },
   modal_content: {
 
