@@ -245,7 +245,8 @@ const styles = {
     },
     sliderInnerContainer: {
         height: 2,
-        backgroundColor: '#999999'
+        backgroundColor: '#999999',
+        transition: 'width 300ms',
     },
     knob: {
         position: 'absolute',
