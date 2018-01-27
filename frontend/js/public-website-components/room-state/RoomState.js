@@ -14,6 +14,7 @@ import { RoomStateUpdater } from '../utilities/RoomStateUpdater';
 const connectionActions = require('../redux/actions/connection');
 import * as tabletActions from '../redux/actions/tabletstate';
 const { WebSocketCommunication } = require('../../js-api-utils/WebSocketCommunication');
+import { DimmerSlider } from '../tablet-components/DimmerSlider';
 
 function mapStateToProps(state) {
     return {
@@ -68,6 +69,8 @@ class RoomState extends React.Component<PropsType, StateType> {
             ['dimmer-1']: 0,
         },
     };
+
+    _accentColor: string = "#BA3737";
 
     _rendererDimensions = {width: 0, height: 0};
 
@@ -684,7 +687,24 @@ class RoomState extends React.Component<PropsType, StateType> {
         if (opacity >= 1 && loadingProgress >= 1 && !loadedDemo)
             setTimeout((() => this.runInitialAnimation()).bind(this), 0);
 
-        this.renderLayers();
+        var loadingView = null;
+        if (loadedDemo) {
+            this.renderLayers();
+        } else {
+            loadingView = (
+                <div style={styles.loadingContainer}>
+                    <div style={styles.loadingText}>{"Loading..."}</div>
+                    <DimmerSlider width={400}
+                                  height={10}
+                                  value={loadingProgress}
+                                  maxValue={1}
+                                  glowColor={this._accentColor}
+                                  disabled={true}
+                                  showKnob={false}/>
+                </div>
+            );
+        }
+
         return (
             <div style={{...styles.container, ...dimensions}}>
                 <div
@@ -692,6 +712,7 @@ class RoomState extends React.Component<PropsType, StateType> {
                     ref={(mount: any) => { this.mount = mount }}>
                     <ReactResizeDetector handleWidth handleHeight onResize={this.renderLayers.bind(this)} />
                 </div>
+                {loadingView}
             </div>
         )
     }
@@ -708,17 +729,22 @@ const styles = {
     canvas: {
         width: '100%',
         height: '100%',
+        position: 'absolute',
         transition: 'opacity 2000ms',
     },
-    progressContainer: {
+    loadingContainer: {
+        display: 'flex',
+        flexDirection: 'column',
         position: 'absolute',
         width: '100%',
         height: '100%',
         justifyContent: 'center',
         alignItems: 'center',
     },
-    progress: {
-        width: 300,
+    loadingText: {
+        fontWeight: 'lighter',
+        color: '#ffffff',
+        fontSize: 26,
     }
 };
 
