@@ -192,7 +192,6 @@ export default class ModernizingControl extends Component<PropsType, StateType> 
 const styles = {
     modernizingControlDivStyle: {
         minHeight: '100vh',
-        background: 'black',
         color: 'white',
     },
 

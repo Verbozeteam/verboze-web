@@ -22,7 +22,7 @@ class RequestDemoBanner extends React.Component<PropsType, StateType> {
       <div key="request-demo-button" style={styles.button}>
         <button className="btn" onClick={toggleModal}
           style={styles.button}>
-          REQUEST DEMO
+          REQUEST A DEMO
         </button>
       </div>
     );
@@ -30,11 +30,11 @@ class RequestDemoBanner extends React.Component<PropsType, StateType> {
 
   render() {
     return (
-      <div style={{ backgroundColor: 'black' }}>
+      <div style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
         <div className='container container-fluid'>
           <div className='row justify-content-around' style={styles.container}>
             <div className='col-lg-6 col-md-8 col-12'>
-              <h2 style={styles.header}>See Verboze in action at your Hotel.</h2>
+              <h2 style={styles.header}>See Verboze in action at your Hotel</h2>
             </div>
             <div className='col-lg-4 col-md-4 col-12'>
               {this._renderButton()}
@@ -48,7 +48,6 @@ class RequestDemoBanner extends React.Component<PropsType, StateType> {
 
 const styles = {
   container: {
-    backgroundColor: '#000000',
     paddingTop: 70,
     paddingBottom: 70
   },
@@ -67,14 +66,11 @@ const styles = {
     margin: '0 auto',
     borderRadius: 0,
     fontWeight: 'lighter',
-
     WebkitTransition: 'background-color 150ms linear',
     MozTransition: 'background-color 150ms linear',
     Otransition: 'background-color 150ms linear',
     msTransition: 'background-color 150ms linear',
     transition: 'background-color 150ms linear',
-
-
     ':hover': {
       backgroundColor: '#BA3737',
       cursor: 'pointer',
