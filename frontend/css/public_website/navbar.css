@@ -79,6 +79,9 @@ span.nav-link, a.nav-link {
     border-bottom-color: #BA3737;
 }
 
+span.nav-link.sticky, a.nav-link.sticky {
+	font-weight: normal;
+}
 
 a.nav-item:hover {
     text-decoration: none !important;
