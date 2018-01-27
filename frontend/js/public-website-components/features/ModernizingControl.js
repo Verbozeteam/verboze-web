@@ -26,12 +26,12 @@ export default class ModernizingControl extends Component<PropsType, StateType> 
             pageUrl: "/modernizing-control"
         },
         {
-            name: "Tablet",
+            name: "In-room Touchscreen",
             slug: "tablet",
             pageUrl: "/modernizing-control"
         },
         {
-            name: "Smartphone",
+            name: "Guest's Smartphone",
             slug: "smartphone",
             pageUrl: "/modernizing-control"
         },
@@ -39,8 +39,12 @@ export default class ModernizingControl extends Component<PropsType, StateType> 
             name: "Voice",
             slug: "voice",
             pageUrl: "/modernizing-control"
+        },
+        {
+            name: "Smart Room",
+            slug: "smart-room",
+            pageUrl: "/modernizing-control",
         }
-
     ];
 
     state = {
@@ -64,99 +68,117 @@ export default class ModernizingControl extends Component<PropsType, StateType> 
                     toggle={this.toggleModal.bind(this)} />
                 <div style={styles.modernizingControlDivStyle}>
                     <PageTopBanner title="Introducing the Hospitality Industry to the 21st Century" imageUrl={ this._banner_img } />
-                    <SideNavBar sections={ this._sections } containerId="modernizing-control-container" />
                     <div className="container" id="modernizing-control-container">
-                        <div id="modernizing-control-info" style={ styles.textDivStyle }>
-                            SOME CONTENT HERE ABOUT MODERNIZING CONTROL
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
+                        <div className="row">
+                            <div className="col-md-9">
+                                <div id="modernizing-control-info" style={ styles.textDivStyle }>
+                                    <h1>Modernizing Control</h1>
+                                    <p>
+                                    SOME CONTENT HERE ABOUT MODERNIZING CONTROL
+                                    </p>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
 
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                        </div>
-                        <div id="tablet-info" style={ styles.textDivStyle }>
-                            SOME CONTENT ABOUT TABLET HERE
-                            <br/>
-                            <br/>
-                            <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                </div>
+                                <div id="tablet-info" style={ styles.textDivStyle }>
+                                    SOME CONTENT ABOUT TABLET HERE
+                                    <br/>
+                                    <br/>
+                                    <br/>
 
-                            <br/>
-                            <br/>
-                        </div>
-                        <div id="smartphone-info" style={ styles.textDivStyle }>
-                            SOME CONTENT ABOUT SMART PHONE HERE
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                        </div>
-                        <div id="voice-info" style={ styles.textDivStyle } >
-                            SOME CONTENT ABOUT VOICE HERE
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
+                                    <br/>
+                                    <br/>
+                                </div>
+                                <div id="smartphone-info" style={ styles.textDivStyle }>
+                                    SOME CONTENT ABOUT SMART PHONE HERE
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                </div>
+                                <div id="voice-info" style={ styles.textDivStyle } >
+                                    SOME CONTENT ABOUT VOICE HERE
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                </div>
+                                <div id="smart-room-info" style={ styles.textDivStyle }>
+                                    SOME CONTENT ABOUT TABLET HERE
+                                    <br/>
+                                    <br/>
+                                    <br/>
+
+                                    <br/>
+                                    <br/>
+                                </div>
+                            </div>
+                            <div className="col-md-3">
+                                <SideNavBar sections={ this._sections } containerId="modernizing-control-container" />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -175,6 +197,7 @@ const styles = {
     },
 
     textDivStyle: {
-        paddingTop: 60
+        fontWeight: 'lighter',
+        paddingTop: 60,
     }
 };
