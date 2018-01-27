@@ -41,10 +41,10 @@ type StateType = {
      * 0: render faded out
      * 1: render full display
      */
-    currentStage: number,
     curtainOpenings: {[string]: number},
     lightIntensities: {[string]: number},
     loadingProgress: number, // 0-1, 1 is done
+    loadedDemo: boolean,
 };
 
 class RoomState extends React.Component<PropsType, StateType> {
@@ -55,8 +55,8 @@ class RoomState extends React.Component<PropsType, StateType> {
     };
 
     state = {
+        loadedDemo: false,
         loadingProgress: 0,
-        currentStage: 0,
         curtainOpenings: {
             ['curtain-1']: 0,
             ['curtain-2']: 0,
@@ -222,27 +222,28 @@ class RoomState extends React.Component<PropsType, StateType> {
     runInitialAnimation() {
         const store = this.context.store;
 
+        this.setState({loadedDemo: true});
+
+        RoomStateUpdater.resetDemo();
+        RoomStateUpdater.updateMany(store, {
+            'lightswitch-1': {intensity: 0},
+            'lightswitch-2': {intensity: 0},
+            'lightswitch-3': {intensity: 0},
+            'dimmer-1': {intensity: 0},
+        }, true);
+
         setTimeout(() => {
-            RoomStateUpdater.resetDemo();
-            RoomStateUpdater.updateMany(store, {
-                'lightswitch-1': {intensity: 0},
-                'lightswitch-2': {intensity: 0},
-                'lightswitch-3': {intensity: 0},
-                'dimmer-1': {intensity: 0},
-            }, true);
+            RoomStateUpdater.update(store, 'lightswitch-1', {intensity: 1}, true);
             setTimeout(() => {
-                RoomStateUpdater.update(store, 'lightswitch-1', {intensity: 1}, true);
+                RoomStateUpdater.update(store, 'dimmer-1', {intensity: 100}, true);
                 setTimeout(() => {
-                    RoomStateUpdater.update(store, 'dimmer-1', {intensity: 100}, true);
+                    RoomStateUpdater.update(store, 'lightswitch-2', {intensity: 1}, true);
                     setTimeout(() => {
-                        RoomStateUpdater.update(store, 'lightswitch-2', {intensity: 1}, true);
-                        setTimeout(() => {
-                            RoomStateUpdater.update(store, 'lightswitch-3', {intensity: 1}, true);
-                        }, 1500);
+                        RoomStateUpdater.update(store, 'lightswitch-3', {intensity: 1}, true);
                     }, 1500);
                 }, 1500);
-            }, 2000);
-        }, 1000);
+            }, 1500);
+        }, 2000);
     }
 
     loadGeometries() {
@@ -434,7 +435,6 @@ class RoomState extends React.Component<PropsType, StateType> {
                 }
             }
             this.loadTemperatureOverlay();
-            this.runInitialAnimation();
             if (this.renderer)
                 this.forceUpdate();
         }).bind(this)).catch(((reason) => {
@@ -674,12 +674,15 @@ class RoomState extends React.Component<PropsType, StateType> {
     }
 
     render() {
-        var { loadingProgress } = this.state;
+        var { loadingProgress, loadedDemo } = this.state;
         var { opacity, dimensions } = this.props;
 
         var curOpacity = opacity;
         if (!this._materials.tempOverlay)
             curOpacity = 0;
+
+        if (opacity >= 1 && loadingProgress >= 1 && !loadedDemo)
+            setTimeout((() => this.runInitialAnimation()).bind(this), 0);
 
         this.renderLayers();
         return (
