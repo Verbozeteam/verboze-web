@@ -73,13 +73,13 @@ class RoomState extends React.Component<PropsType, StateType> {
 
     _imageDimensions: {width: number, height: number}
     = {
-        width: 1024,
-        height: 1024,
+        width: 2048,
+        height: 2048,
     };
     _imageInnerDimensions: {width: number, height: number}
     = {
-        width: 640,
-        height: 480,
+        width: 1920,
+        height: 1080,
     };
 
     _images: {
@@ -465,7 +465,7 @@ class RoomState extends React.Component<PropsType, StateType> {
         const { roomState } = this.props;
         const { curtainOpenings, lightIntensities } = this.state;
 
-        var curtainBrightness = 0.1 + this.computeLightBrightness() * 0.9;
+        var curtainBrightness = 0.1 + this.computeLightBrightness() * 0.5;
         var windowBrightness = this.computeCurtainsLight();
 
         if ("curtainLight" in this._images && this._images.curtainLight.material)
@@ -491,17 +491,17 @@ class RoomState extends React.Component<PropsType, StateType> {
                     if (key+"-1" in this._images && key+"-2" in this._images &&
                         this._images[key+"-1"].material && this._images[key+"-2"].material) {
                         var opening = (curtainOpenings[thing.id] || 0) / 100;
-                        this._images[key+"-1"].sprite.position.x += opening;
+                        this._images[key+"-1"].sprite.position.x += opening*1.5;
                         this._images[key+"-1"].sprite.scale.x *= 1 - (opening/1.8);
                         this._images[key+"-1"].material.uniforms.brightness.value = curtainBrightness;
-                        this._images[key+"-2"].sprite.position.x += -opening;
+                        this._images[key+"-2"].sprite.position.x += -opening*1.5;
                         this._images[key+"-2"].sprite.scale.x *= 1 - (opening/1.8);
                         this._images[key+"-2"].material.uniforms.brightness.value = curtainBrightness;
                         if (thing.curtain != 0)
                             needAnimation = true;
                     } else if (key in this._images && this._images[key].material) {
                         var opening = (curtainOpenings[thing.id] || 0) / 100;
-                        this._images[key].sprite.position.y += opening * 1.3;
+                        this._images[key].sprite.position.y += opening * 2.1;
                         if (thing.curtain != 0)
                             needAnimation = true;
                     }
@@ -534,8 +534,8 @@ class RoomState extends React.Component<PropsType, StateType> {
             const height = this.mount.clientHeight;
 
             if (width > 1 && height > 1) {
-                const maxRenderedLayerWidth = Math.min(this._imageInnerDimensions.width, width - 100);
-                const maxRenderedLayerHeight = Math.min(this._imageInnerDimensions.height, height - 200);
+                const maxRenderedLayerWidth = Math.min(this._imageInnerDimensions.width, width - 50);
+                const maxRenderedLayerHeight = Math.min(this._imageInnerDimensions.height, height - this.props.navbarHeight - 50);
 
                 var scaler = Math.min(maxRenderedLayerWidth / this._imageInnerDimensions.width,
                                       maxRenderedLayerHeight / this._imageInnerDimensions.height);
@@ -577,9 +577,9 @@ class RoomState extends React.Component<PropsType, StateType> {
                         this._images[key].material.uniforms.offset.value.set(0, 0, 1);
                         this._images[key].material.uniforms.scale.value.set(maxRenderedLayerDimension, maxRenderedLayerDimension, 1);
                     } else if (this._images[key].material) {
-                        this._images[key].sprite.position.set(-1.44469-0.42, 1.389754-0.1, -8.079868);
+                        this._images[key].sprite.position.set(-1.44469, 1.389754, -8.079868);
                         this._images[key].sprite.rotation.y = 180.0 * Math.PI / 180.0;
-                        this._images[key].sprite.scale.set(3.4, 3.4, 3.4);
+                        this._images[key].sprite.scale.set(5.0, 5.0, 5.0);
                     }
                 }
                 if (this._materials.tempOverlay) {
