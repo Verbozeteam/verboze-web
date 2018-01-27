@@ -11,7 +11,7 @@ import css from '../../css/public_website/ContactOrDemoForm.css';
 
 type PropsType = {
     requestDemo: boolean,
-    toggle: () => null
+    toggle?: () => null
 };
 
 type StateType = {
@@ -33,6 +33,9 @@ type FormDataType = {
 };
 
 export default class ContactOrDemoForm extends React.Component<PropsType, StateType> {
+    static defaultProps = {
+        toggle: () => null
+    }
 
     state = {
         submitStage: 0
@@ -48,21 +51,14 @@ export default class ContactOrDemoForm extends React.Component<PropsType, StateT
     onValidSubmit(e: Event) {
         e.preventDefault();
         this.setState({submitStage: 1});
-        console.log("submitting");
 
-        var form = document.forms.namedItem("request-demo-form");
+        var form = this.props.requestDemo ? document.forms.namedItem("request-demo-form") : document.forms.namedItem("contact-form");
 
         var name = form.elements.namedItem('inputName').value;
         var email = form.elements.namedItem('inputEmail').value;
         var hotel = form.elements.namedItem('inputHotel').value;
         var role = form.elements.namedItem('inputRole').value;
         var additionalInfo = form.elements.namedItem('inputAdditionalInfo').value;
-
-        console.log("name " + name );
-        console.log("email " + email);
-        console.log("hotel " + hotel);
-        console.log("role " + role);
-        console.log("inputAdditionalInfo " + additionalInfo);
 
         var formData = {
             name: name,
@@ -80,12 +76,9 @@ export default class ContactOrDemoForm extends React.Component<PropsType, StateT
             formData,
             ((data: APITypes.ContactUs) => {
                 this.setState({submitStage: 2});
-                console.log(data);
             }).bind(this),
             ((error: APITypes.ErrorType) => {
                 this.setState({submitStage: 3});
-                // this.setState({errorMessage: error.response.data.error})
-                console.log("This is the error");
             }).bind(this)
         );
 
@@ -93,19 +86,21 @@ export default class ContactOrDemoForm extends React.Component<PropsType, StateT
     }
 
     renderSubmitButton() {
+        var displayText = this.props.requestDemo ? "REQUEST DEMO" : "SUBMIT" ;
+
         if (this.state.submitStage === 0) {
             return (
                 <button
-                    className="btn submit-buttom"
+                    className={ this.props.requestDemo ? "btn submit-button" : "btn submit-button contact-submit-button" }
                     onClick={ () => {document.getElementById("submit-form-button").click() }}>
-                        REQUEST DEMO
+                        { displayText }
                 </button>
             );
         }
         else if (this.state.submitStage === 1) {
             return (
                 <button
-                    className="btn submit-buttom submitting-form"
+                    className="btn submit-button submitting-form"
                     onClick={ () => {document.getElementById("submit-form-button").click() }}
                     disabled
                 >
@@ -126,7 +121,11 @@ export default class ContactOrDemoForm extends React.Component<PropsType, StateT
         else {
             return (
                 <div className={ this.props.requestDemo ? "container request-demo-container" : "container contact-container" } >
-                    <form id="request-demo-form-id" name={ this.props.requestDemo ? "request-demo-form" : "contact-form" } onSubmit={(event) => { this.onValidSubmit(event) }} onKeyPress={ (event) => {this.onKeyPress(event) }}>
+                    <form
+                        id={ this.props.requestDemo ? "request-demo-form-id" : "contact-form-id" }
+                        name={ this.props.requestDemo ? "request-demo-form" : "contact-form" }
+                        onSubmit={(event) => { this.onValidSubmit(event) }} onKeyPress={ (event) => {this.onKeyPress(event) }}
+                    >
                         <div className="form-row">
                             <div className="form-group col-md-6">
                                 <input type="text" className="form-control" id="inputName" placeholder="Your Name" name="inputName" required />
@@ -144,18 +143,17 @@ export default class ContactOrDemoForm extends React.Component<PropsType, StateT
                             </div>
                         </div>
                         <div className="form-group">
-                            <textarea type="text" className="form-control" id="inputAdditionalInfo" placeholder="(Optional) Any additional information you would like us to know" name="inputAdditionalInfo" />
+                            <textarea type="text" className="form-control" id="inputAdditionalInfo" placeholder="Tell us a little bit more about your meeds" name="inputAdditionalInfo" required />
                         </div>
                         <button type="submit" id="submit-form-button" style={{ display: "none"}}></button>
                     </form>
                     <div style={{overflow: 'hidden'}}>
                       <div className="form-row form-buttons">
                           { this.renderSubmitButton() }
-                          <button className="btn cancel-button" onClick={this.props.toggle}>Cancel</button>
+                          <button className="btn cancel-button" onClick={this.props.toggle} style={ this.props.requestDemo ? { display: 'block' } : { display: 'none' } }>Cancel</button>
                       </div>
                     </div>
-
-              </div>
+                </div>
             );
         }
 

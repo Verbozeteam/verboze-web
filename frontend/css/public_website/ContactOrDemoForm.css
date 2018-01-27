@@ -22,7 +22,7 @@ textarea.form-control {
     max-height: 100px;
 }
 
-.submit-buttom {
+.submit-button {
     width: 400px;
     border-radius: 0px;
     border-width: 1px;
@@ -32,9 +32,20 @@ textarea.form-control {
     font-weight: lighter;
 }
 
-.submit-buttom:hover {
+.submit-button:hover {
     background-color: #BA3737;
     color: white;
+}
+
+.contact-submit-button {
+    color: white;
+    margin-right: 5px;
+}
+
+@media (max-width: 576px) {
+    .submit-button {
+        width: 177px;
+    }
 }
 
 .submitting-form {
@@ -58,6 +69,13 @@ textarea.form-control {
 .request-demo-container {
     margin-top: 40px;
     width: 850px;
+}
+
+@media (max-width: 600px) {
+    .request-demo-container{
+        width: 80%;
+        margin: 0 auto;
+    }
 }
 
 .contact-container {

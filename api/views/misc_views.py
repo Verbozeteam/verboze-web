@@ -8,9 +8,9 @@ import threading
 
 def send_contact_us_email(name, email, hotel, role, additional_info, request_demo):
     subject = 'Message from {}'.format(name)
-    contact_reason = "Reach out to "
+    contact_reason = "Reach out to"
     if request_demo:
-        contact_reason = "Demo Request from "
+        contact_reason = "Demo Request from"
     message = '{} {}, {} at {}, through {}. Additional Info: {}'.format(contact_reason, name, role, hotel, email, additional_info)
 
     send_mail(

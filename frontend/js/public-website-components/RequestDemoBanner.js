@@ -30,13 +30,15 @@ class RequestDemoBanner extends React.Component<PropsType, StateType> {
 
   render() {
     return (
-      <div className='container-fluid'>
-        <div className='row justify-content-around' style={styles.container}>
-          <div className='col-lg-6 col-md-8 col-12'>
-            <h2 style={styles.header}>See Verboze in action at your Hotel.</h2>
-          </div>
-          <div className='col-lg-4 col-md-4 col-12'>
-            {this._renderButton()}
+      <div style={{ backgroundColor: 'black' }}>
+        <div className='container container-fluid'>
+          <div className='row justify-content-around' style={styles.container}>
+            <div className='col-lg-6 col-md-8 col-12'>
+              <h2 style={styles.header}>See Verboze in action at your Hotel.</h2>
+            </div>
+            <div className='col-lg-4 col-md-4 col-12'>
+              {this._renderButton()}
+            </div>
           </div>
         </div>
       </div>
@@ -64,6 +66,7 @@ const styles = {
     display: 'block',
     margin: '0 auto',
     borderRadius: 0,
+    fontWeight: 'lighter',
 
     WebkitTransition: 'background-color 150ms linear',
     MozTransition: 'background-color 150ms linear',
