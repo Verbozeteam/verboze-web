@@ -189,11 +189,13 @@ const styles = {
   modal_container: {
     position: 'absolute',
     width: '100%',
+    pointerEvents: 'none'
   },
   modal: {
     backgroundColor: '#FFFFFF',
     transition: '250ms ease-in-out',
-    color: 'black'
+    color: 'black',
+    pointerEvents: 'all'
   },
   modal_header: {
     paddingTop: 50,
