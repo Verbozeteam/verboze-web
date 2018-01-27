@@ -212,7 +212,6 @@ class RoomState extends React.Component<PropsType, StateType> {
         this.prepareComposer();
         this.createFinalComposition();
         this.loadAssets();
-        this.renderLayers();
     }
 
     componentWillUnmount() {
@@ -382,8 +381,7 @@ class RoomState extends React.Component<PropsType, StateType> {
         var curProgress = 0;
         var progress = (() => {
             curProgress += 1;
-            if (this.renderer)
-                this.setState({loadingProgress: curProgress / Object.keys(this._images).length});
+            this.setState({loadingProgress: curProgress / (Object.keys(this._images).length+1)});
         }).bind(this);
 
         for (var key in this._images) {
@@ -438,8 +436,8 @@ class RoomState extends React.Component<PropsType, StateType> {
                 }
             }
             this.loadTemperatureOverlay();
-            if (this.renderer)
-                this.forceUpdate();
+            progress();
+            console.log("done loading...")
         }).bind(this)).catch(((reason) => {
             console.log(reason);
             this.props.setConnectionURL("");
@@ -681,18 +679,24 @@ class RoomState extends React.Component<PropsType, StateType> {
         var { opacity, dimensions } = this.props;
 
         var curOpacity = opacity;
-        if (!this._materials.tempOverlay)
+        if (!this._materials.tempOverlay || !loadedDemo)
             curOpacity = 0;
 
         if (opacity >= 1 && loadingProgress >= 1 && !loadedDemo)
-            setTimeout((() => this.runInitialAnimation()).bind(this), 0);
+            requestAnimationFrame((() => this.runInitialAnimation()).bind(this));
 
-        var loadingView = null;
-        if (loadedDemo) {
+        if (loadedDemo)
             this.renderLayers();
-        } else {
-            loadingView = (
-                <div style={styles.loadingContainer}>
+
+        return (
+            <div style={{...styles.container, ...dimensions}}>
+                <div
+                    style={{...styles.canvas, opacity: curOpacity}}
+                    ref={(mount: any) => { this.mount = mount }}>
+                    <ReactResizeDetector handleWidth handleHeight onResize={this.renderLayers.bind(this)} />
+                </div>
+
+                <div style={{...styles.loadingContainer, opacity: loadedDemo ? 0 : 1}}>
                     <div style={styles.loadingText}>{"Loading..."}</div>
                     <DimmerSlider width={400}
                                   height={10}
@@ -702,17 +706,6 @@ class RoomState extends React.Component<PropsType, StateType> {
                                   disabled={true}
                                   showKnob={false}/>
                 </div>
-            );
-        }
-
-        return (
-            <div style={{...styles.container, ...dimensions}}>
-                <div
-                    style={{...styles.canvas, opacity: curOpacity}}
-                    ref={(mount: any) => { this.mount = mount }}>
-                    <ReactResizeDetector handleWidth handleHeight onResize={this.renderLayers.bind(this)} />
-                </div>
-                {loadingView}
             </div>
         )
     }
@@ -740,6 +733,7 @@ const styles = {
         height: '100%',
         justifyContent: 'center',
         alignItems: 'center',
+        transition: 'opacity 500ms',
     },
     loadingText: {
         fontWeight: 'lighter',
