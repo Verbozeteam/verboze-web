@@ -111,10 +111,12 @@ export default class ContactOrDemoForm extends React.Component<PropsType, StateT
     }
 
     render() {
+        var submitSuccessMessage = this.props.requestDemo ? "submitting your request" : "contacting us";
+
         if (this.state.submitStage === 2) {
             return (
                 <div className={ this.props.requestDemo ? "container request-demo-container" : "container contact-container" } >
-                    <h5 style={{ textAlign: 'center' }}>Thank you for submitting your request! We will reach out to you shortly.</h5>
+                    <h5 style={{ textAlign: 'center' }}>Thank you for { submitSuccessMessage }! We will reach out to you shortly.</h5>
                 </div>
             )
         }
