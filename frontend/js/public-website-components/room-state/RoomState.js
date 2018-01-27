@@ -416,7 +416,8 @@ class RoomState extends React.Component<PropsType, StateType> {
                 } else {
                     this._images[img].material = new THREE.ShaderMaterial({
                         uniforms: {
-                            brightness: {value: 1.0},
+                            lightIntensities: {value: new THREE.Vector4(0, 0, 0, 0)},
+                            curtainOpening: {value: 0.0},
                             textureSampler: {type: 't', value: this._images[img].texture},
                             alphaSampler: {type: 't', value: this._images.curtainMask.texture},
                         },
@@ -465,14 +466,12 @@ class RoomState extends React.Component<PropsType, StateType> {
         const { roomState } = this.props;
         const { curtainOpenings, lightIntensities } = this.state;
 
-        var curtainBrightness = 0.1 + this.computeLightBrightness() * 0.5;
         var windowBrightness = this.computeCurtainsLight();
+        var intensities = Object.keys(lightIntensities).sort().map(k => lightIntensities[k]/100);
+        var lightIntensitiesVector = new THREE.Vector4(intensities[0], intensities[1], intensities[2], intensities[3]);
 
         if ("curtainLight" in this._images && this._images.curtainLight.material)
             this._images.curtainLight.material.uniforms.opacity.value = windowBrightness * 0.6;
-
-        if ("window" in this._images && this._images.window.material)
-            this._images.window.material.uniforms.brightness.value = curtainBrightness * 0.8;
 
         var needAnimation: boolean = false;
         for (var key in roomState) {
@@ -493,15 +492,19 @@ class RoomState extends React.Component<PropsType, StateType> {
                         var opening = (curtainOpenings[thing.id] || 0) / 100;
                         this._images[key+"-1"].sprite.position.x += opening*1.5;
                         this._images[key+"-1"].sprite.scale.x *= 1 - (opening/1.8);
-                        this._images[key+"-1"].material.uniforms.brightness.value = curtainBrightness;
                         this._images[key+"-2"].sprite.position.x += -opening*1.5;
                         this._images[key+"-2"].sprite.scale.x *= 1 - (opening/1.8);
-                        this._images[key+"-2"].material.uniforms.brightness.value = curtainBrightness;
+                        this._images[key+"-1"].material.uniforms.lightIntensities.value = lightIntensitiesVector;
+                        this._images[key+"-1"].material.uniforms.curtainOpening.value = windowBrightness;
+                        this._images[key+"-2"].material.uniforms.lightIntensities.value = lightIntensitiesVector;
+                        this._images[key+"-2"].material.uniforms.curtainOpening.value = windowBrightness;
                         if (thing.curtain != 0)
                             needAnimation = true;
                     } else if (key in this._images && this._images[key].material) {
                         var opening = (curtainOpenings[thing.id] || 0) / 100;
                         this._images[key].sprite.position.y += opening * 2.1;
+                        this._images[key].material.uniforms.lightIntensities.value = lightIntensitiesVector;
+                        this._images[key].material.uniforms.curtainOpening.value = windowBrightness;
                         if (thing.curtain != 0)
                             needAnimation = true;
                     }
@@ -577,7 +580,7 @@ class RoomState extends React.Component<PropsType, StateType> {
                         this._images[key].material.uniforms.offset.value.set(0, 0, 1);
                         this._images[key].material.uniforms.scale.value.set(maxRenderedLayerDimension, maxRenderedLayerDimension, 1);
                     } else if (this._images[key].material) {
-                        this._images[key].sprite.position.set(-1.44469, 1.389754, -8.079868);
+                        this._images[key].sprite.position.set(-1.44469-0.12, 1.389754-0.04, -8.079868);
                         this._images[key].sprite.rotation.y = 180.0 * Math.PI / 180.0;
                         this._images[key].sprite.scale.set(5.0, 5.0, 5.0);
                     }

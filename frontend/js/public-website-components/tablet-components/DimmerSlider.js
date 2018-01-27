@@ -134,7 +134,7 @@ class DimmerSlider extends React.Component<PropsType, StateType> {
             if (onChange && currentValue !== lastValue)
                 onChange(currentValue);
         } else if (hoverState === 0 || hoverState === 2) {
-            var newVal = Math.max(0, Math.min(maxValue, value + increment * (hoverState-1)));
+            var newVal = parseInt(Math.max(0, Math.min(maxValue, value + increment * (hoverState-1))));
             if (onChange && lastValue !== newVal)
                 onChange(newVal);
         }
