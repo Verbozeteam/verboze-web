@@ -148,14 +148,16 @@ export default class ContactOrDemoForm extends React.Component<PropsType, StateT
                         </div>
                         <button type="submit" id="submit-form-button" style={{ display: "none"}}></button>
                     </form>
-                    <div className="form-row form-buttons">
-                        { this.renderSubmitButton() }
-                        <button className="btn cancel-button" onClick={this.props.toggle}>Cancel</button>
+                    <div style={{overflow: 'hidden'}}>
+                      <div className="form-row form-buttons">
+                          { this.renderSubmitButton() }
+                          <button className="btn cancel-button" onClick={this.props.toggle}>Cancel</button>
+                      </div>
                     </div>
+
               </div>
             );
         }
 
     }
 }
-

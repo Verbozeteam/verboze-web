@@ -24,17 +24,16 @@ class RequestDemoModal extends React.Component<PropsType, StateType> {
   };
 
   _modal_animation_closed = {
-    top: '30%',
-    left: '10%',
-    height: '50%',
+    marginTop: '30vh',
+    marginLeft: '10vw',
     width: '80%',
     opacity: 0
   };
 
   _modal_animation_open = {
-    top: '15%',
-    left: '5%',
-    height: '60%',
+    marginTop: '15vh',
+    marginBottom: '15vh',
+    marginLeft: '5vw',
     width: '90%',
     opacity: 1
   };
@@ -105,58 +104,19 @@ class RequestDemoModal extends React.Component<PropsType, StateType> {
     }
 
     return (
-      <div style={modal_style}>
-        <div className="container" style={styles.modal_header}>
-          <h2 style={styles.modal_title}>Request Demo</h2>
-          <h5 style={styles.modal_sub_title}>Some sentence describing what a demo means, and how they can benifit from it, being free and all.</h5>
-        </div>
-        <div style={styles.modal_content}>
-          <ContactOrDemoForm requestDemo={true} toggle={this.props.toggle}/>
+      <div style={styles.modal_container}>
+        <div style={modal_style}>
+          <div className="container" style={styles.modal_header}>
+            <h2 style={styles.modal_title}>Request Demo</h2>
+            <h5 style={styles.modal_sub_title}>Some sentence describing what a demo means, and how they can benifit from it, being free and all.</h5>
+          </div>
+          <div style={styles.modal_content}>
+            <ContactOrDemoForm requestDemo={true} toggle={this.props.toggle}/>
+          </div>
         </div>
       </div>
     );
   }
-
-  // _renderForm() {
-  //   const name_field = <input type='text' placeholder='Your Name'
-  //     style={{...styles.input_field, ...styles.input_field_pull_right}} />;
-
-  //   const email_field = <input type='email' placeholder='Your Email'
-  //     style={{...styles.input_field, ...styles.input_field_pull_left}} />;
-
-  //   const hotel_field = <input type='text' placeholder='Your Hotel'
-  //     style={{...styles.input_field, ...styles.input_field_pull_right}} />;
-
-  //   const role_field = <input type='text' placeholder='Your Role'
-  //     style={{...styles.input_field, ...styles.input_field_pull_left}} />;
-
-  //   return (
-  //     <form>
-  //       <div className='row'>
-  //         <div className='col-sm-6'>
-  //           {name_field}
-  //         </div>
-  //         <div className='col-sm-6'>
-  //           {email_field}
-  //         </div>
-  //       </div>
-  //       <div className='row'>
-  //         <div className='col-sm-6'>
-  //           {hotel_field}
-  //         </div>
-  //         <div className='col-sm-6'>
-  //           {role_field}
-  //         </div>
-  //       </div>
-  //     </form>
-  //   );
-  // }
-
-  // _renderForm() {
-  //   return (
-
-  //   );
-  // }
 
   render() {
     const { open } = this.props;
@@ -194,6 +154,14 @@ class RequestDemoModal extends React.Component<PropsType, StateType> {
       pointerEvents: (open) ? 'all' : 'none'
     };
 
+    /* set body scroll */
+    const body = document.body;
+    if (open) {
+      body.style.overflow = 'hidden';
+    } else {
+      body.style.overflow = 'scroll';
+    }
+
     return (
       <div style={container_style}>
         {overlay}
@@ -208,26 +176,30 @@ const styles = {
     position: 'fixed',
     height: '100%',
     width: '100%',
-    zIndex: 1000,
+    zIndex: 9999999,
+    overflow: 'scroll'
   },
   overlay: {
-    position: 'absolute',
+    position: 'fixed',
     height: '100%',
     width: '100%',
     backgroundColor: '#000000',
     transition: '250ms ease-in-out'
   },
-  modal: {
+  modal_container: {
     position: 'absolute',
+    width: '100%',
+  },
+  modal: {
     backgroundColor: '#FFFFFF',
     transition: '250ms ease-in-out',
     color: 'black'
   },
   modal_header: {
-    paddingTop: 85,
+    paddingTop: 50,
     textAlign: 'center',
     width: 850,
-    margin: '0 auto'
+    margin: '0 auto',
   },
   modal_title: {
     fontWeight: 'lighter'
@@ -237,20 +209,8 @@ const styles = {
     paddingTop: 20
   },
   modal_content: {
-
+    paddingBottom: 50,
   },
-  input_field: {
-    borderWidth: 1,
-    borderColor: '#000000',
-    borderRadius: 2,
-    width: '70%'
-  },
-  input_field_pull_right: {
-    marginLeft: '27%'
-  },
-  input_field_pull_left: {
-    marginLeft: '3%'
-  }
 }
 
 module.exports = RequestDemoModal;
