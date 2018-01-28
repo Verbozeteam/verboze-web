@@ -22,14 +22,31 @@ type PropsType = {
 };
 
 type StateType = {
-    modal_open: boolean
+    modal_open: boolean,
+    width: number,
+    height: number,
 };
 
 
 export default class ContentPage extends Component<PropsType, StateType> {
     state = {
-        modal_open: false
+        modal_open: false,
+        width: 1,
+        height: 1,
     };
+
+    componentDidMount() {
+        this.updateWindowDimensions();
+        window.addEventListener('resize', this.updateWindowDimensions.bind(this));
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('resize', this.updateWindowDimensions.bind(this));
+    }
+
+    updateWindowDimensions() {
+        this.setState({ width: document.documentElement.clientWidth, height: window.innerHeight });
+    }
 
     toggleModal() {
         const { modal_open } = this.state;
@@ -41,7 +58,13 @@ export default class ContentPage extends Component<PropsType, StateType> {
 
     render() {
         const { banner, sections, title, children } = this.props;
-        const { modal_open } = this.state;
+        const { modal_open, width } = this.state;
+
+        var isOnPhone = width <= 992;
+
+        var sidenav = null;
+        if (!isOnPhone)
+            sidenav = <SideNavBar sections={sections} containerId="content-container" />;
 
         return (
             <div>
@@ -56,7 +79,7 @@ export default class ContentPage extends Component<PropsType, StateType> {
                                 {children}
                             </div>
                             <div className="col-md-3">
-                                <SideNavBar sections={sections} containerId="content-container" />
+                                {sidenav}
                             </div>
                         </div>
                     </div>
