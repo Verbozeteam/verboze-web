@@ -93,6 +93,7 @@ export default class ContentPage extends Component<PropsType, StateType> {
 
 const styles = {
     headerDivStyle: {
+        fontWeight: 'lighter',
         minHeight: '100vh',
         color: 'white',
     },

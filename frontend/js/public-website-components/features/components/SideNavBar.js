@@ -155,16 +155,16 @@ export default class SideNavBar extends Component<PropsType, StateType> {
         var sections = [];
 
         for (var i = 0; i < this.props.sections.length; i++) {
-            var padding = (this.props.sections[i].slug+"-info") === currentSection ? 15 : 5;
+            var isSelected = (this.props.sections[i].slug+"-info") === currentSection;
+            var padding = isSelected ? 15 : 5;
             var section = (
                 <div key={"nav-section-"+i} style={{...styles.sectionFragment, paddingLeft: padding}}>
                     <HashLink
-                        className={ this.state.currentSection === this.props.sections[i].slug + "-info" ? "anchor-links selected-anchor" : "anchor-links" }
+                        style={{color: isSelected ? styles.lineStyle.stroke : '#ffffff'}}
                         id={ this.props.sections[i].slug + "-hashlink" }
                         to={ this.props.sections[i].pageUrl + "#" +  this.props.sections[i].slug + "-info" }>
                         {this.props.sections[i].name}
                     </HashLink>
-                    <br/>
                 </div>
             );
             sections.push(section);
@@ -238,6 +238,7 @@ const styles = {
     sectionFragment: {
         height: 40,
         lineHeight: '40px',
+        fontWeight: 'lighter',
     },
 
     lineStyle: {
