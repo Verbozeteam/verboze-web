@@ -84,6 +84,7 @@ export default class ContentPage extends Component<PropsType, StateType> {
                         </div>
                     </div>
                 </div>
+                <div style={{minHeight: 92}} />
                 <RequestDemoBanner toggleModal={this.toggleModal.bind(this)} />
                 <FeaturesPanels expanded={false} />
             </div>

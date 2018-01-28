@@ -134,7 +134,7 @@ export default class SideNavBar extends Component<PropsType, StateType> {
         for (var i = 0; i < this.props.sections.length; i++) {
             var curOffset = i * 40;
             var style = {...styles.diamondStyle};
-            var s = 6;
+            var s = 4;
             if (this.props.sections[i].slug+"-info" === this.state.currentSection) {
                 s = 10;
                 style.fill = "#BA3737";
@@ -160,7 +160,7 @@ export default class SideNavBar extends Component<PropsType, StateType> {
             var section = (
                 <div key={"nav-section-"+i} style={{...styles.sectionFragment, paddingLeft: padding}}>
                     <HashLink
-                        style={{color: isSelected ? styles.lineStyle.stroke : '#ffffff'}}
+                        className={this.state.currentSection === this.props.sections[i].slug + "-info" ? "anchor-links selected-anchor" : "anchor-links"}
                         id={ this.props.sections[i].slug + "-hashlink" }
                         to={ this.props.sections[i].pageUrl + "#" +  this.props.sections[i].slug + "-info" }>
                         {this.props.sections[i].name}

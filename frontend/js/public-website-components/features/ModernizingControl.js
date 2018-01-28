@@ -25,13 +25,9 @@ export default class ModernizingControl extends Component<PropsType, StateType> 
             slug: "smartphone",
             pageUrl: "/modernizing-control"
         }, {
-            name: "Voice",
-            slug: "voice",
-            pageUrl: "/modernizing-control"
-        }, {
-            name: "Smart Room",
-            slug: "smart-room",
-            pageUrl: "/modernizing-control",
+            name: "Voice Controls",
+            slug: "voice-controls",
+            pageUrl: "/voice",
         }],
     };
 
@@ -41,114 +37,38 @@ export default class ModernizingControl extends Component<PropsType, StateType> 
                 <div id="modernizing-control-info" style={ styles.textDivStyle }>
                     <h1>Modernizing Control</h1>
                     <p>
-                    SOME CONTENT HERE ABOUT MODERNIZING CONTROL
+                        The Verboze system is installed in each of your hotel rooms allowing them to be automated and easily controlled. The system supports automating the following components:
                     </p>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
+                    <ul>
+                        <li>Lights and Dimmers</li>
+                        <li>Motorized Curtains</li>
+                        <li>Air Conditioner</li>
+                        <li>TV and Entertainment</li>
+                        <li>Locking/Unlocking of the Door</li>
+                        <li>Digital Room Service and Do Not Disturb Lights (outside the room)</li>
+                        <li>And more...</li>
+                    </ul>
+                    <p>
+                        All components can be easily accessed and controlled by the hotel staff and more importantly the guests.
+                    </p>
                 </div>
                 <div id="tablet-info" style={ styles.textDivStyle }>
-                    <h1>Touchscreen</h1>
-                    SOME CONTENT ABOUT TABLET HERE
-                    <br/>
-                    <br/>
-                    <br/>
-
-                    <br/>
-                    <br/>
+                    <h1>In-room Touchscreen</h1>
+                    <p>
+                        The primary control device that is installed in every room is a touchscreen that we provide, either portable or mounted on a wall. You may choose to have several touchscreen devices for different arrangements of your rooms or suites.
+                    </p>
                 </div>
                 <div id="smartphone-info" style={ styles.textDivStyle }>
-                    <h1>Smartphone</h1>
-                    SOME CONTENT ABOUT SMART PHONE HERE
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
+                    <h1>Guest App</h1>
+                    <p>
+                        Guests will have access to an app on their own smartphones which can connect to their booked rooms and give them control of the room for the duration of their stay.
+                    </p>
                 </div>
-                <div id="voice-info" style={ styles.textDivStyle } >
-                    <h1>Voice Control</h1>
-                    SOME CONTENT ABOUT VOICE HERE
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                </div>
-                <div id="smart-room-info" style={ styles.textDivStyle }>
-                    <h1>Smart Room</h1>
-                    SOME CONTENT ABOUT TABLET HERE
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-
-                    <br/>
-                    <br/>
+                <div id="voice-controls-info" style={ styles.textDivStyle }>
+                    <h1>Voice Controls</h1>
+                    <p>
+                        Voice assistants can be installed in the rooms to enable voice-activated commands to control the room.
+                    </p>
                 </div>
             </ContentPage>
         );

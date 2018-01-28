@@ -13,17 +13,17 @@ export default class EmpoweringGuests extends Component<PropsType, StateType> {
         title: "Empowering Guests make them feel that they have a say in the place they choose to stay",
         banner: require('../../../assets/images/page_top_banners/banner.png'),
         sections: [{
-            name: "Empowering Guests",
-            slug: "empowering-guests",
-            pageUrl: "/empowering-guests"
+            name: "Reservation Data",
+            slug: "reservation-data",
+            pageUrl: "/reservation-data"
         }, {
-            name: "Control",
-            slug: "control",
-            pageUrl: "/empowering-guests"
+            name: "Room Services",
+            slug: "room-services",
+            pageUrl: "/room-services"
         }, {
-            name: "Request",
-            slug: "request",
-            pageUrl: "/empowering-guests"
+            name: "Feedback",
+            slug: "feedback",
+            pageUrl: "/feedback"
         }, {
             name: "Keyless Entry",
             slug: "keyless-entry",
@@ -34,97 +34,33 @@ export default class EmpoweringGuests extends Component<PropsType, StateType> {
     render() {
         return (
             <ContentPage {...this._contentProps} >
-                <div id="empowering-guests-info" style={ styles.textDivStyle }>
-                    SOME CONTENT HERE ABOUT EMPOWERING GUESTS
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
+                <div id="reservation-data-info" style={ styles.textDivStyle }>
+                    <h1>Reservation Data</h1>
+                    <br />
+                    <p>
+                        Guests can review information regarding their reservation, billing, check-out time, wifi password, duration of their stay, amenities the hotel has to offer and much more. Keeping the guests aware of their reservation details and expenditure prevents any unpleasant surprises at checkout time.
+                    </p>
                 </div>
-                <div id="control-info" style={ styles.textDivStyle }>
-                    SOME CONTENT ABOUT CONTROL HERE
-                    <br/>
-                    <br/>
-                    <br/>
-
-                    <br/>
-                    <br/>
+                <div id="room-services-info" style={ styles.textDivStyle }>
+                    <h1>Room Services</h1>
+                    <br />
+                    <p>
+                        Guests are able to request pillows, sheets, toiletries or any other services your hotel chooses to offer at the comfort of their fingertips. Requests will be forwarded to your staff who will serve your guest.
+                    </p>
                 </div>
-                <div id="request-info" style={ styles.textDivStyle }>
-                    SOME CONTENT ABOUT REQUESTING ROOM SERVICE/CONCEIRGE/ORDER TO ROOM/DO NOT DISTIRUB HERE
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
+                <div id="feedback-info" style={ styles.textDivStyle }>
+                    <h1>Feedback</h1>
+                    <br />
+                    <p>
+                        Guests can provide feedback to the staff to let them know about any inconveniences encountered. The staff can use the feedback to tailor their treatment and services and ensure guest satisfaction. The last thing a hotel wants is having a guest leave unhappy without knowing why and trying to make it right for them.
+                    </p>
                 </div>
                 <div id="keyless-entry-info" style={ styles.textDivStyle } >
-                    SOME CONTENT ABOUT KEYLESS ENTRY HERE
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
-                    <br/>
+                    <h1>Keyless Entry</h1>
+                    <br />
+                    <p>
+                        Guests will gain access to their rooms and other amenities in your hotel, such as pools or spas, using only their smartphones. There will no longer be a need to carry around cards or ask for permissions or availability of amenities.
+                    </p>
                 </div>
             </ContentPage>
         );

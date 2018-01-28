@@ -89,7 +89,7 @@ class RoomState extends React.Component<PropsType, StateType> {
     _images: {
         [string]: {
             image: string,
-            z: number,
+            z?: number,
             texture?: Object,
             material?: Object,
             sprite?: Object,
