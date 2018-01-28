@@ -149,6 +149,10 @@ class RoomState extends React.Component<PropsType, StateType> {
         curtainMask: {
             image: require('../../../assets/images/room_state/curtain_mask.jpg'),
             isHelper: true,
+        },
+        curtainNormal: {
+            image: require('../../../assets/images/room_state/curtain_normals.jpg'),
+            isHelper: true,
         }
     };
 
@@ -240,10 +244,7 @@ class RoomState extends React.Component<PropsType, StateType> {
             setTimeout(() => {
                 RoomStateUpdater.update(store, 'dimmer-1', {intensity: 100}, true);
                 setTimeout(() => {
-                    RoomStateUpdater.update(store, 'lightswitch-2', {intensity: 1}, true);
-                    setTimeout(() => {
-                        RoomStateUpdater.update(store, 'lightswitch-3', {intensity: 1}, true);
-                    }, 1500);
+                    RoomStateUpdater.update(store, 'lightswitch-3', {intensity: 1}, true);
                 }, 1500);
             }, 1500);
         }, 2000);
@@ -423,6 +424,7 @@ class RoomState extends React.Component<PropsType, StateType> {
                             curtainOpening: {value: 0.0},
                             textureSampler: {type: 't', value: this._images[img].texture},
                             alphaSampler: {type: 't', value: this._images.curtainMask.texture},
+                            normalSampler: {type: 't', value: this._images.curtainNormal.texture},
                         },
                         vertexShader: Shaders.curtainVertexShader,
                         fragmentShader: Shaders.curtainPixelShader,
@@ -581,7 +583,7 @@ class RoomState extends React.Component<PropsType, StateType> {
                         this._images[key].material.uniforms.offset.value.set(0, 0, 1);
                         this._images[key].material.uniforms.scale.value.set(maxRenderedLayerDimension, maxRenderedLayerDimension, 1);
                     } else if (this._images[key].material) {
-                        this._images[key].sprite.position.set(-1.44469-0.12, 1.389754-0.04, -8.079868);
+                        this._images[key].sprite.position.set(-1.44469-0.05, 1.389754-0.04, -8.079868);
                         this._images[key].sprite.rotation.y = 180.0 * Math.PI / 180.0;
                         this._images[key].sprite.scale.set(5.0, 5.0, 5.0);
                     }
