@@ -71,20 +71,15 @@ export default class SideNavBar extends Component<PropsType, StateType> {
         window.removeEventListener('scroll', this._bound_handleScroll)
     }
 
-    isFullyInViewport(elem: Object) {
+    scrolledPastElement(elem: Object) {
         let screenTop = document.scrollingElement || document.documentElement;
 
-        var elementTop = elem.offsetTop;
-        var elementBottom = elem.offsetTop + elem.offsetHeight;
-
+        var elementTop = elem.offsetTop + 480;
         var viewportTop = screenTop.scrollTop;
-        var viewportBottom = screenTop.scrollTop + window.innerHeight;
-
-        return (elementTop - viewportTop < 180);
-
+        return elementTop - 100 <= viewportTop;
     }
 
-    isAtBottom() {
+    isAtBottom(): Object {
         let screenTop = document.scrollingElement || document.documentElement;
 
         var container = document.getElementById(this.props.containerId);
@@ -92,47 +87,42 @@ export default class SideNavBar extends Component<PropsType, StateType> {
         var containerBottom = containerTop + container.offsetHeight;
         var cutoff = 280;
 
-        if (containerBottom - screenTop.scrollTop <= cutoff && this.state.sticky && !this.state.bottom){
-            this.setState({
-                bottom: true
-            });
-        }
-        else if (containerBottom - screenTop.scrollTop > cutoff && this.state.sticky && this.state.bottom) {
-            this.setState({
-                bottom: false
-            });
-        }
+        var update = {};
+
+        if (containerBottom - screenTop.scrollTop <= cutoff && this.state.sticky && !this.state.bottom)
+            update.bottom = true;
+        else if (containerBottom - screenTop.scrollTop > cutoff && this.state.sticky && this.state.bottom)
+            update.bottom = false;
+
+        return update;
     }
 
     handleScroll(e: Event) {
         let tempScreenTop = document.scrollingElement || document.documentElement;
+        var stateUpdate = {};
 
         /* determine to stick the side nav bar or not */
-        if (tempScreenTop.scrollTop >= 495 && !this.state.sticky) {
-            this.setState({
-                sticky: true
-            });
-        }
-        else if (tempScreenTop.scrollTop < 495 && this.state.sticky) {
-            this.setState({
-                sticky: false
-            });
-        }
+        if (tempScreenTop.scrollTop >= 495 && !this.state.sticky)
+            stateUpdate = {...stateUpdate, sticky: true};
+        else if (tempScreenTop.scrollTop < 495 && this.state.sticky)
+            stateUpdate = {...stateUpdate, sticky: false};
 
         /* determine if navbar is at the bottom to stop it from going down further */
-        this.isAtBottom();
+        stateUpdate = {...stateUpdate, ...this.isAtBottom()};
 
         /* determine which section we are on to change the diamond */
+        var selectedElem = null;
         for (var j = 0; j < this.props.sections.length; j++) {
             var elemId = this.props.sections[j].slug + "-info";
             var elem = document.getElementById(elemId);
-
-            if (this.isFullyInViewport(elem)){
-                this.setState({
-                    currentSection: elemId
-                });
-            };
+            if (this.scrolledPastElement(elem))
+                selectedElem = elemId
         }
+        if (selectedElem && this.state.currentSection !== selectedElem)
+            stateUpdate = {...stateUpdate, currentSection: selectedElem};
+
+        if (Object.keys(stateUpdate).length > 0)
+            this.setState(stateUpdate);
 
         return null;
     };
