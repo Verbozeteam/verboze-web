@@ -27,7 +27,7 @@ export default class ModernizingControl extends Component<PropsType, StateType> 
         }, {
             name: "Voice Controls",
             slug: "voice-controls",
-            pageUrl: "/voice",
+            pageUrl: "/modernizing-control",
         }],
     };
 
