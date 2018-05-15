@@ -21,5 +21,6 @@ urlpatterns = [
     url(r'^dashboard/', include("dashboard.urls")),
     url(r'^api/', include("api.urls")),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    url(r'^deployment/', include('deployment_manager.urls')),
     url(r'', include('public_website.urls')),
 ]

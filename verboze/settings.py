@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'public_website',
     'api',
     'dashboard',
+    'deployment_manager',
 
     # packages
     'webpack_loader',
