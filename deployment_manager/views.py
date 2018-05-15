@@ -1,53 +1,48 @@
 from deployment_manager.models import *
-from rest_framework import viewsets
 from rest_framework.decorators import list_route, detail_route
 from deployment_manager.serializers import *
+
+from deployment_manager.viewsets import DeploymentManagerModelViewSet
+from deployment_manager.permissions import IsSuperUser
 
 from rest_framework.response import Response
 from rest_framework import status
 
 from django.shortcuts import render, HttpResponse
 from django.db import transaction
+from verboze.decorators import superuser_only
 
 import threading, os, re
 from os import listdir
 
-
+@superuser_only(next='/deployment/')
 def home_view(req):
     return render(req, 'home.html', {})
 
-class FirmwareViewSet(viewsets.ModelViewSet):
-    authentication_classes = ()
-    permission_classes = ()
+class FirmwareViewSet(DeploymentManagerModelViewSet):
     queryset = Firmware.objects.all()
     serializer_class = FirmwareSerializer
 
 
-    @list_route(methods=['get'], authentication_classes=[], permission_classes=[])
+    @list_route(methods=['get'], authentication_classes=[], permission_classes=[IsSuperUser])
     def get_mounting_devices(self, request, pk=None):
         base = "/dev/"
         devices = [os.path.join(base, f) for f in listdir(base) if re.match("^sd[a-z]$", f) or re.match("^rdisk[1-9]$", f)]
         return Response(data=devices, status=status.HTTP_200_OK)
 
-class RepositoryViewSet(viewsets.ModelViewSet):
-    authentication_classes = ()
-    permission_classes = ()
+class RepositoryViewSet(DeploymentManagerModelViewSet):
     queryset = Repository.objects.all()
     serializer_class = RepositorySerializer
 
-class RepositoryBuildOptionViewSet(viewsets.ModelViewSet):
-    authentication_classes = ()
-    permission_classes = ()
+class RepositoryBuildOptionViewSet(DeploymentManagerModelViewSet):
     queryset = RepositoryBuildOption.objects.all()
     serializer_class = RepositoryBuildOptionSerializer
 
-class DeploymentConfigViewSet(viewsets.ModelViewSet):
-    authentication_classes = ()
-    permission_classes = ()
+class DeploymentConfigViewSet(DeploymentManagerModelViewSet):
     queryset = DeploymentConfig.objects.all()
     serializer_class = DeploymentConfigSerializer
 
-    @detail_route(methods=['post'], authentication_classes=[], permission_classes=[])
+    @detail_route(methods=['post'], authentication_classes=[], permission_classes=[IsSuperUser])
     def new_version(self, request, pk=None):
         config = self.get_object()
         try:
@@ -58,7 +53,7 @@ class DeploymentConfigViewSet(viewsets.ModelViewSet):
             return Response(data={'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_200_OK)
 
-    @detail_route(methods=['post'], authentication_classes=[], permission_classes=[])
+    @detail_route(methods=['post'], authentication_classes=[], permission_classes=[IsSuperUser])
     def update_parent(self, request, pk=None):
         config = self.get_object()
         try:
@@ -108,31 +103,23 @@ class DeploymentConfigViewSet(viewsets.ModelViewSet):
 
         return new_config
 
-class DeploymentFileViewSet(viewsets.ModelViewSet):
-    authentication_classes = ()
-    permission_classes = ()
+class DeploymentFileViewSet(DeploymentManagerModelViewSet):
     queryset = DeploymentFile.objects.all()
     serializer_class = DeploymentFileSerializer
 
-class FileDefaultParameterViewSet(viewsets.ModelViewSet):
-    authentication_classes = ()
-    permission_classes = ()
+class FileDefaultParameterViewSet(DeploymentManagerModelViewSet):
     queryset = FileDefaultParameter.objects.all()
     serializer_class = FileDefaultParameterSerializer
 
-class DeploymentRepositoryViewSet(viewsets.ModelViewSet):
-    authentication_classes = ()
-    permission_classes = ()
+class DeploymentRepositoryViewSet(DeploymentManagerModelViewSet):
     queryset = DeploymentRepository.objects.all()
     serializer_class = DeploymentRepositorySerializer
 
-class DeploymentViewSet(viewsets.ModelViewSet):
-    authentication_classes = ()
-    permission_classes = ()
+class DeploymentViewSet(DeploymentManagerModelViewSet):
     queryset = Deployment.objects.all()
     serializer_class = DeploymentSerializer
 
-    @list_route(methods=['post'], authentication_classes=[], permission_classes=[])
+    @list_route(methods=['post'], authentication_classes=[], permission_classes=[IsSuperUser])
     def deploy(self, request, pk=None):
         data = request.data
         try:
@@ -157,15 +144,11 @@ class DeploymentViewSet(viewsets.ModelViewSet):
             return Response(data={'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_200_OK)
 
-class DeploymentParameterViewSet(viewsets.ModelViewSet):
-    authentication_classes = ()
-    permission_classes = ()
+class DeploymentParameterViewSet(DeploymentManagerModelViewSet):
     queryset = DeploymentParameter.objects.all()
     serializer_class = DeploymentParameterSerializer
 
-class RunningDeploymentViewSet(viewsets.ModelViewSet):
-    authentication_classes = ()
-    permission_classes = ()
+class RunningDeploymentViewSet(DeploymentManagerModelViewSet):
     queryset = RunningDeployment.objects.all()
     serializer_class = RunningDeploymentSerializer
 
