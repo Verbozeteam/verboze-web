@@ -157,3 +157,14 @@ class RunningDeployment(models.Model):
 
     deployment = models.ForeignKey(Deployment, on_delete=models.SET_NULL, null=True)
     status = models.TextField(default="", blank="")
+
+class RemoteDeploymentMachine(models.Model):
+    """
+        An actively connected remote deployment machines
+        (record is deleted when websocket disconnects)
+    """
+
+    channel_name = models.CharField(max_length=128)
+
+    def ws_send_message(message):
+        Channel(self.channel_name).send(message)
