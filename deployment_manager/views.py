@@ -13,7 +13,10 @@ from django.db import transaction
 from verboze.decorators import superuser_only
 
 import threading, os, re
+import subprocess
+import json
 from os import listdir
+
 
 @superuser_only(next='/deployment/')
 def home_view(req):
@@ -136,10 +139,11 @@ class DeploymentViewSet(DeploymentManagerModelViewSet):
                 options = []
                 for oid in data["optionIds"]:
                     options.append(RepositoryBuildOption.objects.get(pk=oid))
+                disabled_repo_ids = data.get("disabledRepoIds", [])
 
                 deployment_lock = RunningDeployment.objects.create(deployment=dep)
                 disk_path = data["diskPath"]
-                DeploymentThread(deployment_lock, disk_path, firmware, config, dep, params, options).start()
+                DeploymentThread(deployment_lock, disk_path, firmware, config, dep, params, options, disabled_repo_ids).start()
         except Exception as e:
             return Response(data={'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_200_OK)
@@ -154,7 +158,7 @@ class RunningDeploymentViewSet(DeploymentManagerModelViewSet):
 
 
 class COMMAND(object):
-    def run(self):
+    def run(self, lock):
         pass
 
 class BASH_COMMAND(COMMAND):
@@ -162,14 +166,18 @@ class BASH_COMMAND(COMMAND):
         self.cmd = cmd
         self.silent = silent
 
-    def run(self):
-        try:
-            err = os.system(self.cmd)
-        except:
-            err = -1
+    def run(self, lock):
+        lock.stdout += "~~~~{}".format(self.cmd)
+        lock.save()
 
-        if err != 0 and not self.silent:
-            raise Exception("{} ==> {}".format(self.cmd, err))
+        proc = subprocess.Popen(self.cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        (out, err) = proc.communicate()
+        ret = proc.returncode
+
+        lock.stdout += out.decode() + "\n" + err.decode() + "\n"
+        lock.save()
+        if ret != 0 and not self.silent:
+            raise Exception("{} ==> {}".format(self.cmd, ret))
 
 class WRITE_FILE_COMMAND(COMMAND):
     def __init__(self, path, content, silent=False):
@@ -177,16 +185,18 @@ class WRITE_FILE_COMMAND(COMMAND):
         self.content = content
         self.silent = silent
 
-    def run(self):
+    def run(self, lock):
         try:
             with open(self.path, "wb") as F:
                 F.write(self.content.encode('utf-8'))
+            lock.stdout += "Wrote to file {}\n".format(self.path)
+            lock.save()
         except Exception as e:
             if not self.silent:
                 raise e
 
 class DeploymentThread(threading.Thread):
-    def __init__(self, deployment_lock, disk_path, firmware, config, dep, params, options):
+    def __init__(self, deployment_lock, disk_path, firmware, config, dep, params, options, disabled_repo_ids):
         threading.Thread.__init__(self)
         self.firmware = firmware
         self.deployment_lock = deployment_lock
@@ -196,6 +206,7 @@ class DeploymentThread(threading.Thread):
         self.build_options = options
         self.repositories = self.find_all_repositories(base=self.config)
         self.files = self.find_all_files(base=self.config)
+        self.disabled_repo_ids = disabled_repo_ids
 
         self.command_queue = []
         self.disk_path = disk_path
@@ -235,7 +246,8 @@ class DeploymentThread(threading.Thread):
             self.deployment.delete()
         finally:
             if self.deployment_lock.status == "":
-                self.deployment_lock.delete()
+                self.deployment_lock.status = "OK"
+                self.deployment_lock.save()
 
     def deploy(self):
         self.setup_image()
@@ -244,14 +256,14 @@ class DeploymentThread(threading.Thread):
         self.unmount_image()
 
         for cmd in self.command_queue:
-            cmd.run()
+            cmd.run(self.deployment_lock)
 
     def queue_command(self, cmd):
         self.command_queue.append(cmd)
 
     def setup_image(self):
         if self.firmware:
-            self.queue_command(BASH_COMMAND("dd if={} of={} bs=8M".format(self.firmware.local_path, self.disk_partition_path)))
+            self.queue_command(BASH_COMMAND("dd if={} of={} bs=8M".format(self.firmware.local_path, self.disk_path)))
         self.queue_command(BASH_COMMAND("umount {}".format(self.mounting_point), silent=True))
         self.queue_command(BASH_COMMAND("rm -rf {}".format(self.mounting_point), silent=True))
         self.queue_command(BASH_COMMAND("mkdir {}".format(self.mounting_point)))
@@ -264,14 +276,18 @@ class DeploymentThread(threading.Thread):
 
     def clone_repositories(self):
         for repo in self.repositories:
+            if repo.id in self.disabled_repo_ids:
+                continue
             repo_local_path = repo.repo.local_path
             if len(repo_local_path) > 0 and repo_local_path[0] == '/': repo_local_path = repo_local_path[1:]
             local_path = os.path.join(self.mounting_point, repo_local_path)
             self.queue_command(BASH_COMMAND("rm -rf {}".format(local_path), silent=True))
             if repo.repo.local_cache:
-                self.queue_command(BASH_COMMAND("git clone -b {} {} {}".format(repo.commit, repo.repo.local_cache, local_path)))
+                self.queue_command(BASH_COMMAND("git clone {} {}".format(repo.repo.local_cache, local_path)))
+                self.queue_command(BASH_COMMAND("cd {} && git checkout {}".format(local_path, repo.commit)))
             else:
-                self.queue_command(BASH_COMMAND("eval \"$(ssh-agent -s)\" && ssh-add /home/pi/.ssh/id_rsa && git clone -b {} {} {} && sudo killall ssh-agent".format(repo.commit, repo.repo.remote_path, local_path)))
+                self.queue_command(BASH_COMMAND("eval \"$(ssh-agent -s)\" && ssh-add /home/pi/.ssh/id_rsa && git clone {} {} && sudo killall ssh-agent".format(repo.repo.remote_path, local_path)))
+                self.queue_command(BASH_COMMAND("cd {} && git checkout {}".format(local_path, repo.commit)))
             for op in sorted(list(filter(lambda op: op.repo.id == repo.repo.id, self.build_options)), key=lambda op: op.option_priority):
                 self.queue_command(BASH_COMMAND("cd {} && {}".format(local_path, op.option_command)))
 
@@ -296,7 +312,7 @@ class DeploymentThread(threading.Thread):
 
     def get_deployment_info(self):
         return json.dumps({
-            "firmware": self.firmware.id,
+            "firmware": self.firmware.id if self.firmware else -1,
             "config": self.config.id,
             "deployment": self.deployment.id,
             "date": str(self.deployment.date),

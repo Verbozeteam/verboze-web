@@ -156,7 +156,8 @@ class RunningDeployment(models.Model):
     """
 
     deployment = models.ForeignKey(Deployment, on_delete=models.SET_NULL, null=True)
-    status = models.TextField(default="", blank="")
+    status = models.TextField(default="", blank=True)
+    stdout = models.TextField(default="", blank=True)
 
 class RemoteDeploymentMachine(models.Model):
     """

@@ -1,7 +1,6 @@
 import React from 'react';
 import NiceButton from './NiceButton';
 import DataManager from './DataManager';
-import BlueprintEditor from './BlueprintEditor';
 
 export default class FileEditor extends React.Component {
     state = {
@@ -85,24 +84,6 @@ export default class FileEditor extends React.Component {
             this.setState({parameters: oldParameters});
     }
 
-    renderContentView(targetFilename, content, isEditable) {
-        if (targetFilename.endsWith('.json')) {
-            return <div style={styles.fieldValue}>
-                <BlueprintEditor content={content}
-                    editable={isEditable}
-                    onChange={this.setState.bind(this)} />
-            </div>;
-        }
-
-        else {
-            return <textarea style={styles.fieldValue}
-                disabled={!isEditable}
-                value={content}
-                onChange={e => this.setState({content: e.target.value})}
-                rows={35} />;
-        }
-    }
-
     render() {
         const { targetFilename, executable, content, parameters } = this.state;
         const { file, config, isEditable } = this.props;
@@ -113,11 +94,10 @@ export default class FileEditor extends React.Component {
         var editButtons = null;
         var paramsView = null;
 
-        contentView = this.renderContentView(targetFilename, content, isEditable);
-
         if (isEditable) {
             filenameView = <input style={styles.fieldValue} value={targetFilename} onChange={e => this.setState({targetFilename: e.target.value})} />;
             executableView = <input type="checkbox" style={styles.fieldValue} checked={executable} onChange={e => this.setState({executable: e.target.checked})} />;
+            contentView = <textarea style={styles.fieldValue} value={content} onChange={e => this.setState({content: e.target.value})} rows={35} />;
 
             var deleteButton = null;
             if (file && file.deployment == config.id) {
@@ -161,6 +141,7 @@ export default class FileEditor extends React.Component {
         } else {
             filenameView = <div style={styles.fieldValue}>{targetFilename}</div>;
             executableView = <div style={styles.fieldValue}>{executable ? "Yes" : "No"}</div>;
+            contentView = <textarea disabled style={styles.fieldValue} value={content} onChange={e => this.setState({content: e.target.value})} rows={35} />;
 
             paramsView = [];
             for (var key in parameters) {

@@ -12,6 +12,7 @@ export default class DeploymentForm extends React.Component {
         options: {},
         diskPath: "",
         disksList: [],
+        disabledRepoIds: [],
     };
 
     refreshDisks() {
@@ -40,6 +41,7 @@ export default class DeploymentForm extends React.Component {
             params: params,
             options: boDict,
             diskPath: "",
+            disabledRepoIds: [],
         })
     }
 
@@ -54,7 +56,7 @@ export default class DeploymentForm extends React.Component {
 
     deploy() {
         const { config } = this.props;
-        const { firmware, target, comment, params, burnFirmware, options, diskPath } = this.state;
+        const { firmware, target, comment, params, burnFirmware, options, diskPath, disabledRepoIds } = this.state;
 
         if (target.trim() == "" || diskPath.trim() == "") {
             console.log("Missing 'target' or 'Mounting Disk Path'");
@@ -69,15 +71,16 @@ export default class DeploymentForm extends React.Component {
         }
 
         var optionIds = Object.values(options).filter(o => o.isChecked).map(o => o.id);
-        DataManager.deploy(config, diskPath, burnFirmware ? firmware : -1, target, comment, params, optionIds);
+        DataManager.deploy(config, diskPath, burnFirmware ? firmware : -1, target, comment, params, optionIds, disabledRepoIds);
     }
 
     render() {
         const { config } = this.props;
-        const { firmware, target, comment, params, burnFirmware, options, diskPath, disksList } = this.state;
+        const { firmware, target, comment, params, burnFirmware, options, diskPath, disksList, disabledRepoIds } = this.state;
 
         var firmwareList = DataManager.getAllFirmwares().map(f => <option key={'opf-'+f.id} value={f.id}>{f.local_path}</option>);
         var diskList = disksList.concat("").map(d => <option key={'opd-'+d} value={d}>{d}</option>);
+        var depRepos = DataManager.getConfigRepositories(config, true);
 
         return (
             <div style={styles.container}>
@@ -103,6 +106,16 @@ export default class DeploymentForm extends React.Component {
                     <div style={styles.fieldName}>Comment</div>
                     <textarea style={styles.fieldValue} value={comment} onChange={e => this.setState({comment: e.target.value})} rows={4} />
                 </div>
+                <div style={styles.row}>
+                    <div style={styles.fieldName}>Repositories to clone</div>
+                    <div style={styles.fieldValue}></div>
+                </div>
+                {depRepos.map(repo =>
+                    <div key={'rbo-'+repo.id} style={styles.row}>
+                        <div style={styles.fieldName}>{((rp) => rp.slice(rp.slice(0, rp.length-2).lastIndexOf('/')))(DataManager.getRepoById(repo.repo).remote_path)}</div>
+                        <input style={styles.fieldValue} type={"checkbox"} checked={disabledRepoIds.indexOf(repo.id) == -1} onChange={e => this.setState({disabledRepoIds: e.target.checked ? disabledRepoIds.filter(rid => rid != repo.id) : disabledRepoIds.concat(repo.id)})} />
+                    </div>
+                )}
                 <div style={styles.row}>
                     <div style={styles.fieldName}>Build options:</div>
                     <div style={styles.fieldValue}></div>

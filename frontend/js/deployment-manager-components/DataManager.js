@@ -38,7 +38,7 @@ class DataManagerImpl {
             /* depend on remote deployment machine */
             this.fetchData('/deployment/running_deployment/', d => this.serverData.deploymentLocks = d),
             this.fetchData('/deployment/firmware/', d => this.serverData.firmwares = d),
-            
+
             this.fetchData('/deployment/repository/', d => this.serverData.repositories = d),
             this.fetchData('/deployment/repository_build_option/', d => this.serverData.repositoryBuildOptions = d),
 
@@ -273,7 +273,7 @@ class DataManagerImpl {
         this._apiCall('DELETE', '/deployment/deployment_repository/'+repo.id+'/');
     }
 
-    deploy(config, diskPath, firmwareId, target, comment, params, optionIds) {
+    deploy(config, diskPath, firmwareId, target, comment, params, optionIds, disabledRepoIds) {
         this._apiCall('POST', '/deployment/deployment/deploy/', {
             config: config.id,
             firmwareId,
@@ -282,6 +282,7 @@ class DataManagerImpl {
             params,
             optionIds,
             diskPath,
+            disabledRepoIds,
         });
     }
 

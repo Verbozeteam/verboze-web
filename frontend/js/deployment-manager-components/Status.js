@@ -8,8 +8,12 @@ export default class Status extends React.Component {
 
         return (
             <div>
-                <div>
-                    {lock.status == "" ? "Loading..." : ("Error: " + lock.status)}
+                <div style={styles.container}>
+                    {lock.stdout.split('\n').map((line, i) =>
+                        line.indexOf("~~~~") == 0 ? <div key={'errline-'+i} style={styles.cmdLine}>{line.substr(4)}</div>
+                                                  : <div key={'errline-'+i} style={styles.stdoutLine}>{line}</div>
+                    )}
+                    <p style={styles.statusLine}>{lock.status == "" ? "Loading..." : ("Error: " + lock.status)}</p>
                 </div>
                 <div>
                     {lock.status == "" ? null :
@@ -22,3 +26,17 @@ export default class Status extends React.Component {
         );
     }
 };
+
+const styles = {
+    container: {
+        margin: 20,
+    },
+    cmdLine: {
+        color: 'green',
+    },
+    stdoutLine: {
+    },
+    statusLine: {
+        color: 'red',
+    }
+}
