@@ -1,4 +1,5 @@
 from django.db import models
+from channels import Channel
 
 class Firmware(models.Model):
     """
@@ -165,7 +166,12 @@ class RemoteDeploymentMachine(models.Model):
         (record is deleted when websocket disconnects)
     """
 
-    channel_name = models.CharField(max_length=128)
+    channel_name = models.CharField(max_length=128) # TODO: need to provide defualt and allow blank
+    # name = models.CharField(max_length=128)
 
-    def ws_send_message(message):
+    def __str__(self):
+        # return "{}".format(self.name)
+        return "{}".format(self.channel_name)
+
+    def ws_send_message(self, message):
         Channel(self.channel_name).send(message)
