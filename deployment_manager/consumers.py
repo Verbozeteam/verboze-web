@@ -1,5 +1,6 @@
 from api.models import Token as VerbozeToken
-from deployment_manager.models import RemoteDeploymentMachine
+from deployment_manager.models import RemoteDeploymentMachine, Repository
+from deployment_manager.serializers import RepositorySerializer
 from channels import Channel
 from django.db.models import Q
 from django.utils import timezone
@@ -20,11 +21,21 @@ def get_valid_token(token):
         return None
     return token_object
 
+def send_repo_data(message):
+    repos = Repository.objects.all()
+    serializer = RepositorySerializer(repos, many=True)
+    message.reply_channel.send({'text': json.dumps({'repos': serializer.data})})
+
 def ws_connect(message, token):
     token_object = get_valid_token(token)
     # making sure RDM object exists for token
     if token_object and isinstance(token_object.content_object, RemoteDeploymentMachine):
         message.reply_channel.send({'accept': True})
+
+        # send repo information for client to clone/pull latest
+        send_repo_data(message)
+
+        # save channel name to be able to communicate with
         rdm = token_object.content_object
         rdm.channel_name = message.reply_channel
         rdm.save()
@@ -36,6 +47,7 @@ def ws_receive(message, token):
     message_text = message.content.get("text")
     if token_object and isinstance(token_object.content_object, RemoteDeploymentMachine) and message_text:
         message_content = json.loads(message_text)
+
         # Perform logic when receiving data from RDM
         # ...
         #
