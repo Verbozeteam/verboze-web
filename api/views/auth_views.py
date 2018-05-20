@@ -17,8 +17,7 @@ class ObtainExpiringAuthToken(ObtainAuthToken):
         # ...
         #
 
-        # channel_name provided temporarly as it is required (TODO: We should change this)
-        rdm = RemoteDeploymentMachine.objects.create(channel_name=machine)
+        rdm = RemoteDeploymentMachine.objects.create(name=machine)
         rdm_contenttype = ContentType.objects.get(model='remotedeploymentmachine')
         expiry = datetime.datetime.utcnow() + datetime.timedelta(hours=24)
         token = VerbozeToken.objects.create(expiry=expiry,

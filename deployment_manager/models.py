@@ -1,25 +1,15 @@
 from django.db import models
 from channels import Channel
 
-class Firmware(models.Model):
-    """
-        Represents an existing .img file to be dd'd on an SD card
-    """
-    local_path = models.CharField(max_length=256, unique=True)
-
-    def __str__(self):
-        return self.local_path
-
 class Repository(models.Model):
     """
         Represents a repository that can be used in a deployment
     """
     remote_path = models.CharField(max_length=2048, unique=True) # remote repository (e.g. github)
-    local_path = models.CharField(max_length=256, unique=True)   # local path relative to mounted FS
-    local_cache = models.CharField(max_length=256, blank=True)   # local path to a cached remote repository
+    name = models.CharField(max_length=128) # name of repository
 
     def __str__(self):
-        return self.remote_path
+        return self.name
 
 class RepositoryBuildOption(models.Model):
     """
@@ -155,7 +145,6 @@ class RunningDeployment(models.Model):
     """
         A deployment currently happening
     """
-
     deployment = models.ForeignKey(Deployment, on_delete=models.SET_NULL, null=True)
     status = models.TextField(default="", blank=True)
     stdout = models.TextField(default="", blank=True)
@@ -165,13 +154,33 @@ class RemoteDeploymentMachine(models.Model):
         An actively connected remote deployment machines
         (record is deleted when websocket disconnects)
     """
-
-    channel_name = models.CharField(max_length=128) # TODO: need to provide defualt and allow blank
-    # name = models.CharField(max_length=128)
+    channel_name = models.CharField(max_length=128, default="", blank=True)
+    name = models.CharField(max_length=128)
 
     def __str__(self):
-        # return "{}".format(self.name)
-        return "{}".format(self.channel_name)
+        return "{}".format(self.name)
 
     def ws_send_message(self, message):
         Channel(self.channel_name).send(message)
+
+class Disk(models.Model):
+    """
+        A disk available on a Remote Deployment Machine
+    """
+    remote_deployment_machine = models.ForeignKey(RemoteDeploymentMachine, on_delete=models.CASCADE, related_name="disks", related_query_name="disk")
+    name = models.CharField(max_length=128)
+    identifier = models.CharField(max_length=128)
+
+    def __str__(self):
+        return "{} on {}".format(self.name, self.remote_deployment_machine)
+
+class Firmware(models.Model):
+    """
+        Represents an existing .img file to be dd'd on an SD card
+        Available on Remote Deployment Machine
+    """
+    remote_deployment_machine = models.ForeignKey(RemoteDeploymentMachine, on_delete=models.CASCADE, related_name="firmwares", related_query_name="firmware")
+    name = models.CharField(max_length=256, unique=True)
+
+    def __str__(self):
+        return "{} on {}".format(self.name, self.remote_deployment_machine)
