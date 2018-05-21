@@ -163,16 +163,32 @@ class RemoteDeploymentMachine(models.Model):
     def ws_send_message(self, message):
         Channel(self.channel_name).send(message)
 
-class Disk(models.Model):
+class DeploymentTarget(models.Model):
     """
-        A disk available on a Remote Deployment Machine
+        A target available on a Remote Deployment Machine
     """
-    remote_deployment_machine = models.ForeignKey(RemoteDeploymentMachine, on_delete=models.CASCADE, related_name="disks", related_query_name="disk")
-    name = models.CharField(max_length=128)
-    identifier = models.CharField(max_length=128)
+    remote_deployment_machine = models.ForeignKey(
+        RemoteDeploymentMachine,
+        default=None,
+        on_delete=models.CASCADE,
+        related_name="targets",
+        related_query_name="target"
+    )
+    identifier = models.CharField(max_length=128, default="")
 
     def __str__(self):
-        return "{} on {}".format(self.name, self.remote_deployment_machine)
+        return "{} on {}".format(self.identifier, self.remote_deployment_machine)
+
+# class Disk(models.Model):
+#     """
+#         A disk available on a Remote Deployment Machine
+#     """
+#     remote_deployment_machine = models.ForeignKey(RemoteDeploymentMachine, on_delete=models.CASCADE, related_name="disks", related_query_name="disk")
+#     name = models.CharField(max_length=128)
+#     identifier = models.CharField(max_length=128)
+
+#     def __str__(self):
+#         return "{} on {}".format(self.name, self.remote_deployment_machine)
 
 class Firmware(models.Model):
     """

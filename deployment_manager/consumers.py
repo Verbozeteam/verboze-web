@@ -1,5 +1,5 @@
 from api.models import Token as VerbozeToken
-from deployment_manager.models import RemoteDeploymentMachine, Repository, Disk, Firmware
+from deployment_manager.models import RemoteDeploymentMachine, Repository, DeploymentTarget, Firmware
 from deployment_manager.serializers import RepositorySerializer
 from channels import Channel
 from django.db.models import Q
@@ -25,16 +25,17 @@ def send_repo_data(message):
     serializer = RepositorySerializer(repos, many=True)
     message.reply_channel.send({'text': json.dumps({'repos': serializer.data})})
 
-def update_rdm_disks(rdm, message_content):
-    disks = message_content["disks"]
+def update_rdm_deployment_targets(rdm, message_content):
+    deployment_targets = message_content["deployment_targets"]
 
-    # delete old disks
-    rdm.disks.all().delete()
+    # delete old deployment targets
+    rdm.targets.all().delete()
 
-    for disk in disks:
-        Disk.objects.create(remote_deployment_machine=rdm,
-                            name=disk['name'],
-                            identifier=disk['identifier'])
+    for target in deployment_targets:
+        DeploymentTarget.objects.create(
+            remote_deployment_machine=rdm,
+            identifier=target['identifier']
+        )
 
 def update_rdm_firmwares(rdm, message_content):
     firmwares = message_content["firmwares"]
@@ -43,8 +44,10 @@ def update_rdm_firmwares(rdm, message_content):
     rdm.firmwares.all().delete()
 
     for firmware in firmwares:
-        Firmware.objects.create(remote_deployment_machine=rdm,
-                                name=firmware['name'])
+        Firmware.objects.create(
+            remote_deployment_machine=rdm,
+            name=firmware['name']
+        )
 
 def ws_connect(message, token):
     token_object = get_valid_token(token)
@@ -69,8 +72,8 @@ def ws_receive(message, token):
         message_content = json.loads(message_text)
         rdm = token_object.content_object
         # Perform logic when receiving data from RDM
-        if message_content.get("disks"):
-            update_rdm_disks(rdm, message_content)
+        if message_content.get("deployment_targets"):
+            update_rdm_deployment_targets(rdm, message_content)
         elif message_content.get("firmwares"):
             update_rdm_firmwares(rdm, message_content)
         else: # ignore message if not any of the above
