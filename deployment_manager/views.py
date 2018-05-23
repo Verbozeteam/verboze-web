@@ -4,6 +4,7 @@ from deployment_manager.serializers import *
 
 from deployment_manager.viewsets import DeploymentManagerModelViewSet
 from deployment_manager.permissions import IsSuperUser
+from rest_framework.authentication import SessionAuthentication
 
 from rest_framework.response import Response
 from rest_framework import status
@@ -22,17 +23,6 @@ from os import listdir
 def home_view(req):
     return render(req, 'home.html', {})
 
-class FirmwareViewSet(DeploymentManagerModelViewSet):
-    queryset = Firmware.objects.all()
-    serializer_class = FirmwareSerializer
-
-
-    @list_route(methods=['get'], authentication_classes=[], permission_classes=[IsSuperUser])
-    def get_mounting_devices(self, request, pk=None):
-        base = "/dev/"
-        devices = [os.path.join(base, f) for f in listdir(base) if re.match("^sd[a-z]$", f) or re.match("^rdisk[1-9]$", f)]
-        return Response(data=devices, status=status.HTTP_200_OK)
-
 class RepositoryViewSet(DeploymentManagerModelViewSet):
     queryset = Repository.objects.all()
     serializer_class = RepositorySerializer
@@ -45,7 +35,7 @@ class DeploymentConfigViewSet(DeploymentManagerModelViewSet):
     queryset = DeploymentConfig.objects.all()
     serializer_class = DeploymentConfigSerializer
 
-    @detail_route(methods=['post'], authentication_classes=[], permission_classes=[IsSuperUser])
+    @detail_route(methods=['post'], authentication_classes=[SessionAuthentication], permission_classes=[IsSuperUser])
     def new_version(self, request, pk=None):
         config = self.get_object()
         try:
@@ -122,7 +112,7 @@ class DeploymentViewSet(DeploymentManagerModelViewSet):
     queryset = Deployment.objects.all()
     serializer_class = DeploymentSerializer
 
-    @list_route(methods=['post'], authentication_classes=[], permission_classes=[IsSuperUser])
+    @list_route(methods=['post'], authentication_classes=[SessionAuthentication], permission_classes=[IsSuperUser])
     def deploy(self, request, pk=None):
         data = request.data
         try:
@@ -132,7 +122,7 @@ class DeploymentViewSet(DeploymentManagerModelViewSet):
                 except:
                     firmware = None
                 config = DeploymentConfig.objects.get(pk=data["config"])
-                dep = Deployment.objects.create(config=config, target=data["target"], comment=data["comment"])
+                dep = Deployment.objects.create(config=config, target=data["targetName"], comment=data["comment"])
                 params = []
                 for p in data["params"]:
                     params.append(DeploymentParameter.objects.create(deployment=dep, parameter_name=p["parameter_name"], parameter_value=p["parameter_value"]))
@@ -142,8 +132,21 @@ class DeploymentViewSet(DeploymentManagerModelViewSet):
                 disabled_repo_ids = data.get("disabledRepoIds", [])
 
                 deployment_lock = RunningDeployment.objects.create(deployment=dep)
-                disk_path = data["diskPath"]
-                DeploymentThread(deployment_lock, disk_path, firmware, config, dep, params, options, disabled_repo_ids).start()
+
+                deployment_target = DeploymentTarget.objects.get(id=data["deploymentTargetId"])
+                deployment_data = {
+                    'deployment_lock': RunningDeploymentSerializer(deployment_lock).data,
+                    'deployment_target': DeploymentTargetSerializer(deployment_target).data,
+                    'firmware': FirmwareSerializer(firmware).data,
+                    'config': DeploymentConfigSerializer(config).data,
+                    'dep:': DeploymentSerializer(dep).data,
+                    'params': DeploymentParameterSerializer(params, many=True).data,
+                    'options': RepositoryBuildOptionSerializer(options, many=True).data,
+                    'disabled_repo_ids': disabled_repo_ids
+                }
+                deployment_target.remote_deployment_machine.ws_send_message({'text': json.dumps(deployment_data)})
+
+                # DeploymentThread(deployment_lock, disk_path, firmware, config, dep, params, options, disabled_repo_ids).start()
         except Exception as e:
             return Response(data={'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_200_OK)
@@ -156,6 +159,23 @@ class RunningDeploymentViewSet(DeploymentManagerModelViewSet):
     queryset = RunningDeployment.objects.all()
     serializer_class = RunningDeploymentSerializer
 
+class RemoteDeploymentMachineViewSet(DeploymentManagerModelViewSet):
+    queryset = RemoteDeploymentMachine.objects.all()
+    serializer_class = RemoteDeploymentMachineSerializer
+
+class DeploymentTargetViewSet(DeploymentManagerModelViewSet):
+    queryset = DeploymentTarget.objects.all()
+    serializer_class = DeploymentTargetSerializer
+
+class FirmwareViewSet(DeploymentManagerModelViewSet):
+    queryset = Firmware.objects.all()
+    serializer_class = FirmwareSerializer
+
+    @list_route(methods=['get'], authentication_classes=[SessionAuthentication], permission_classes=[IsSuperUser])
+    def get_mounting_devices(self, request, pk=None):
+        base = "/dev/"
+        devices = [os.path.join(base, f) for f in listdir(base) if re.match("^sd[a-z]$", f) or re.match("^rdisk[1-9]$", f)]
+        return Response(data=devices, status=status.HTTP_200_OK)
 
 class COMMAND(object):
     def run(self, lock):

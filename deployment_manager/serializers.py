@@ -1,11 +1,6 @@
 from deployment_manager.models import *
 from rest_framework import serializers
 
-class FirmwareSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Firmware
-        fields = '__all__'
-
 class RepositorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Repository
@@ -49,4 +44,21 @@ class DeploymentParameterSerializer(serializers.ModelSerializer):
 class RunningDeploymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = RunningDeployment
+        fields = '__all__'
+
+class DeploymentTargetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DeploymentTarget
+        fields = '__all__'
+
+class RemoteDeploymentMachineSerializer(serializers.ModelSerializer):
+    targets = DeploymentTargetSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = RemoteDeploymentMachine
+        fields = ('id', 'channel_name', 'name', 'targets',)
+
+class FirmwareSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Firmware
         fields = '__all__'

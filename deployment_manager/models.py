@@ -6,7 +6,6 @@ class Repository(models.Model):
         Represents a repository that can be used in a deployment
     """
     remote_path = models.CharField(max_length=2048, unique=True) # remote repository (e.g. github)
-    name = models.CharField(max_length=128) # name of repository
 
     def __str__(self):
         return self.name
@@ -178,17 +177,6 @@ class DeploymentTarget(models.Model):
 
     def __str__(self):
         return "{} on {}".format(self.identifier, self.remote_deployment_machine)
-
-# class Disk(models.Model):
-#     """
-#         A disk available on a Remote Deployment Machine
-#     """
-#     remote_deployment_machine = models.ForeignKey(RemoteDeploymentMachine, on_delete=models.CASCADE, related_name="disks", related_query_name="disk")
-#     name = models.CharField(max_length=128)
-#     identifier = models.CharField(max_length=128)
-
-#     def __str__(self):
-#         return "{} on {}".format(self.name, self.remote_deployment_machine)
 
 class Firmware(models.Model):
     """
