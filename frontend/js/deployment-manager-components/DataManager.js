@@ -1,4 +1,7 @@
+/* @flow */
+
 import axios from 'axios';
+import * as Cookies from 'js-cookie';
 
 class DataManagerImpl {
 
@@ -55,15 +58,6 @@ class DataManagerImpl {
             if (this.serverData.deploymentLocks.length > 0)
                 this._reloadTimout = setTimeout(this.load.bind(this), 5000);
         }).bind(this));
-    }
-
-    fetchMountingDevices(on_success) {
-        axios({
-            method: 'GET',
-            url: '/deployment/firmware/get_mounting_devices/',
-        }).then(ret => {
-            on_success(ret.data);
-        });
     }
 
     registerListener(listener) {
@@ -167,10 +161,12 @@ class DataManagerImpl {
     }
 
     _apiCall(method, url, data, cb, errcb) {
+        var csrftoken = Cookies.get('csrftoken');
         axios({
             method: method,
             url: url,
             data: data,
+            headers: {'X-CSRFToken': csrftoken}
         }).then(ret => {
             console.log(ret.data);
             if (cb)
@@ -182,6 +178,10 @@ class DataManagerImpl {
                 errcb(err);
             alert(err);
         });
+    }
+
+    getRemoteDeploymentMachines(on_success) {
+        this._apiCall('GET', '/deployment/remote_deployment_machine/', {}, on_success)
     }
 
     addConfig(name, parentId) {
@@ -273,15 +273,15 @@ class DataManagerImpl {
         this._apiCall('DELETE', '/deployment/deployment_repository/'+repo.id+'/');
     }
 
-    deploy(config, diskPath, firmwareId, target, comment, params, optionIds, disabledRepoIds) {
+    deploy(config, deploymentTargetId, firmwareId, targetName, comment, params, optionIds, disabledRepoIds) {
         this._apiCall('POST', '/deployment/deployment/deploy/', {
             config: config.id,
             firmwareId,
-            target,
+            targetName,
             comment,
             params,
             optionIds,
-            diskPath,
+            deploymentTargetId,
             disabledRepoIds,
         });
     }

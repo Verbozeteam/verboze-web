@@ -6,17 +6,23 @@ export default class DeploymentForm extends React.Component {
     state = {
         burnFirmware: false,
         firmware: 1,
-        target: "",
         comment: "",
+        targetName: "",
         params: [],
         options: {},
+
         diskPath: "",
         disksList: [],
+
+        rdmsList: [],
+        rdm: "",
+        deploymentTargetId: "",
+
         disabledRepoIds: [],
     };
 
-    refreshDisks() {
-        DataManager.fetchMountingDevices(disks => this.setState({disksList: disks, diskPath: disks.length > 0 ? disks[0] : this.state.diskPath}));
+    refreshRDMs() {
+        DataManager.getRemoteDeploymentMachines(rdms => this.setState({rdmsList: rdms, rdm: rdms.length > 0 ? rdms[0] : this.state.rdm }));
     }
 
     resetState(config) {
@@ -36,7 +42,7 @@ export default class DeploymentForm extends React.Component {
         this.setState({
             burnFirmware: false,
             firmware: DataManager.getAllFirmwares()[0].id,
-            target: "",
+            targetName: "",
             comment: "",
             params: params,
             options: boDict,
@@ -47,7 +53,7 @@ export default class DeploymentForm extends React.Component {
 
     componentWillMount() {
         this.resetState(this.props.config);
-        this.refreshDisks();
+        this.refreshRDMs();
     }
 
     componentWillReceiveProps(nextProps) {
@@ -56,10 +62,10 @@ export default class DeploymentForm extends React.Component {
 
     deploy() {
         const { config } = this.props;
-        const { firmware, target, comment, params, burnFirmware, options, diskPath, disabledRepoIds } = this.state;
+        const { firmware, targetName, comment, params, burnFirmware, options, rdmsList, deploymentTargetId, disabledRepoIds } = this.state;
 
-        if (target.trim() == "" || diskPath.trim() == "") {
-            console.log("Missing 'target' or 'Mounting Disk Path'");
+        if (targetName.trim() == "" || deploymentTargetId.trim() == "") {
+            console.log("Missing 'Target Name' or 'Target Deployment'");
             return;
         }
 
@@ -71,24 +77,35 @@ export default class DeploymentForm extends React.Component {
         }
 
         var optionIds = Object.values(options).filter(o => o.isChecked).map(o => o.id);
-        DataManager.deploy(config, diskPath, burnFirmware ? firmware : -1, target, comment, params, optionIds, disabledRepoIds);
+        DataManager.deploy(config, deploymentTargetId, burnFirmware ? firmware : -1, targetName, comment, params, optionIds, disabledRepoIds);
     }
 
     render() {
         const { config } = this.props;
-        const { firmware, target, comment, params, burnFirmware, options, diskPath, disksList, disabledRepoIds } = this.state;
+        const { firmware, targetName, comment, params, burnFirmware, options, diskPath, disksList, rdmsList, rdm, disabledRepoIds } = this.state;
 
-        var firmwareList = DataManager.getAllFirmwares().map(f => <option key={'opf-'+f.id} value={f.id}>{f.local_path}</option>);
+        var firmwareList = DataManager.getAllFirmwares().map(f => <option key={'opf-'+f.id} value={f.id}>{f.name}</option>);
         var diskList = disksList.concat("").map(d => <option key={'opd-'+d} value={d}>{d}</option>);
         var depRepos = DataManager.getConfigRepositories(config, true);
+
+        var rdmsOptionsList = [""].concat(rdmsList).map(_rdm => <option key={'rdm-'+_rdm.id} value={JSON.stringify(_rdm)}>{_rdm.name}</option>);
+        var targetOptionsList = rdm ? [""].concat(rdm.targets).map(target => <option key={'dt-'+target.id} value={target.id}>{target.identifier}</option>) : [];
 
         return (
             <div style={styles.container}>
                 <div style={styles.row}>
-                    <div style={styles.fieldName}>Mounting Disk Path</div>
+                    <div style={styles.fieldName}>Remote Deployment Machine</div>
                     <div style={styles.fieldValue}>
-                        <NiceButton extraStyle={{width: 200, float: "right"}} onClick={this.refreshDisks.bind(this)}>Refresh</NiceButton>
-                        <select onChange={e => this.setState({diskPath: e.target.value})}>{diskList}</select>
+                        <NiceButton extraStyle={{width: 200, float: "right"}} onClick={this.refreshRDMs.bind(this)}>Refresh</NiceButton>
+                        <select onChange={e => {
+                            this.setState({rdm: JSON.parse(e.target.value)});
+                        } }>{rdmsOptionsList}</select>
+                    </div>
+                </div>
+                <div style={styles.row}>
+                    <div style={styles.fieldName}>Deployment Target</div>
+                    <div style={styles.fieldValue}>
+                        <select onChange={e => this.setState({deploymentTargetId: e.target.value})}>{targetOptionsList}</select>
                     </div>
                 </div>
                 <div style={styles.row}>
@@ -100,7 +117,7 @@ export default class DeploymentForm extends React.Component {
                 </div>
                 <div style={styles.row}>
                     <div style={styles.fieldName}>Target Name</div>
-                    <input style={styles.fieldValue} value={target} onChange={e => this.setState({target: e.target.value})} />
+                    <input style={styles.fieldValue} value={targetName} onChange={e => this.setState({targetName: e.target.value})} />
                 </div>
                 <div style={styles.row}>
                     <div style={styles.fieldName}>Comment</div>
