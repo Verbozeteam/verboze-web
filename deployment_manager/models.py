@@ -8,7 +8,7 @@ class Repository(models.Model):
     remote_path = models.CharField(max_length=2048, unique=True) # remote repository (e.g. github)
 
     def __str__(self):
-        return self.name
+        return self.remote_path
 
 class RepositoryBuildOption(models.Model):
     """
@@ -147,6 +147,9 @@ class RunningDeployment(models.Model):
     deployment = models.ForeignKey(Deployment, on_delete=models.SET_NULL, null=True)
     status = models.TextField(default="", blank=True)
     stdout = models.TextField(default="", blank=True)
+
+    def __str__(self):
+        return "{}: {}".format(self.deployment, self.status)
 
 class RemoteDeploymentMachine(models.Model):
     """

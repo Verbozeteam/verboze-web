@@ -49,6 +49,9 @@ def update_rdm_firmwares(rdm, message_content):
             name=firmware['name']
         )
 
+def update_running_deployment_target_stdout(rdm, message_content):
+    pass
+
 def ws_connect(message, token):
     token_object = get_valid_token(token)
     # making sure RDM object exists for token
@@ -76,6 +79,9 @@ def ws_receive(message, token):
             update_rdm_deployment_targets(rdm, message_content)
         elif message_content.get("firmwares"):
             update_rdm_firmwares(rdm, message_content)
+        elif message_content.get("running_deployment_target"):
+            print(message_content)
+            update_running_deployment_target_stdout(rdm, message_content)
         else: # ignore message if not any of the above
             pass
     else:

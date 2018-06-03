@@ -55,8 +55,8 @@ class DataManagerImpl {
         ];
         Promise.all(promises).then((results => {
             Object.values(this._listeners).map(l => l()); // call all listeners
-            if (this.serverData.deploymentLocks.length > 0)
-                this._reloadTimout = setTimeout(this.load.bind(this), 5000);
+            // if (this.serverData.deploymentLocks.length > 0)
+            //     this._reloadTimout = setTimeout(this.load.bind(this), 5000);
         }).bind(this));
     }
 

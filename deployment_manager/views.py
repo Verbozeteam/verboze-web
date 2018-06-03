@@ -144,7 +144,8 @@ class DeploymentViewSet(DeploymentManagerModelViewSet):
                     'options': RepositoryBuildOptionSerializer(options, many=True).data,
                     'disabled_repo_ids': disabled_repo_ids
                 }
-                deployment_target.remote_deployment_machine.ws_send_message({'text': json.dumps(deployment_data)})
+                deploy_object = {'deploy': deployment_data}
+                deployment_target.remote_deployment_machine.ws_send_message({'text': json.dumps(deploy_object)})
 
                 # DeploymentThread(deployment_lock, disk_path, firmware, config, dep, params, options, disabled_repo_ids).start()
         except Exception as e:

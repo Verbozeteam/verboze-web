@@ -30,10 +30,11 @@ export default class App extends React.Component {
 
     render() {
         const { runningDeployments } = this.state;
-        
+
         return (
             <div style={styles.global}>
-                {runningDeployments.length > 0 ? <Status lock={runningDeployments[0]} /> : <ConfigEditor />}
+                {/* runningDeployments.length > 0 ? <Status lock={runningDeployments[0]} /> : <ConfigEditor /> */}
+                <ConfigEditor runningDeployments={runningDeployments} />
             </div>
         );
     }
@@ -43,5 +44,8 @@ const styles = {
     global: {
         fontFamily: 'Courier New',
         color: 'white',
+        display: 'flex',
+        flex: 1,
+        minHeight: '100vh'
     },
 };

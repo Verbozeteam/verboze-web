@@ -39,9 +39,11 @@ export default class DeploymentForm extends React.Component {
         for (var i = 0; i < buildOptions.length; i++)
             boDict[buildOptions[i].option_name] = {...buildOptions[i], isChecked: false};
 
+        var allFirmwares = DataManager.getAllFirmwares()
+
         this.setState({
             burnFirmware: false,
-            firmware: DataManager.getAllFirmwares()[0].id,
+            firmware: allFirmwares.length > 0 ? allFirmwares[0].id : [],
             targetName: "",
             comment: "",
             params: params,
@@ -65,13 +67,13 @@ export default class DeploymentForm extends React.Component {
         const { firmware, targetName, comment, params, burnFirmware, options, rdmsList, deploymentTargetId, disabledRepoIds } = this.state;
 
         if (targetName.trim() == "" || deploymentTargetId.trim() == "") {
-            console.log("Missing 'Target Name' or 'Target Deployment'");
+            alert("Missing 'Target Name' or 'Target Deployment'");
             return;
         }
 
         for (var i = 0; i < params.length; i++) {
             if (params[i].parameter_value.trim() == "") {
-                console.log("Missing parameter '" + params[i].parameter_name + "'");
+                alert("Missing parameter '" + params[i].parameter_name + "'");
                 return;
             }
         }

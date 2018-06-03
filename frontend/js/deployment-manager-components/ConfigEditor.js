@@ -7,6 +7,7 @@ import FileEditor from './FileEditor';
 import DeploymentManager from './DeploymentManager';
 import AddConfigForm from './AddConfigForm';
 import DeploymentForm from './DeploymentForm';
+import RunningDeploymentStatus from './RunningDeploymentStatus';
 
 const SELECTED_TYPES = {
     NONE: -1,
@@ -19,8 +20,13 @@ const SELECTED_TYPES = {
 export default class ConfigEditor extends React.Component {
     _deregister = undefined;
 
+    static defaultProps = {
+        runningDeployments: [],
+    }
+
     state = {
         isAddingConfig: false,
+        selectedRunningDeploymentId: -1,
         selectedConfigId: -1,
         selectedVersion: -1,
         selectedType: -1, // SELECTED_TYPES
@@ -52,7 +58,7 @@ export default class ConfigEditor extends React.Component {
         return Object.values(dict);
     }
 
-    renderSidebarItems(config, indent=0, isLatest=true) {
+    renderSidebarConfigItems(config, indent=0, isLatest=true) {
         if (config.length == 0)
             return null;
 
@@ -69,10 +75,10 @@ export default class ConfigEditor extends React.Component {
                 <NiceButton
                         extraStyle={{marginTop: 5, textAlign: 'left', paddingLeft: 5, borderTop: '', borderRight: '', borderLeft: '', backgroundColor: '', color: isLatest? 'white' : 'gray'}}
                         isHighlighted={selectedConfigId == config.id}
-                        onClick={() => this.setState({selectedConfigId: config.id, selectedVersion: config.version, selectedType: SELECTED_TYPES.NONE, isAddingConfig: false})}>
+                        onClick={() => this.setState({selectedConfigId: config.id, selectedVersion: config.version, selectedType: SELECTED_TYPES.NONE, isAddingConfig: false, selectedRunningDeploymentId: -1})}>
                     {"• " + config.name + " (v" + (config.version) + ")" + (isLatest ? "" : " (OLD)")}
                 </NiceButton>
-                {allChildren.map(c => this.renderSidebarItems(c, 20, c.parent == config.id))}
+                {allChildren.map(c => this.renderSidebarConfigItems(c, 20, c.parent == config.id))}
             </div>
         );
     }
@@ -84,11 +90,26 @@ export default class ConfigEditor extends React.Component {
         return filename;
     }
 
-    renderContent() {
-        const { selectedConfigId, selectedVersion, selectedIndex, selectedType } = this.state;
+    renderRunningDeployment() {
+        const { selectedRunningDeploymentId } = this.state;
+        const { runningDeployments } = this.props;
 
-        if (selectedConfigId == -1)
+        var selectedRunningDeployment = runningDeployments.filter((rd) => rd.id == selectedRunningDeploymentId);
+        selectedRunningDeployment = selectedRunningDeployment.length > 0 ? selectedRunningDeployment[0] : null;
+
+        return <RunningDeploymentStatus runningDeployment={selectedRunningDeployment} />
+
+
+    }
+
+    renderContent() {
+        const { selectedRunningDeploymentId, selectedConfigId, selectedVersion, selectedIndex, selectedType } = this.state;
+
+        if (selectedConfigId == -1 && selectedRunningDeploymentId == -1)
             return null;
+
+        if (selectedRunningDeploymentId != -1)
+            return this.renderRunningDeployment()
 
         var config = DataManager.getConfigById(selectedConfigId);
         var allVersions = DataManager.getConfigsByName(config.name);
@@ -244,6 +265,7 @@ export default class ConfigEditor extends React.Component {
 
     render() {
         const { isAddingConfig } = this.state;
+        const { runningDeployments } = this.props;
 
         return (
             <React.Fragment>
@@ -253,14 +275,52 @@ export default class ConfigEditor extends React.Component {
                             <img src={'/static/images/verboze.png'} height="30"/>
                             <div style={contentStyles.verbozeLogoText}>VERBOZE</div>
                         </div>
-                        {this.filterConfigChildren(DataManager.getConfigChildren()).map(c => this.renderSidebarItems(c))}
+                        <div style={ styles.sidebarComponents }>
+                            <h4>Configurations</h4>
+                            {this.filterConfigChildren(DataManager.getConfigChildren()).map(c => this.renderSidebarConfigItems(c))}
+                            <br />
+                            <NiceButton
+                                    isHighlighted={isAddingConfig}
+                                    onClick={() => this.setState({isAddingConfig: true, selectedConfigId: -1, selectedRunningDeploymentId: -1})} >
+                                + Add Config
+                            </NiceButton>
+                        </div>
                         <br />
-                        <NiceButton
-                                isHighlighted={isAddingConfig}
-                                onClick={() => this.setState({isAddingConfig: true, selectedConfigId: -1})} >
-                            + Add Config
-                        </NiceButton>
+                        <div style={ styles.sidebarComponents }>
+
+                            <h4>Running Deployments</h4>
+                            { runningDeployments.map((rd, i) => ( <NiceButton
+                                    key={"rd-" + i}
+                                    onClick={() => this.setState({
+                                        isAddingConfig: false,
+                                        selectedRunningDeploymentId: rd.id,
+                                        selectedConfigId: -1,
+                                        selectedVersion: -1,
+                                        selectedType: -1,
+                                        selectedIndex: -1,
+                                    })}
+                                    extraStyle={{
+                                        marginTop: 5,
+                                        textAlign: 'left',
+                                        paddingLeft: 5,
+                                        borderTop: '',
+                                        borderRight: '',
+                                        borderLeft: '',
+                                        backgroundColor: '',
+                                        color: 'white'}}>
+                                { rd.deployment.target + " : " + rd.status }
+                            </NiceButton>)) }
+
+
+
+                        </div>
+
+
                     </div>
+
+
+
+
                     <div style={styles.contentContainer}>
                         {isAddingConfig ? <AddConfigForm /> : this.renderContent()}
                     </div>
@@ -285,10 +345,17 @@ const styles = {
         backgroundColor: '#111111'
     },
     contentContainer: {
-        display: 'flex',
         flex: 5,
         flexDirection: 'column',
-    }
+        maxHeight: '100vh',
+        overflow: 'scroll'
+    },
+    sidebarComponents: {
+        flex: 1,
+        maxHeight: 500,
+        overflow: 'scroll'
+    },
+
 };
 
 const contentStyles = {

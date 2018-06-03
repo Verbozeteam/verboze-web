@@ -42,9 +42,11 @@ class DeploymentParameterSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class RunningDeploymentSerializer(serializers.ModelSerializer):
+    deployment = DeploymentSerializer(read_only=True)
+
     class Meta:
         model = RunningDeployment
-        fields = '__all__'
+        fields = ('id', 'status', 'stdout', 'deployment')
 
 class DeploymentTargetSerializer(serializers.ModelSerializer):
     class Meta:
