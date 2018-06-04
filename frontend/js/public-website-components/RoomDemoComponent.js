@@ -17,6 +17,8 @@ import * as connectionActions from './redux/actions/connection';
 
 import { RoomState } from './room-state/RoomState';
 
+import * as Cookies from 'js-cookie';
+
 function mapStateToProps(state) {
     return {
     };
@@ -133,6 +135,9 @@ class RoomDemoComponent extends React.Component<PropsType, StateType> {
 
         if (this.state.currentStage === 0) {
             this.setState({currentStage: 1});
+
+            var csrftoken = Cookies.get('csrftoken');
+            PublicWebsiteAPICaller.setCSRFToken(csrftoken);
             PublicWebsiteAPICaller.createToken(((token: APITypes.CreatedToken) => {
                 setConnectionURL(this.createWebsocketURL(token.id));
                 WebSocketCommunication.connect(this.createWebsocketURL(token.id));

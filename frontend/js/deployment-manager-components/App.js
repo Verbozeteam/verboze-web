@@ -4,6 +4,11 @@ import ConfigEditor from './ConfigEditor';
 import DataManager from './DataManager';
 import Status from './Status';
 
+import { PublicWebsiteAPICaller } from '../js-api-utils/PublicWebsiteAPI';
+import { WebSocketCommunication } from '../js-api-utils/WebSocketCommunication';
+
+import * as Cookies from 'js-cookie';
+
 export default class App extends React.Component {
     _deregister = undefined;
 
@@ -12,16 +17,51 @@ export default class App extends React.Component {
     };
 
     componentWillMount() {
-        this._deregister = DataManager.registerListener(this.onDataChanged.bind(this));
-        this.onDataChanged();
+        this.establishWebSocketCommunication();
         DataManager.load();
     }
 
     componentWillUnmount() {
-        if (this._deregister) {
-            this._deregister();
-            this._deregister = undefined;
+        WebSocketCommunication.disconnect();
+    }
+
+    createWebsocketURL(token) {
+        var protocol = 'ws://';
+        if (location.protocol === 'https:')
+            protocol = 'wss://';
+        return protocol + location.host + '/deployment-comm/' + token + '/';
+    }
+
+    establishWebSocketCommunication() {
+        /* bind websocket callbacks */
+        WebSocketCommunication.setOnConnected(() => this.onConnected());
+        WebSocketCommunication.setOnDisconnected(() => this.onDisconnected());
+        WebSocketCommunication.setOnMessage((data) => this.onMessage(data));
+
+        var csrftoken = Cookies.get('csrftoken');
+        PublicWebsiteAPICaller.setCSRFToken(csrftoken);
+        PublicWebsiteAPICaller.createToken(((token) => {
+            WebSocketCommunication.connect(this.createWebsocketURL(token.id));
+        }).bind(this), ((error) => {
+            console.log('Could not fetch WS Token');
+        }).bind(this), {
+            deployment_manager: true /* sending data to api */
+        });
+    }
+
+    onConnected() {
+        console.log('connnected');
+    }
+
+    onMessage(data) {
+        /* handle receiving running deployments update */
+        if ('running_deployments' in data) {
+            this.setState({runningDeployments: data['running_deployments']});
         }
+    }
+
+    onDisconnected() {
+        console.log('Disconnected');
     }
 
     onDataChanged() {
@@ -33,7 +73,6 @@ export default class App extends React.Component {
 
         return (
             <div style={styles.global}>
-                {/* runningDeployments.length > 0 ? <Status lock={runningDeployments[0]} /> : <ConfigEditor /> */}
                 <ConfigEditor runningDeployments={runningDeployments} />
             </div>
         );

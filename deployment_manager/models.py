@@ -144,7 +144,13 @@ class RunningDeployment(models.Model):
     """
         A deployment currently happening
     """
-    deployment = models.ForeignKey(Deployment, on_delete=models.SET_NULL, null=True)
+    deployment = models.ForeignKey(
+        Deployment,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="running_deployments",
+        related_query_name="running_deployment"
+    )
     status = models.TextField(default="", blank=True)
     stdout = models.TextField(default="", blank=True)
 
@@ -177,6 +183,7 @@ class DeploymentTarget(models.Model):
         related_query_name="target"
     )
     identifier = models.CharField(max_length=128, default="")
+    status = models.CharField(max_length=128, default="")
 
     def __str__(self):
         return "{} on {}".format(self.identifier, self.remote_deployment_machine)
