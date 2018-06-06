@@ -146,7 +146,7 @@ class RunningDeployment(models.Model):
     """
     deployment = models.ForeignKey(
         Deployment,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         null=True,
         related_name="running_deployments",
         related_query_name="running_deployment"

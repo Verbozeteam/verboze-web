@@ -3,6 +3,7 @@ from deployment_manager.models import RemoteDeploymentMachine, Repository, Deplo
 from deployment_manager.serializers import RepositorySerializer, RunningDeploymentSerializer
 from channels import Channel, Group
 from django.db.models import Q
+from django.db import transaction
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.contrib.contenttypes.models import ContentType
@@ -65,13 +66,22 @@ def update_rdm_firmwares(rdm, message_content):
 def update_running_deployment_target_stdout(rdm, message_content):
     deployment_id = message_content["deployment_update"].get("deployment")
     updated_stdout = message_content["deployment_update"].get("message")
-    if deployment_id and updated_stdout: # validate right format
+    updated_status = message_content["deployment_update"].get("status")
+    if deployment_id and (updated_stdout or updated_status): # validate right format
         try:
-            deployment = Deployment.objects.get(id=deployment_id)
-            running_deployment = deployment.running_deployments.first()
-            running_deployment.stdout += updated_stdout
-            running_deployment.save()
-        except Exception:
+            # atomic block will attempt to make changes, if it fails it will roll back
+            with transaction.atomic():
+                # `select_for_update` is used to lock rows until end of transaction,
+                # to avoid race condition when messages coming in too fast
+                deployment = Deployment.objects.select_for_update().filter(id=deployment_id).first()
+                running_deployment = deployment.running_deployments.first()
+                if updated_stdout:
+                    running_deployment.stdout += updated_stdout
+                if updated_status:
+                    running_deployment.status = updated_status
+                running_deployment.save()
+        except Exception as e:
+            print(e)
             pass
 
 def ws_connect(message, token):
