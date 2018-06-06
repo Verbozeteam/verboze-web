@@ -22,7 +22,7 @@ export default class DeploymentForm extends React.Component {
     };
 
     refreshRDMs() {
-        DataManager.getRemoteDeploymentMachines(rdms => this.setState({rdmsList: rdms, rdm: rdms.length > 0 ? rdms[0] : "" }));
+        DataManager.getRemoteDeploymentMachines(rdms => this.setState({rdmsList: rdms }));
     }
 
     resetState(config) {
@@ -91,7 +91,7 @@ export default class DeploymentForm extends React.Component {
         var depRepos = DataManager.getConfigRepositories(config, true);
 
         var rdmsOptionsList = [""].concat(rdmsList).map(_rdm => <option key={'rdm-'+_rdm.id} value={JSON.stringify(_rdm)}>{_rdm.name}</option>);
-        var targetOptionsList = rdm ? [""].concat(rdm.targets).map(target => <option disabled={target.status !== 'Ready'} key={'dt-'+target.id} value={target.id}>{target.identifier}</option>) : [];
+        var targetOptionsList = rdm ? [""].concat(rdm.targets).map(target => <option disabled={target.status !== 'Ready' && target !== ""} key={'dt-'+target.id} value={target.id}>{target.identifier}</option>) : [];
 
         return (
             <div style={styles.container}>
