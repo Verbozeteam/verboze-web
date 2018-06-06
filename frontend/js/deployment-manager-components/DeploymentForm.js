@@ -22,7 +22,7 @@ export default class DeploymentForm extends React.Component {
     };
 
     refreshRDMs() {
-        DataManager.getRemoteDeploymentMachines(rdms => this.setState({rdmsList: rdms, rdm: rdms.length > 0 ? rdms[0] : this.state.rdm }));
+        DataManager.getRemoteDeploymentMachines(rdms => this.setState({rdmsList: rdms, rdm: rdms.length > 0 ? rdms[0] : "" }));
     }
 
     resetState(config) {
