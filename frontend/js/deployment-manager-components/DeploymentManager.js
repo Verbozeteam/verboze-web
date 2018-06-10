@@ -28,24 +28,7 @@ export default class DeploymentManager extends React.Component {
 
     render() {
         const { selectedDeployment } = this.state;
-        const { configs } = this.props;
-
-        var configDict = {};
-        var configDeployments = {};
-        var deployments = {};
-        for (var i = 0; i < configs.length; i++) {
-            configDict[configs[i].id] = configs[i];
-            configDeployments[configs[i].id] = DataManager.getConfigDeployments(configs[i]);
-            for (var j = 0; j < configDeployments[configs[i].id].length; j++) {
-                var dep = configDeployments[configs[i].id][j];
-                if (dep.target in deployments)
-                    deployments[dep.target].push(dep);
-                else
-                    deployments[dep.target] = [dep];
-            }
-        }
-        for (var k in deployments)
-            deployments[k] = deployments[k].sort((a, b) => new Date(b.date) - new Date(a.date));
+        const { deployments, configDict } = this.props;
 
         var deploymentList = Object.keys(deployments).map(target =>
             <div key={"deployment-"+target}>

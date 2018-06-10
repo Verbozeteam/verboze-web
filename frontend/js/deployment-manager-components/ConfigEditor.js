@@ -102,6 +102,27 @@ export default class ConfigEditor extends React.Component {
 
     }
 
+    getDeploymentsForAllConfigVersions(allVersions) {
+        var configDict = {};
+        var configDeployments = {};
+        var deployments = {};
+        for (var i = 0; i < allVersions.length; i++) {
+            configDict[allVersions[i].id] = allVersions[i];
+            configDeployments[allVersions[i].id] = DataManager.getConfigDeployments(allVersions[i]);
+            for (var j = 0; j < configDeployments[allVersions[i].id].length; j++) {
+                var dep = configDeployments[allVersions[i].id][j];
+                if (dep.target in deployments)
+                    deployments[dep.target].push(dep);
+                else
+                    deployments[dep.target] = [dep];
+            }
+        }
+        for (var k in deployments)
+            deployments[k] = deployments[k].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        return {deployments: deployments, configDict: configDict};
+    }
+
     renderContent() {
         const { selectedRunningDeploymentId, selectedConfigId, selectedVersion, selectedIndex, selectedType } = this.state;
 
@@ -210,6 +231,9 @@ export default class ConfigEditor extends React.Component {
             );
         }
 
+        var deploymentsForAllConfigVersions = this.getDeploymentsForAllConfigVersions(allVersions).deployments;
+        var configDict = this.getDeploymentsForAllConfigVersions(allVersions).configDict;
+
         return (
             <React.Fragment>
                 <div style={contentStyles.versionsContainer}>
@@ -254,10 +278,10 @@ export default class ConfigEditor extends React.Component {
 
                 <div style={contentStyles.deploymentFormContainer}>
                     <h3>New Deployment</h3>
-                    <DeploymentForm config={config} />
+                    <DeploymentForm config={config} previousConfigs={deploymentsForAllConfigVersions} />
                     <br />
                     <h3>Deployments</h3>
-                    <DeploymentManager key={"dm-"+config.id} configs={allVersions} />
+                    <DeploymentManager key={"dm-"+config.id} deployments={deploymentsForAllConfigVersions} configDict={configDict} />
                 </div>
             </React.Fragment>
         );

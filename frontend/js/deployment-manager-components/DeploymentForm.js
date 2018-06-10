@@ -19,13 +19,15 @@ export default class DeploymentForm extends React.Component {
         deploymentTargetId: "",
 
         disabledRepoIds: [],
+
+        previousConfigs: [],
     };
 
     refreshRDMs() {
-        DataManager.getRemoteDeploymentMachines(rdms => this.setState({rdmsList: rdms }));
+        DataManager.getRemoteDeploymentMachines(rdms => this.setState({rdmsList: rdms, rdm: "" }));
     }
 
-    resetState(config) {
+    resetState(config, previousConfigs) {
         var _params = DataManager.getConfigFiles(config, true).map(f => DataManager.getConfigFileParameters(f));
         var params = [];
         for (var i = 0; i < _params.length; i++)
@@ -50,16 +52,19 @@ export default class DeploymentForm extends React.Component {
             options: boDict,
             diskPath: "",
             disabledRepoIds: [],
+            previousConfigs: previousConfigs,
+            rdm: "",
+
         })
     }
 
     componentWillMount() {
-        this.resetState(this.props.config);
+        this.resetState(this.props.config, this.props.previousConfigs);
         this.refreshRDMs();
     }
 
     componentWillReceiveProps(nextProps) {
-        this.resetState(nextProps.config);
+        this.resetState(nextProps.config, nextProps.previousConfigs);
     }
 
     deploy() {
@@ -72,7 +77,7 @@ export default class DeploymentForm extends React.Component {
         }
 
         for (var i = 0; i < params.length; i++) {
-            if (params[i].parameter_value.trim() == "") {
+            if (params[i].parameter_value.trim() == "" && params[i].is_required) {
                 alert("Missing parameter '" + params[i].parameter_name + "'");
                 return;
             }
@@ -80,11 +85,54 @@ export default class DeploymentForm extends React.Component {
 
         var optionIds = Object.values(options).filter(o => o.isChecked).map(o => o.id);
         DataManager.deploy(config, deploymentTargetId, burnFirmware ? firmware : -1, targetName, comment, params, optionIds, disabledRepoIds);
+        this.resetState(this.props.config, this.props.previousConfigs);
+    }
+
+    prefillFields(prevConfig) {
+        const { params } = this.state;
+
+        /* empty obj meaning selected blank option */
+        if (JSON.stringify(prevConfig) === JSON.stringify({})) {
+
+            /* clearing out parameter values */
+            for (var i = 0; i < params.length; i++) {
+                params[i].parameter_value = "";
+            }
+
+            this.setState({
+                comment: "",
+                targetName: "",
+                params: params
+            });
+        }
+        else {
+            var prefillParameters = DataManager.getDeploymentParameters(prevConfig);
+            for (var i = 0; i < params.length; i++) {
+                var prefilled = false;
+                for (var j = 0; j < prefillParameters.length; j++) {
+                    if (prefillParameters[j].parameter_name == params[i].parameter_name) {
+                        params[i].parameter_value = prefillParameters[j].parameter_value;
+                        prefilled = true;
+                    }
+                }
+                if (!prefilled) {
+                    params[i].parameter_value = "";
+                }
+            }
+            this.setState({
+                comment: prevConfig.comment,
+                targetName: prevConfig.target,
+                params: params
+            });
+        }
     }
 
     render() {
         const { config } = this.props;
-        const { firmware, targetName, comment, params, burnFirmware, options, diskPath, disksList, rdmsList, rdm, disabledRepoIds } = this.state;
+        const {
+            firmware, targetName, comment, params,
+            burnFirmware, options, diskPath, disksList,
+            rdmsList, rdm, disabledRepoIds, previousConfigs } = this.state;
 
         var firmwareList = DataManager.getAllFirmwares().map(f => <option key={'opf-'+f.id} value={f.id}>{f.name}</option>);
         var diskList = disksList.concat("").map(d => <option key={'opd-'+d} value={d}>{d}</option>);
@@ -92,6 +140,15 @@ export default class DeploymentForm extends React.Component {
 
         var rdmsOptionsList = [""].concat(rdmsList).map(_rdm => <option key={'rdm-'+_rdm.id} value={JSON.stringify(_rdm)}>{_rdm.name}</option>);
         var targetOptionsList = rdm ? [""].concat(rdm.targets).map(target => <option disabled={target.status !== 'Ready' && target !== ""} key={'dt-'+target.id} value={target.id}>{target.identifier}</option>) : [];
+
+        /* first option empty */
+        var previousConfigsList = [<option key={'prev-deply-'} value={JSON.stringify({})}></option>];
+        for (var k in previousConfigs) {
+            for (var i = 0; i < previousConfigs[k].length; i++) {
+                var listElem = <option key={'prev-deply-'+k+i} value={JSON.stringify(previousConfigs[k][i])}>{k} {previousConfigs[k].length > 1 ? "(" + (i + 1) + ")"  : null}</option>;
+                previousConfigsList.push(listElem);
+            }
+        }
 
         return (
             <div style={styles.container}>
@@ -115,6 +172,12 @@ export default class DeploymentForm extends React.Component {
                     <div style={styles.fieldValue}>
                         <input type={"checkbox"} checked={burnFirmware} onChange={e => this.setState({burnFirmware: e.target.checked})} />
                         <select onChange={e => this.setState({firmware: e.target.value})}>{firmwareList}</select>
+                    </div>
+                </div>
+                <div style={styles.row}>
+                    <div style={styles.fieldName}>Pre-Fill From Previous Config</div>
+                    <div style={styles.fieldValue}>
+                        <select onChange={e => this.prefillFields(JSON.parse(e.target.value))}>{previousConfigsList}</select>
                     </div>
                 </div>
                 <div style={styles.row}>
