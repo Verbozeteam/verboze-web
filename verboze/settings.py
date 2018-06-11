@@ -12,12 +12,14 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 
 import os
 import dj_database_url
+import raven
 from verboze.whitenoise_utils import add_gzip_encoding
 
 DB_NAME = os.environ.get('DB_NAME', '')
 DB_USER = os.environ.get('DB_USER', '')
 DB_PASS = os.environ.get('DB_PASS', '')
 VERBOZE_EMAIL_PASSWORD = os.environ.get('VERBOZE_EMAIL_PASSWORD', '')
+RAVEN_DSN = os.environ.get('RAVEN_DSN', '')
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -35,6 +37,12 @@ if os.environ.get('ON_HEROKU', False):
     ALLOWED_HOSTS = ['verboze.herokuapp.com', 'www.verboze.com']
     # Redirect all non HTTPS requests to HTTPS
     #SECURE_SSL_REDIRECT = True
+
+    # RAVEN CONFIG FOR SETTING UP SENTRY WHEN ON PRODUCTION
+    RAVEN_CONFIG = {
+        'dsn': RAVEN_DSN,
+        'release': raven.fetch_git_sha(os.path.abspath(os.curdir)),
+    }
 else:
     DEBUG = True
     ALLOWED_HOSTS = ['*']
@@ -62,6 +70,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'django_extensions',
+    'raven.contrib.django.raven_compat',
 ]
 
 MIDDLEWARE = [
@@ -207,9 +216,3 @@ EMAIL_HOST_PASSWORD = VERBOZE_EMAIL_PASSWORD
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
-
-# SPECIFIED TO DETERMINE IF DEBUG OR PRODUCTION IN DJANGO TEMPLATES
-INTERNAL_IPS = (
-    '127.0.0.1',
-)

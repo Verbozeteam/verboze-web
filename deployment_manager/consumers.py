@@ -9,6 +9,9 @@ from django.core.exceptions import ValidationError
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth import get_user_model
 
+from raven.contrib.django.models import get_client
+client = get_client()
+
 import json
 
 def get_valid_token(token):
@@ -84,6 +87,7 @@ def update_running_deployment_target_stdout(rdm, message_content):
             print(e)
             pass
 
+@client.capture_exceptions
 def ws_connect(message, token):
     token_object = get_valid_token(token)
     # making sure RDM object exists for token
@@ -111,6 +115,7 @@ def ws_connect(message, token):
     else:
         message.reply_channel.send({"accept": False})
 
+@client.capture_exceptions
 def ws_receive(message, token):
     token_object = get_valid_token(token)
     message_text = message.content.get("text")
@@ -130,6 +135,7 @@ def ws_receive(message, token):
     else:
         message.reply_channel.send({"accept": False})
 
+@client.capture_exceptions
 def ws_disconnect(message, token):
     token_object = get_valid_token(token)
     if token_object and isinstance(token_object.content_object, RemoteDeploymentMachine):

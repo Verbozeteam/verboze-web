@@ -4,6 +4,9 @@ from channels import Group
 
 from django.core.exceptions import ValidationError
 
+from raven.contrib.django.models import get_client
+client = get_client()
+
 import json
 from django.utils import timezone
 
@@ -60,6 +63,7 @@ def on_message_from_phone(sender_token, message_dict):
 	hotel_hub.ws_send_message(message_json)
 
 
+@client.capture_exceptions
 def ws_connect(message, token):
 	token_object = get_valid_token(token)
 	if token_object:
@@ -76,6 +80,7 @@ def ws_connect(message, token):
 		message.reply_channel.send({"accept": False})
 
 
+@client.capture_exceptions
 def ws_receive(message, token):
 	token_object = get_valid_token(token)
 	message_text = message.content.get("text")
@@ -97,6 +102,7 @@ def ws_receive(message, token):
 		message.reply_channel.send({"accept": False})
 
 
+@client.capture_exceptions
 def ws_disconnect(message, token):
 	token_object = get_valid_token(token)
 	if token_object:
