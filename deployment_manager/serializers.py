@@ -27,9 +27,11 @@ class FileDefaultParameterSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class DeploymentRepositorySerializer(serializers.ModelSerializer):
+    repo = RepositorySerializer(read_only=True)
+
     class Meta:
         model = DeploymentRepository
-        fields = '__all__'
+        fields = ('id', 'deployment', 'repo', 'commit')
 
 class DeploymentSerializer(serializers.ModelSerializer):
     class Meta:

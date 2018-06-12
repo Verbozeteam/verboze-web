@@ -148,7 +148,7 @@ export default class ConfigEditor extends React.Component {
                     extraStyle={myRepositories.filter(r => r == repo.id).length > 0 ? {} : {color: '#3467bb'}}
                     isHighlighted={selectedType == SELECTED_TYPES.REPO && selectedIndex == repo.id}
                     onClick={() => this.setState({selectedIndex: repo.id, selectedType: SELECTED_TYPES.REPO})}>
-                {this.trimFilename(DataManager.getRepoById(repo.repo).remote_path)}
+                {this.trimFilename(repo.repo.remote_path)}
             </NiceButton>
         );
 

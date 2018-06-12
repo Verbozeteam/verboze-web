@@ -81,7 +81,7 @@ export default class RepositoryEditor extends React.Component {
             );
         } else {
             commitView = <div style={styles.fieldValue}>{commit}</div>;
-            repoView = <div style={styles.fieldValue}>{DataManager.getRepoById(repo.repo).remote_path}</div>;
+            repoView = <div style={styles.fieldValue}>{repo.repo.remote_path}</div>;
         }
 
         return (

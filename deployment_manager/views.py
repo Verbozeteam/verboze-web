@@ -112,6 +112,28 @@ class DeploymentViewSet(DeploymentManagerModelViewSet):
     queryset = Deployment.objects.all()
     serializer_class = DeploymentSerializer
 
+    def find_all_repositories(self, base=None):
+        if base == None:
+            return []
+        repos = list(DeploymentRepository.objects.filter(deployment=base))
+        my_repos = dict(map(lambda r: (r.repo, r), repos))
+        parentRepos = self.find_all_repositories(base=base.parent)
+        for r in parentRepos:
+            if r.repo not in my_repos:
+                repos.append(r)
+        return repos
+
+    def find_all_files(self, base=None):
+        if base == None:
+            return []
+        files = list(DeploymentFile.objects.filter(deployment=base))
+        my_files = dict(map(lambda f: (f.target_filename, f), files))
+        parentFiles = self.find_all_files(base=base.parent)
+        for f in parentFiles:
+            if f.target_filename not in my_files:
+                files.append(f)
+        return files
+
     @list_route(methods=['post'], authentication_classes=[SessionAuthentication], permission_classes=[IsSuperUser])
     def deploy(self, request, pk=None):
         data = request.data
@@ -134,6 +156,10 @@ class DeploymentViewSet(DeploymentManagerModelViewSet):
                 deployment_lock = RunningDeployment.objects.create(deployment=dep)
 
                 deployment_target = DeploymentTarget.objects.get(id=data["deploymentTargetId"])
+
+                deployment_repositories = self.find_all_repositories(base=config)
+                deployment_files = self.find_all_files(base=config)
+
                 deployment_data = {
                     'deployment_lock': RunningDeploymentSerializer(deployment_lock).data,
                     'deployment_target': DeploymentTargetSerializer(deployment_target).data,
@@ -142,7 +168,9 @@ class DeploymentViewSet(DeploymentManagerModelViewSet):
                     'dep:': DeploymentSerializer(dep).data,
                     'params': DeploymentParameterSerializer(params, many=True).data,
                     'options': RepositoryBuildOptionSerializer(options, many=True).data,
-                    'disabled_repo_ids': disabled_repo_ids
+                    'disabled_repo_ids': disabled_repo_ids,
+                    'repositories': DeploymentRepositorySerializer(deployment_repositories, many=True).data,
+                    'files': DeploymentFileSerializer(deployment_files, many=True).data
                 }
                 deploy_object = {'deploy': deployment_data}
                 deployment_target.remote_deployment_machine.ws_send_message({'text': json.dumps(deploy_object)})
@@ -234,28 +262,6 @@ class DeploymentThread(threading.Thread):
         self.disk_partition_path = self.disk_path + "2"
         self.mounting_point = "/home/pi/mnt/"
         self.deployment_info_filename = "/home/pi/.deployment"
-
-    def find_all_repositories(self, base=None):
-        if base == None:
-            return []
-        repos = list(DeploymentRepository.objects.filter(deployment=base))
-        my_repos = dict(map(lambda r: (r.repo, r), repos))
-        parentRepos = self.find_all_repositories(base=base.parent)
-        for r in parentRepos:
-            if r.repo not in my_repos:
-                repos.append(r)
-        return repos
-
-    def find_all_files(self, base=None):
-        if base == None:
-            return []
-        files = list(DeploymentFile.objects.filter(deployment=base))
-        my_files = dict(map(lambda f: (f.target_filename, f), files))
-        parentFiles = self.find_all_files(base=base.parent)
-        for f in parentFiles:
-            if f.target_filename not in my_files:
-                files.append(f)
-        return files
 
     def run(self):
         try:
