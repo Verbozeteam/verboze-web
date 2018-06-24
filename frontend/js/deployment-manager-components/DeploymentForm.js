@@ -213,7 +213,7 @@ export default class DeploymentForm extends React.Component {
                     <div style={styles.fieldValue}></div>
                 </div>
                 {params.map((p, i) =>
-                    <div key={'dep-param-'+p.parameter_name} style={styles.row}>
+                    <div key={'dep-param-'+p.parameter_name+i} style={styles.row}>
                         <div style={styles.fieldName}>{p.parameter_name + " (" + (p.is_required? "required" : "not required") + ")"}</div>
                         <input style={styles.fieldValue} value={p.parameter_value} onChange={(e => {
                             params[i].parameter_value = e.target.value;

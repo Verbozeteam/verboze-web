@@ -56,7 +56,10 @@ export default class FileEditor extends React.Component {
     }
 
     updateParameters() {
-        var defaultParams = DataManager.getConfigFileParameters(this.props.file);
+        var defaultParams = [];
+        if (this.props.file) {
+            defaultParams = DataManager.getConfigFileParameters(this.props.file);
+        }
         var defaultParamsDict = {};
         for (var i = 0; i < defaultParams.length; i++)
             defaultParamsDict[defaultParams[i].parameter_name] = {value: defaultParams[i].parameter_value, required: defaultParams[i].is_required};

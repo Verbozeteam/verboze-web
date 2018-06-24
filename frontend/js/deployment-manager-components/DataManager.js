@@ -176,7 +176,7 @@ class DataManagerImpl {
             console.log(err);
             if (errcb)
                 errcb(err);
-            alert(err);
+            alert(JSON.stringify(err.response.data));
         });
     }
 
