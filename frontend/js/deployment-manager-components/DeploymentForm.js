@@ -139,7 +139,7 @@ export default class DeploymentForm extends React.Component {
         var depRepos = DataManager.getConfigRepositories(config, true);
 
         var rdmsOptionsList = [""].concat(rdmsList).map(_rdm => <option key={'rdm-'+_rdm.id} value={JSON.stringify(_rdm)}>{_rdm.name}</option>);
-        var targetOptionsList = rdm ? [""].concat(rdm.targets).map(target => <option disabled={target.status !== 'Ready' && target !== ""} key={'dt-'+target.id} value={target.id}>{target.identifier}</option>) : [];
+        var targetOptionsList = rdm ? [""].concat(rdm.targets).map(target => <option disabled={target !== "" && target.status.toLowerCase() !== 'ready'} key={'dt-'+target.id} value={target.id}>{target.identifier}</option>) : [];
 
         /* first option empty */
         var previousConfigsList = [<option key={'prev-deply-'} value={JSON.stringify({})}></option>];
