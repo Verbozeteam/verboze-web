@@ -165,7 +165,7 @@ class DeploymentViewSet(DeploymentManagerModelViewSet):
                     'deployment_target': DeploymentTargetSerializer(deployment_target).data,
                     'firmware': FirmwareSerializer(firmware).data,
                     'config': DeploymentConfigSerializer(config).data,
-                    'dep:': DeploymentSerializer(dep).data,
+                    'dep': DeploymentSerializer(dep).data,
                     'params': DeploymentParameterSerializer(params, many=True).data,
                     'options': RepositoryBuildOptionSerializer(options, many=True).data,
                     'disabled_repo_ids': disabled_repo_ids,
