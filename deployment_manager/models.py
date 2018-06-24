@@ -6,6 +6,7 @@ class Repository(models.Model):
         Represents a repository that can be used in a deployment
     """
     remote_path = models.CharField(max_length=2048, unique=True) # remote repository (e.g. github)
+    local_path = models.CharField(max_length=256, unique=True, default="")   # local path relative to mounted FS
 
     def __str__(self):
         return self.remote_path
