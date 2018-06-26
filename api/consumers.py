@@ -13,7 +13,6 @@ from django.utils import timezone
 def get_valid_token(token):
 	# delete old tokens
 	VerbozeToken.objects.filter(~Q(expiry=None), expiry__lt=timezone.now()).delete()
-
 	try:
 		token_object = VerbozeToken.objects.get(id=token)
 	except (VerbozeToken.DoesNotExist, ValidationError):
@@ -98,8 +97,8 @@ def ws_receive(message, token):
 			# temporary token, do simple to the creator's front-end
 			Group("temp-token-"+str(token_object.id)).send({"text": message_text})
 	else:
-		# invalid token or not text data found, reject connection
-		message.reply_channel.send({"accept": False})
+		# invalid token or not text data found, close connection
+		message.reply_channel.send({"close": True})
 
 
 @client.capture_exceptions

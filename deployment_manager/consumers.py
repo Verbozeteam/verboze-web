@@ -133,7 +133,7 @@ def ws_receive(message, token):
         else: # ignore message if not any of the above
             pass
     else:
-        message.reply_channel.send({"accept": False})
+        message.reply_channel.send({"close": True})
 
 @client.capture_exceptions
 def ws_disconnect(message, token):

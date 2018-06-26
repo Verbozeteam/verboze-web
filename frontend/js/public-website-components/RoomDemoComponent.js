@@ -77,7 +77,6 @@ class RoomDemoComponent extends React.Component<PropsType, StateType> {
 
         /* bind websocket callbacks */
         WebSocketCommunication.setOnConnected(this.onConnected.bind(this));
-        WebSocketCommunication.setOnDisconnected(this.onDisconnected.bind(this));
         WebSocketCommunication.setOnMessage(this.onMessage.bind(this));
 
         this.startDemo();
@@ -106,8 +105,11 @@ class RoomDemoComponent extends React.Component<PropsType, StateType> {
 
     /* websocket callback on disconnect event */
     onDisconnected() : any {
-        if (!this._isUnmounting)
+        if (!this._isUnmounting) {
+            WebSocketCommunication.setOnDisconnected(() => null);
+            WebSocketCommunication.reset();
             this.setState({currentStage: 0});
+        }
     }
 
     /* websocket callback on message event */
@@ -140,6 +142,7 @@ class RoomDemoComponent extends React.Component<PropsType, StateType> {
             PublicWebsiteAPICaller.setCSRFToken(csrftoken);
             PublicWebsiteAPICaller.createToken(((token: APITypes.CreatedToken) => {
                 setConnectionURL(this.createWebsocketURL(token.id));
+                WebSocketCommunication.setOnDisconnected(this.onDisconnected.bind(this));
                 WebSocketCommunication.connect(this.createWebsocketURL(token.id));
             }).bind(this), ((error: APITypes.ErrorType) => {
                 this.setState({currentStage: 0});
