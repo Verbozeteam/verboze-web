@@ -291,6 +291,10 @@ class DataManagerImpl {
         this._apiCall('DELETE', '/deployment/running_deployment/'+lock.id+'/');
     }
 
+    deleteRunningDeployment(rdId) {
+        this._apiCall('DELETE', '/deployment/running_deployment/' + rdId + '/');
+    }
+
     createNewVersion(config) {
         // first find all different versions of that config
         var allConfigs = this.getConfigsByName(config.name);

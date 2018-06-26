@@ -98,8 +98,25 @@ export default class ConfigEditor extends React.Component {
         selectedRunningDeployment = selectedRunningDeployment.length > 0 ? selectedRunningDeployment[0] : null;
 
         return <RunningDeploymentStatus runningDeployment={selectedRunningDeployment} />
+    }
 
+    deleteRunningDeployment(rdID) {
+        const { selectedRunningDeploymentId } = this.state;
+        DataManager.deleteRunningDeployment(rdID);
 
+        /* if we delete a running deployment that we are viewing reset state
+         * so it does not render a running deployment that does not exist
+         */
+        if (selectedRunningDeploymentId == rdID) {
+            this.setState({
+                isAddingConfig: false,
+                selectedRunningDeploymentId: -1,
+                selectedConfigId: -1,
+                selectedVersion: -1,
+                selectedType: -1,
+                selectedIndex: -1,
+            });
+        }
     }
 
     getDeploymentsForAllConfigVersions(allVersions) {
@@ -311,40 +328,37 @@ export default class ConfigEditor extends React.Component {
                         </div>
                         <br />
                         <div style={ styles.sidebarComponents }>
-
                             <h4>Running Deployments</h4>
-                            { runningDeployments.map((rd, i) => ( <NiceButton
-                                    key={"rd-" + i}
-                                    onClick={() => this.setState({
-                                        isAddingConfig: false,
-                                        selectedRunningDeploymentId: rd.id,
-                                        selectedConfigId: -1,
-                                        selectedVersion: -1,
-                                        selectedType: -1,
-                                        selectedIndex: -1,
-                                    })}
-                                    extraStyle={{
-                                        marginTop: 5,
-                                        textAlign: 'left',
-                                        paddingLeft: 5,
-                                        borderTop: '',
-                                        borderRight: '',
-                                        borderLeft: '',
-                                        backgroundColor: '',
-                                        color: 'white'}}>
-                                { rd.deployment.target + " : " + rd.status }
-                            </NiceButton>)) }
-
-
-
+                            { runningDeployments.map((rd, i) => (
+                                <div key={"rd-fragment-"+i} style={styles.runningDeploymentDiv}>
+                                    <span style={{cursor: 'pointer'}} key={"rd-span"+i} onClick={() => this.deleteRunningDeployment(rd.deployment.id)}>
+                                        <p>&#10005;&nbsp;</p>
+                                    </span>
+                                    <NiceButton
+                                        key={"rd-" + i}
+                                        onClick={() => this.setState({
+                                            isAddingConfig: false,
+                                            selectedRunningDeploymentId: rd.id,
+                                            selectedConfigId: -1,
+                                            selectedVersion: -1,
+                                            selectedType: -1,
+                                            selectedIndex: -1,
+                                        })}
+                                        extraStyle={{
+                                            flex: 1,
+                                            marginTop: 5,
+                                            textAlign: 'left',
+                                            paddingLeft: 5,
+                                            borderTop: '',
+                                            borderRight: '',
+                                            borderLeft: '',
+                                            backgroundColor: '',
+                                            color: 'white'}}>
+                                    { rd.deployment.target + " : " + rd.status }
+                                </NiceButton>
+                            </div>)) }
                         </div>
-
-
                     </div>
-
-
-
-
                     <div style={styles.contentContainer}>
                         {isAddingConfig ? <AddConfigForm /> : this.renderContent()}
                     </div>
@@ -379,6 +393,11 @@ const styles = {
         maxHeight: 500,
         overflow: 'scroll'
     },
+    runningDeploymentDiv: {
+        display: 'flex',
+        flex: 1,
+        flexDirection: 'row',
+    }
 
 };
 

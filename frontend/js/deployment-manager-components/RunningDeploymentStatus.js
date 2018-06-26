@@ -36,7 +36,7 @@ export default class RunningDeploymentStatus extends React.Component {
         else {
             return (
                 <div style={styles.container}>
-                    <h2>Invalid Running Deployment Id: selectedRunningDeploymentId</h2>
+                    <h2>Invalid Running Deployment Id</h2>
                 </div>
             );
         }

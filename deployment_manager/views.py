@@ -4,6 +4,7 @@ from deployment_manager.serializers import *
 
 from deployment_manager.viewsets import DeploymentManagerModelViewSet
 from deployment_manager.permissions import IsSuperUser
+from deployment_manager.consumers import send_updated_running_deployments
 from rest_framework.authentication import SessionAuthentication
 
 from rest_framework.response import Response
@@ -187,6 +188,13 @@ class DeploymentParameterViewSet(DeploymentManagerModelViewSet):
 class RunningDeploymentViewSet(DeploymentManagerModelViewSet):
     queryset = RunningDeployment.objects.all()
     serializer_class = RunningDeploymentSerializer
+
+    # informing all clients over websockets that a running deployment was deleted
+    # so they can update their frontends accordingly
+    def destroy(self, request, *args, **kwargs):
+        returned = super(DeploymentManagerModelViewSet, self).destroy(request, *args, **kwargs)
+        send_updated_running_deployments()
+        return returned
 
 class RemoteDeploymentMachineViewSet(DeploymentManagerModelViewSet):
     queryset = RemoteDeploymentMachine.objects.all()
