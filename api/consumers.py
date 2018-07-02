@@ -3,6 +3,7 @@ from django.db.models import Q
 from channels import Group
 
 from django.core.exceptions import ValidationError
+from django.contrib.auth import get_user_model
 
 from raven.contrib.django.models import get_client
 client = get_client()
@@ -69,7 +70,7 @@ def ws_connect(message, token):
 		# valid token, accept connection
 		message.reply_channel.send({"accept": True})
 		# add reply_channel to Hub/Hotel/Room group
-		if token_object.content_object:
+		if token_object.content_object and not isinstance(token_object.content_object, get_user_model()):
 			group = token_object.content_object.websocket_group
 		else:
 			group = "temp-token-"+str(token_object.id)
