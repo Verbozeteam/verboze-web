@@ -29,7 +29,7 @@ export default class App extends React.Component {
         var protocol = 'ws://';
         if (location.protocol === 'https:')
             protocol = 'wss://';
-        return protocol + location.host + '/deployment-comm/' + token + '/';
+        return protocol + location.host + '/deployment-comm/' + token + '/deployment_manager/';
     }
 
     establishWebSocketCommunication() {

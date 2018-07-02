@@ -4,5 +4,5 @@ from deployment_manager.routing import websocket_routing as deployment_manager_w
 
 channel_routing = [
 	include(api_ws_routing, path=r"^/stream/(?P<token>[a-zA-Z0-9-]+)"),
-	include(deployment_manager_ws_routing, path=r'^/deployment-comm/(?P<token>[a-zA-Z0-9-]+)')
+	include(deployment_manager_ws_routing, path=r'^/deployment-comm/(?P<token>[a-zA-Z0-9-]+)/(?P<deployment_manager>\w+|)')
 ]

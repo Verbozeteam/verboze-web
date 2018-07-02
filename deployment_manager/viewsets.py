@@ -6,5 +6,5 @@ class DeploymentManagerModelViewSet(viewsets.ModelViewSet):
     def __init__(self, *args, **kwargs):
         super(viewsets.ModelViewSet, self).__init__(*args, **kwargs)
 
-    authentication_classes = (SessionAuthentication, BasicAuthentication)
+    authentication_classes = (SessionAuthentication,)
     permission_classes = (IsSuperUser,)
