@@ -3,19 +3,20 @@ from api.permissions import IsHotelUser
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from api.serializers import RoomSerializer, HotelSerializer, HubSerializer
-from api.authentication import ExpiringTokenAuthentication
+from api.authentication import VerbozeTokenAuthentication
 
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework import exceptions
 
 #
 # API endpoint that allows Rooms to be viewed
 # Request must be coming from Hotel User
 # Only rooms that belong to User's Hotel will be returned
 #
-class RoomViewSet(viewsets.ReadOnlyModelViewSet):
-    authentication_classes = (ExpiringTokenAuthentication,)
-    permission_classes = (IsAuthenticated, IsHotelUser,)
+class RoomViewSet(viewsets.ModelViewSet):
+    authentication_classes = (VerbozeTokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     queryset = Room.objects.all()
     serializer_class = RoomSerializer
@@ -25,6 +26,29 @@ class RoomViewSet(viewsets.ReadOnlyModelViewSet):
         # return all rooms in hotel that user belongs to
         return Room.objects.filter(hotel=hotel_user.hotel)
 
+    def create(self, request):
+        try:
+            hotel = request.user.hub_user.hub.hotel
+            request_data = request.data.copy()
+            request_data['hotel'] = hotel.id
+        except Exception as e:
+            return Response({'error': 'Could not determine hotel - {}'.format(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        if 'name' not in request_data:
+            request_data['name'] = request_data['identifier']
+
+        try:
+            room = self.queryset.get(identifier=request_data['identifier'], hotel=hotel)
+            serializer = self.serializer_class(room, data=request_data)
+        except:
+            serializer = self.serializer_class(data=request_data)
+        serializer.hotel_object = hotel
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST)
 
 #
 # API endpoint that allows Hotels to be viewed
@@ -50,7 +74,7 @@ class HotelViewSet(viewsets.ReadOnlyModelViewSet):
 # API endpoint that allows Hubs to be viewed
 #
 class HubViewSet(viewsets.ReadOnlyModelViewSet):
-    authentication_classes = (ExpiringTokenAuthentication,)
+    authentication_classes = (VerbozeTokenAuthentication,)
     permission_classes = (IsAuthenticated, IsHotelUser,)
 
     queryset = Hub.objects.all()

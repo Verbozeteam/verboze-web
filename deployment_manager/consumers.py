@@ -24,6 +24,14 @@ def get_valid_token(token):
         return None
     return token_object
 
+def get_rdm_from_token(token):
+    if token and isinstance(token.content_object, get_user_model()):
+        try:
+            return RemoteDeploymentMachine.objects.get(user=token.content_object)
+        except:
+            return None
+    return None
+
 def send_repo_data(message):
     repos = Repository.objects.all()
     serializer = RepositorySerializer(repos, many=True)
@@ -88,17 +96,18 @@ def update_running_deployment_target_stdout(rdm, message_content):
             pass
 
 @client.capture_exceptions
-def ws_connect(message, token):
+def ws_connect(message, token, deployment_manager=None):
     token_object = get_valid_token(token)
+    rdm = get_rdm_from_token(token_object)
+
     # making sure RDM object exists for token
-    if token_object and isinstance(token_object.content_object, RemoteDeploymentMachine):
+    if not deployment_manager and rdm:
         message.reply_channel.send({"accept": True})
 
         # send repo information for client to clone/pull latest
         send_repo_data(message)
 
         # save channel name to be able to communicate with
-        rdm = token_object.content_object
         rdm.channel_name = message.reply_channel
         rdm.save()
     elif token_object and isinstance(token_object.content_object, get_user_model()):
@@ -116,12 +125,12 @@ def ws_connect(message, token):
         message.reply_channel.send({"accept": False})
 
 @client.capture_exceptions
-def ws_receive(message, token):
+def ws_receive(message, token, deployment_manager=None):
     token_object = get_valid_token(token)
     message_text = message.content.get("text")
-    if token_object and isinstance(token_object.content_object, RemoteDeploymentMachine) and message_text:
+    rdm = get_rdm_from_token(token_object)
+    if not deployment_manager and rdm and message_text:
         message_content = json.loads(message_text)
-        rdm = token_object.content_object
         # Perform logic when receiving data from RDM
         if message_content.get("deployment_targets"):
             update_rdm_deployment_targets(rdm, message_content)
@@ -136,13 +145,16 @@ def ws_receive(message, token):
         message.reply_channel.send({"close": True})
 
 @client.capture_exceptions
-def ws_disconnect(message, token):
+def ws_disconnect(message, token, deployment_manager=None):
     token_object = get_valid_token(token)
-    if token_object and isinstance(token_object.content_object, RemoteDeploymentMachine):
-        token_object.content_object.delete()
-        token_object.delete()
-    elif token_object and isinstance(token_object.content_object, get_user_model()):
-        # remove reply_channel from group
-        Group("updates_from_rdms").discard(message.reply_channel)
-        # delete token
+    if token_object:
+        if deployment_manager:
+            # disconnecting from deployment manager frontend
+            Group("updates_from_rdms").discard(message.reply_channel)
+        else:
+            # disconnecting from RDM
+            rdm = get_rdm_from_token(token_object)
+            if rdm:
+                rdm.delete()
+
         token_object.delete()
