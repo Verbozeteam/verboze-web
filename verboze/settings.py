@@ -20,6 +20,7 @@ DB_USER = os.environ.get('DB_USER', '')
 DB_PASS = os.environ.get('DB_PASS', '')
 VERBOZE_EMAIL_PASSWORD = os.environ.get('VERBOZE_EMAIL_PASSWORD', '')
 RAVEN_DSN = os.environ.get('RAVEN_DSN', '')
+IFTTT_KEY = os.environ.get('IFTTT_KEY', '')
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -63,6 +64,7 @@ INSTALLED_APPS = [
     'api',
     'dashboard',
     'deployment_manager',
+    'ifttt',
 
     # packages
     'webpack_loader',
@@ -215,3 +217,4 @@ EMAIL_HOST_PASSWORD = VERBOZE_EMAIL_PASSWORD
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+APPEND_SLASH = True
