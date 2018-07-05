@@ -4,6 +4,6 @@ from ifttt import views
 
 urlpatterns = [
     url(r'^status/?$', views.status_view),
-    url(r'^setup/?$', views.setup_view),
+    url(r'^test/setup/?$', views.setup_view),
     # url(r'^', include(router.urls)),
 ]

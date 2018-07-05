@@ -17,10 +17,15 @@ def status_view(request):
 #
 # API endpoint for IFTTT setup
 #
+@csrf_exempt
 @api_view(['POST'])
 @authentication_classes([FromIFTTT])
 @permission_classes([])
-@csrf_exempt
 def setup_view(request):
-    return Response({}, status=status.HTTP_200_OK)
+    return Response({
+        "data": {
+            "x": "y"
+        }
+    }, status=status.HTTP_200_OK,
+    content_type="application/json; charset=utf-8")
 
