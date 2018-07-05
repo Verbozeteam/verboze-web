@@ -107,7 +107,7 @@ def ws_disconnect(message, token):
 	token_object = get_valid_token(token)
 	if token_object:
 		# valid token
-		if token_object.content_object:
+		if token_object.content_object and not isinstance(token_object.content_object, get_user_model()):
 			group = token_object.content_object.websocket_group
 		else:
 			group = "temp-token-"+str(token_object.id)
