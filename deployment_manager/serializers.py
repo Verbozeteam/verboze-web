@@ -27,11 +27,15 @@ class FileDefaultParameterSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class DeploymentRepositorySerializer(serializers.ModelSerializer):
-    repo = RepositorySerializer(read_only=True)
-
     class Meta:
         model = DeploymentRepository
-        fields = ('id', 'deployment', 'repo', 'commit')
+        fields = '__all__'
+
+    def to_representation(self, obj):
+        ret = super(DeploymentRepositorySerializer, self).to_representation(obj)
+        repo_object = Repository.objects.get(pk=ret['repo'])
+        ret['repo'] = RepositorySerializer(repo_object).data
+        return ret
 
 class DeploymentSerializer(serializers.ModelSerializer):
     class Meta:
