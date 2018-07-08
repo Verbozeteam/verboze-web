@@ -88,7 +88,7 @@ def update_running_deployment_target_stdout(rdm, message_content):
                 running_deployment = deployment.running_deployments.first()
                 if updated_stdout:
                     running_deployment.stdout += updated_stdout
-                if updated_status:
+                if updated_status and running_deployment.status.lower() != 'error':
                     running_deployment.status = updated_status
                 running_deployment.save()
         except Exception as e:

@@ -119,6 +119,24 @@ export default class ConfigEditor extends React.Component {
         }
     }
 
+    renderRunningDeploymentStatus(status) {
+        var statusReturn = null;
+        switch (status.toLowerCase()) {
+            case 'running':
+                statusReturn = <span>RUNNING</span>
+                break;
+            case 'error':
+                statusReturn = <span style={{ color: 'red' }}>ERROR</span>
+                break;
+            case 'completed':
+                statusReturn = <span style={{ color: 'green' }}>COMPLETED</span>
+                break;
+            default:
+                statusReturn = <span>{ status }</span>
+        }
+        return statusReturn
+    }
+
     getDeploymentsForAllConfigVersions(allVersions) {
         var configDict = {};
         var configDeployments = {};
@@ -354,7 +372,8 @@ export default class ConfigEditor extends React.Component {
                                             borderLeft: '',
                                             backgroundColor: '',
                                             color: 'white'}}>
-                                    { rd.deployment.target + " : " + rd.status }
+                                    { rd.deployment.target + " : " }
+                                    { this.renderRunningDeploymentStatus(rd.status) }
                                 </NiceButton>
                             </div>)) }
                         </div>
