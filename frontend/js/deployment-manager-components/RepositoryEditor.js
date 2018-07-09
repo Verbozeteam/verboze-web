@@ -15,7 +15,7 @@ export default class RepositoryEditor extends React.Component {
     resetParams() {
         if (this.props.repo) {
             this.setState({
-                repository: this.props.repo.repo,
+                repository: this.props.repo.repo.id,
                 commit: this.props.repo.commit
             });
         } else {

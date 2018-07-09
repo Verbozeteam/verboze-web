@@ -117,7 +117,7 @@ class DataManagerImpl {
         if (traceInheritance && config.parent != null) {
             var ancestorRepos = this.getConfigRepositories(this.getConfigById(config.parent), true);
             for (var i = 0; i < ancestorRepos.length; i++) {
-                if (repos.filter(r => r.repo == ancestorRepos[i].repo).length == 0)
+                if (repos.filter(r => r.repo.id == ancestorRepos[i].repo.id).length == 0)
                     repos.push(ancestorRepos[i]);
             }
         }
