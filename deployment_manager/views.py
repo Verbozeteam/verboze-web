@@ -170,7 +170,7 @@ class DeploymentViewSet(DeploymentManagerModelViewSet):
                     'params': DeploymentParameterSerializer(params, many=True).data,
                     'options': RepositoryBuildOptionSerializer(options, many=True).data,
                     'disabled_repo_ids': disabled_repo_ids,
-                    'repositories': DeploymentRepositorySerializer(deployment_repositories, many=True).data,
+                    'repositories': DeploymentRepositoryForRDMSerializer(deployment_repositories, many=True).data,
                     'files': DeploymentFileSerializer(deployment_files, many=True).data
                 }
                 deploy_object = {'deploy': deployment_data}
