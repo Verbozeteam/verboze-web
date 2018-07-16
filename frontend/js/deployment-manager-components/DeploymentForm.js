@@ -89,7 +89,7 @@ export default class DeploymentForm extends React.Component {
     }
 
     prefillFields(prevConfig) {
-        const { params } = this.state;
+        const { params, options } = this.state;
 
         /* empty obj meaning selected blank option */
         if (JSON.stringify(prevConfig) === JSON.stringify({})) {
@@ -99,14 +99,22 @@ export default class DeploymentForm extends React.Component {
                 params[i].parameter_value = "";
             }
 
+            for (var key in options) {
+                options[key].isChecked = false;
+            }
+
             this.setState({
                 comment: "",
                 targetName: "",
-                params: params
+                params: params,
+                options: options,
             });
         }
         else {
             var prefillParameters = DataManager.getDeploymentParameters(prevConfig);
+            var prefillBuildOptions = DataManager.getDeploymentBuildOptions(prevConfig);
+
+            /* prefilling parameters */
             for (var i = 0; i < params.length; i++) {
                 var prefilled = false;
                 for (var j = 0; j < prefillParameters.length; j++) {
@@ -119,10 +127,26 @@ export default class DeploymentForm extends React.Component {
                     params[i].parameter_value = "";
                 }
             }
+
+            /* prefilling options */
+            for (var key in options) {
+                var prefilled = false;
+                for (var i = 0; i < prefillBuildOptions.length; i++) {
+                    if (prefillBuildOptions[i].option_name == key) {
+                        options[key].isChecked = true
+                        prefilled = true;
+                    }
+                }
+                if (!prefilled) {
+                    options[key].isChecked = false;
+                }
+            }
+
             this.setState({
                 comment: prevConfig.comment,
                 targetName: prevConfig.target,
-                params: params
+                params: params,
+                options: options
             });
         }
     }

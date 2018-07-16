@@ -7,6 +7,7 @@ export default class DeploymentEditor extends React.Component {
         const { deployment } = this.props;
 
         var params = DataManager.getDeploymentParameters(deployment);
+        var buildOptions = DataManager.getDeploymentBuildOptions(deployment);
 
         return (
             <div style={styles.container}>
@@ -26,6 +27,16 @@ export default class DeploymentEditor extends React.Component {
                     <div style={styles.fieldName}>Comment</div>
                     <div style={styles.fieldValue}>{deployment.comment.split('\r\n').map((line, i) => <div key={'cline-'+i}>{line}</div>)}</div>
                 </div>
+                <div style={styles.row}>
+                    <div style={styles.fieldName}>Build Options:</div>
+                    <div style={styles.fieldValue}></div>
+                </div>
+                {buildOptions.map((buildOption, i) =>
+                    <div key={"boline-"+i} style={styles.row}>
+                        <div style={styles.fieldName}>&#10003;</div>
+                        <div style={styles.fieldValue}>{buildOption.option_name}</div>
+                    </div>
+                )}
                 <div style={styles.row}>
                     <div style={styles.fieldName}>Parameters:</div>
                     <div style={styles.fieldValue}></div>

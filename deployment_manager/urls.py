@@ -28,6 +28,7 @@ router.register(r'file_default_parameter', views.FileDefaultParameterViewSet)
 router.register(r'deployment_repository', views.DeploymentRepositoryViewSet)
 router.register(r'deployment', views.DeploymentViewSet, base_name='deployment')
 router.register(r'deployment_parameter', views.DeploymentParameterViewSet)
+router.register(r'deployment_build_option', views.DeploymentBuildOptionViewSet)
 router.register(r'remote_deployment_machine', views.RemoteDeploymentMachineViewSet)
 router.register(r'deployment_target', views.DeploymentTargetViewSet)
 

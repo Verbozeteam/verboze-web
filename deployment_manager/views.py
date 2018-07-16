@@ -151,7 +151,14 @@ class DeploymentViewSet(DeploymentManagerModelViewSet):
                     params.append(DeploymentParameter.objects.create(deployment=dep, parameter_name=p["parameter_name"], parameter_value=p["parameter_value"]))
                 options = []
                 for oid in data["optionIds"]:
-                    options.append(RepositoryBuildOption.objects.get(pk=oid))
+                    repo_build_option = RepositoryBuildOption.objects.get(pk=oid)
+                    options.append(repo_build_option)
+                    DeploymentBuildOption.objects.create(
+                        deployment=dep,
+                        option_name=repo_build_option.option_name,
+                        option_command=repo_build_option.option_command,
+                        option_priority=repo_build_option.option_priority
+                    )
                 disabled_repo_ids = data.get("disabledRepoIds", [])
 
                 deployment_lock = RunningDeployment.objects.create(deployment=dep)
@@ -184,6 +191,10 @@ class DeploymentViewSet(DeploymentManagerModelViewSet):
 class DeploymentParameterViewSet(DeploymentManagerModelViewSet):
     queryset = DeploymentParameter.objects.all()
     serializer_class = DeploymentParameterSerializer
+
+class DeploymentBuildOptionViewSet(DeploymentManagerModelViewSet):
+    queryset = DeploymentBuildOption.objects.all()
+    serializer_class = DeploymentBuildOptionSerializer
 
 class RunningDeploymentViewSet(DeploymentManagerModelViewSet):
     queryset = RunningDeployment.objects.all()

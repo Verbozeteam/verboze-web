@@ -19,6 +19,7 @@ class DataManagerImpl {
         deploymentRepositories: [],
         deployments: [],
         deploymentParameters: [],
+        deploymentBuildOptions: [],
     };
 
     fetchData(url, onData) {
@@ -52,6 +53,7 @@ class DataManagerImpl {
             this.fetchData('/deployment/deployment_repository/', d => this.serverData.deploymentRepositories = d),
             this.fetchData('/deployment/deployment/', d => this.serverData.deployments = d),
             this.fetchData('/deployment/deployment_parameter/', d => this.serverData.deploymentParameters = d),
+            this.fetchData('/deployment/deployment_build_option/', d => this.serverData.deploymentBuildOptions = d),
         ];
         Promise.all(promises).then((results => {
             Object.values(this._listeners).map(l => l()); // call all listeners
@@ -146,6 +148,10 @@ class DataManagerImpl {
 
     getDeploymentParameters(deployment) {
         return this.serverData.deploymentParameters.filter(p => p.deployment == deployment.id);
+    }
+
+    getDeploymentBuildOptions(deployment) {
+        return this.serverData.deploymentBuildOptions.filter(p => p.deployment == deployment.id);
     }
 
     isDeploymentConfigEditable(config) {

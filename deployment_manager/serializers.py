@@ -48,6 +48,11 @@ class DeploymentParameterSerializer(serializers.ModelSerializer):
         model = DeploymentParameter
         fields = '__all__'
 
+class DeploymentBuildOptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DeploymentBuildOption
+        fields = '__all__'
+
 class RunningDeploymentSerializer(serializers.ModelSerializer):
     deployment = DeploymentSerializer(read_only=True)
 

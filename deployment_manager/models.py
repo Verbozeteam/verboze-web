@@ -142,6 +142,24 @@ class DeploymentParameter(models.Model):
     def __str__(self):
         return "[{}] {}:{}".format(self.deployment, self.parameter_name, self.parameter_value)
 
+class DeploymentBuildOption(models.Model):
+    """
+        A build option used in a deployment
+    """
+    deployment = models.ForeignKey(
+        Deployment,
+        on_delete=models.CASCADE,
+        null=True,
+        related_name='build_options',
+        related_query_name='build_option'
+    )
+    option_name = models.CharField(max_length=256)
+    option_command = models.CharField(max_length=1024)
+    option_priority = models.IntegerField(default=1)
+
+    def __str__(self):
+        return "{}: {}".format(self.deployment, self.option_name, self.option_command, self.option_priority)
+
 class RunningDeployment(models.Model):
     """
         A deployment currently happening
