@@ -1,4 +1,4 @@
-from api.models import Token as VerbozeToken, Hub, Hotel, Room
+from api.models import Token as VerbozeToken, Hub, HubUser, Hotel, HotelUser, Room
 from django.db.models import Q
 from channels import Group
 
@@ -9,6 +9,7 @@ from raven.contrib.django.models import get_client
 client = get_client()
 
 import json
+import uuid
 from django.utils import timezone
 
 def get_valid_token(token):
@@ -22,8 +23,7 @@ def get_valid_token(token):
 
 
 def on_message_from_hub(sender_token, message_dict):
-	# From hub means a message comes from within the hotel system (tablets)
-	# check room name list
+	# From hub means a message comes from within the hotel system (hub)
 	__reply_target = message_dict.get("__reply_target", None)
 	if __reply_target:
 		# This means that this message coming from the hub, which got it from a room's kernel,
@@ -31,27 +31,39 @@ def on_message_from_hub(sender_token, message_dict):
 		# we forward the reply to the original sender (a phone or a dashboard)
 		del message_dict["__reply_target"]
 		if __reply_target == "dashboard":
-			target_hotel_dashboard = sender_token.content_object.hotel
+			target_hotel_dashboard = sender_token.content_object.hub.hotel
 			ws_target_objects = [target_hotel_dashboard]
 		else:
-			target_room = Room.objects.get(identifier=__reply_target, hotel=sender_token.content_object.hotel)
+			target_room = Room.objects.get(identifier=__reply_target, hotel=sender_token.content_object.hub.hotel)
 			ws_target_objects = [target_room]
 	else:
 		# no reply target means send to everyone (hotel dashboard and rooms(phones))
-		hotel_dashboard = [sender_token.content_object.hotel]
-		hotel_rooms = [Room.objects.get(hotel=sender_token.content_object.hotel)]
+		hotel_dashboard = [sender_token.content_object.hub.hotel]
+		hotel_rooms = list(Room.objects.filter(hotel=sender_token.content_object.hub.hotel))
 		ws_target_objects = hotel_dashboard + hotel_rooms
 
-	message_json = {"text": json.dumps(message_dict)}
-	for ws_target in ws_target_objects:
-		ws_target.ws_send_message(message_json)
+	if "code" in message_dict:
+		code = message_dict["code"]
+		if code == 3:
+			for room in Room.objects.filter(hotel=sender_token.content_object.hub.hotel):
+				for token in room.tokens.all():
+					try:
+						token.delete()
+						token.id = uuid.uuid4()
+						token.save()
+						sender_token.content_object.hub.ws_send_message({"text": json.dumps({"__room_id": room.identifier, "code": 4, "qr-code": str(token.id)})})
+					except: pass
+	else:
+		message_json = {"text": json.dumps(message_dict)}
+		for ws_target in ws_target_objects:
+			ws_target.ws_send_message(message_json)
 
 def on_message_from_dashboard(sender_token, message_dict):
 	# message_dict["__room_id"] = sender_token.content_object.identifier
 	message_dict["__reply_target"] = "dashboard"
 	message_json = {"text": json.dumps(message_dict)}
 	# forward message to hotel's hub
-	hotel_hub = sender_token.content_object.hubs.first()
+	hotel_hub = sender_token.content_object.hotel.hubs.first()
 	hotel_hub.ws_send_message(message_json)
 
 def on_message_from_phone(sender_token, message_dict):
@@ -88,9 +100,9 @@ def ws_receive(message, token):
 		# valid token, and text data found
 		message_dict = json.loads(message_text)
 		message.reply_channel.send({"accept": True})
-		if isinstance(token_object.content_object, Hub):
+		if isinstance(token_object.content_object, HubUser):
 			on_message_from_hub(token_object, message_dict)
-		elif isinstance(token_object.content_object, Hotel):
+		elif isinstance(token_object.content_object, HotelUser):
 			on_message_from_dashboard(token_object, message_dict)
 		elif isinstance(token_object.content_object, Room):
 			on_message_from_phone(token_object, message_dict)

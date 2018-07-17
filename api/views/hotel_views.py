@@ -9,6 +9,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import exceptions
 
+import json
+
 #
 # API endpoint that allows Rooms to be viewed
 # Request must be coming from Hotel User
@@ -44,8 +46,12 @@ class RoomViewSet(viewsets.ModelViewSet):
             serializer = self.serializer_class(data=request_data)
         serializer.hotel_object = hotel
 
+        tokens = room.tokens.all()
+
         if serializer.is_valid():
             serializer.save()
+            if len(tokens) > 0:
+                request.user.hub_user.hub.ws_send_message({"text": json.dumps({"__room_id": room.identifier, "code": 4, "qr-code": str(tokens[0].id)})})
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors,
                         status=status.HTTP_400_BAD_REQUEST)

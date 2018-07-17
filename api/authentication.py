@@ -22,7 +22,7 @@ class VerbozeTokenAuthentication(TokenAuthentication):
 
         time_now = timezone.now()
 
-        if auth_token.expiry < time_now:
+        if auth_token.expiry and auth_token.expiry < time_now:
             auth_token.delete()
             raise exceptions.AuthenticationFailed('Auth Token has expired')
 

@@ -1,6 +1,10 @@
 from api.models import Token, Room, Hotel, Hub, Service, ServiceAction, ServiceActionQuantity
 from rest_framework import serializers
 
+class TokenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Token
+        fields = ('id', )
 
 class RecursiveSerializer(serializers.Serializer):
     def to_representation(self, value):
@@ -42,10 +46,11 @@ class HotelSerializer(serializers.ModelSerializer):
 #
 class RoomSerializer(serializers.ModelSerializer):
     hotel = serializers.PrimaryKeyRelatedField(queryset=Hotel.objects.all(), many=False)
+    tokens = TokenSerializer(many=True, read_only=True)
 
     class Meta:
         model = Room
-        fields = ('id', 'name', 'floor', 'identifier', 'hotel',)
+        fields = ('id', 'name', 'floor', 'identifier', 'hotel', 'tokens',)
 
     def to_representation(self, obj):
         # if this serializer has hotel_object set to the hotel, it will use it instead of
@@ -55,6 +60,7 @@ class RoomSerializer(serializers.ModelSerializer):
 
         ret = super(RoomSerializer, self).to_representation(obj)
         ret['hotel'] = HotelSerializer(self.hotel_object).data
+        ret['token'] = ret['tokens'][0]['id'] if len(ret['tokens']) > 0 else None
         return ret
 
 
