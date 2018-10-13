@@ -6,21 +6,28 @@ from django.contrib.auth.models import AbstractUser
 # but we’ll be able to customize it in the future if the need arises.
 # It would be much more difficult to do so mid-project after initial migrations.
 class User(AbstractUser):
-    def __str__(self):
+    @property
+    def types(self):
         user_types = []
         if hasattr(self, 'admin_user'):
             user_types.append('admin_user')
         if hasattr(self, 'guest_user'):
-            user_types.append('GUEST USER')
+            user_types.append('guest_user')
         if hasattr(self, 'hotel_user'):
-            user_types.append('HOTEL USER')
+            user_types.append('hotel_user')
         if hasattr(self, 'hub_user'):
-            user_types.append('HUB USER')
+            user_types.append('hub_user')
+        return user_types
+
+    def __str__(self):
+        user_types = self.types
+        user_types = list(map(lambda user_type: user_type.replace('_', ' ').upper(), user_types))
 
         if len(user_types) == 0:
             return self.username
         else:
             return self.username + ' -> ' + str(user_types)
+
 
 class AdminUser(models.Model):
     user = models.OneToOneField(
@@ -34,6 +41,14 @@ class AdminUser(models.Model):
             self.user.username
         )
 
+    @property
+    def websocket_group(self):
+        return 'admin-{}'.format(self.id)
+
+    def ws_send_message(self, message):
+        # send message to this admin's group (only contains this admin)
+        Group(self.websocket_group).send(message)
+
 class GuestUser(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -45,6 +60,14 @@ class GuestUser(models.Model):
         return '[GUEST USER] {}'.format(
             self.user.username
         )
+
+    @property
+    def websocket_group(self):
+        return 'guest-{}'.format(self.id)
+
+    def ws_send_message(self, message):
+        # send message to this guest's group (only contains this guest)
+        Group(self.websocket_group).send(message)
 
 
 class HotelUser(models.Model):
