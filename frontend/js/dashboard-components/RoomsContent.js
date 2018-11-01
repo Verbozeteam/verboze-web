@@ -139,7 +139,33 @@ class RoomsContentBase extends React.Component<PropsType, StateType> {
         }
     }
 
-    renderFloor(floor: number, rooms: Array<Room>) {
+    renderFloorSuffix(floor: string) {
+        /* expecting floor to be string eg: 'G', 'B' '1', '2', ...  */
+
+        if (isNaN(parseInt(floor))) {
+            return '';
+        }
+        else {
+            var suffix = '';
+            switch (parseInt(floor)) {
+                case 1:
+                    suffix = 'st';
+                    break;
+                case 2:
+                    suffix = 'nd';
+                    break;
+                case 3:
+                    suffix = 'rd';
+                    break;
+                default:
+                    suffix = 'th';
+                    break;
+            }
+            return suffix;
+        }
+    }
+
+    renderFloor(floor: string, rooms: Array<Room>) {
         const { minimized_floors } = this.state;
 
         const minimized = minimized_floors.indexOf(floor) !== -1;
@@ -149,7 +175,7 @@ class RoomsContentBase extends React.Component<PropsType, StateType> {
                 <div style={styles.header}>
                     <div style={styles.floorHeader}>
                         <span style={styles.floorHeaderNumber}>{floor}</span>
-                        <span style={styles.floorHeader}>th Floor</span>
+                        <span style={styles.floorHeader}>{ this.renderFloorSuffix(floor) } Floor</span>
                     </div>
                     <div style={styles.hide}
                         onClick={() => this.toggleHideFloor(floor)}>
