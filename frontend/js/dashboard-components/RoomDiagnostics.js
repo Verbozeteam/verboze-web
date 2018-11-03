@@ -20,7 +20,8 @@ type StateType = {
     /* 3 - ERROR
     */
     status: number,
-    errors: Array<{[string]: string}>
+    errors: Array<{[string]: string}>,
+    loadingDots: string,
 };
 
 export default class RoomDiagnostics extends React.Component<PropsType, StateType> {
@@ -29,6 +30,7 @@ export default class RoomDiagnostics extends React.Component<PropsType, StateTyp
     state = {
         status: 1,
         errors: [],
+        loadingDots: "",
     }
 
     componentWillMount() {
@@ -56,26 +58,32 @@ export default class RoomDiagnostics extends React.Component<PropsType, StateTyp
                 case 0:
                     /* status OK */
                     this.setState({
-                        status: 0
+                        status: 0,
+                        errors: roomDiagnosticsState.report.errors,
+                        loadingDots: "",
                     });
                     break;
                 case 1:
                     /* status IDLE */
                     this.setState({
-                        status: 1
+                        status: 1,
+                        errors: roomDiagnosticsState.report.errors,
+                        loadingDots: "",
                     });
                     break;
                 case 2:
                     /* status RUNNING */
                     this.setState({
-                        status: 2
+                        status: 2,
+                        errors: roomDiagnosticsState.report.errors,
                     });
                     break;
                 case 3:
                     /* status ERROR */
                     this.setState({
                         status: 3,
-                        errors: roomDiagnosticsState.report.errors
+                        errors: roomDiagnosticsState.report.errors,
+                        loadingDots: "",
                     });
                     break;
             }
@@ -140,10 +148,14 @@ export default class RoomDiagnostics extends React.Component<PropsType, StateTyp
     }
 
     renderRoomReport() {
-        const { status, errors } = this.state;
-        var _loader = require('../../assets/dashboard_images/loader.gif');
+        const { status, errors, loadingDots } = this.state;
 
         var report = null;
+        var errorsView = (
+            <div style={ styles.errorsContainer }>
+                <ul>{errors.map((e, i) => <li style={ styles.errorText } key={'error-'+i}>{ e.error }</li>)}</ul>
+            </div>
+        );
 
         switch (status) {
             case 0:
@@ -161,17 +173,16 @@ export default class RoomDiagnostics extends React.Component<PropsType, StateTyp
             case 2:
                 /* diagnostics running */
                 report = <div style={ styles.diagnosticsReportContainer }>
-                    <span style={ styles.reportHeading }>Currently running Room Diagnostics...</span>
-                    <div style={ styles.loaderContainer }>
-                        <img src={ _loader } />
-                    </div>
+                    <span style={ styles.reportHeading }>{"Currently running Room Diagnostics" + loadingDots}</span>
+                    {errorsView}
                 </div>
+                setTimeout(() => this.setState({loadingDots: loadingDots === "...." ? "" : loadingDots + "."}), 500);
                 break;
             case 3:
                 /* diagnostics found an error */
                 report = <div style={ styles.diagnosticsReportContainer }>
                     <span style={ styles.reportHeading }>We found the following <span style={{ color: Styles.Colors.red }}>problems</span> in the room:</span>
-                    <div style={ styles.errorsContainer }>{ errors.map((e, i) => <div style={ styles.errorText } key={'error-'+i}>{ e.error }</div> ) }</div>
+                    {errorsView}
                 </div>
                 break;
         }
