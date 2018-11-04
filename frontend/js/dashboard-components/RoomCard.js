@@ -57,7 +57,7 @@ class RoomCardBase extends React.Component<PropsType, StateType> {
                         Room #{room.name}
                     </div>
                     <div style={ styles.guestName }>
-                        { guestName ? 'Yahya Alhomsi' : 'No Guest' }
+                        { guestName ? guestName : 'Yahya Alhomsi' }
                     </div>
                     <RoomView room={room} isSummary={true}/>
                 </div>

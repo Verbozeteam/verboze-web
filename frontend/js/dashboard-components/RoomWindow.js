@@ -28,22 +28,46 @@ type PropsType = {
 };
 
 type StateType = {
+    hoveringOverCloseButton: boolean
 };
 
 class RoomWindowBase extends React.Component<PropsType, StateType> {
     _close_button = require('../../assets/dashboard_images/cross.png');
 
+    state = {
+        hoveringOverCloseButton: false,
+    }
+
     onClose() {
         this.props.setCurrentRoom("");
     }
 
+    hoverOn() {
+        this.setState({
+            hoveringOverCloseButton: true
+        })
+    }
+
+    hoverOff() {
+        this.setState({
+            hoveringOverCloseButton: false
+        })
+    }
+
     render() {
         const { room } = this.props
+        const { hoveringOverCloseButton } = this.state;
 
         return (
             <div style={ styles.roomContainer }>
                 <span style={ styles.roomName }>Room #{ room.name }</span>
-                <div className={ 'float-right container' } style={ styles.closeButtonContainer } onClick={this.onClose.bind(this)}>
+                <div
+                    className={ 'float-right container' }
+                    style={{ ...styles.closeButtonContainer, backgroundColor: hoveringOverCloseButton ? Styles.Colors.background_close_button_hovering : Styles.Colors.background_close_button }}
+                    onClick={this.onClose.bind(this)}
+                    onMouseEnter={this.hoverOn.bind(this)}
+                    onMouseLeave={this.hoverOff.bind(this)}
+                    >
                     <button style={styles.closeButton}>
                         <img src={this._close_button} /> Close
                     </button>
@@ -94,7 +118,6 @@ const styles = {
         width: 154,
         height: 35,
         borderRadius: 3,
-        backgroundColor: Styles.Colors.background_close_button,
         padding: 0,
     },
     closeButton: {
@@ -104,7 +127,8 @@ const styles = {
         fontSize: 18,
         fontWeight: 500,
         borderRadius: 3,
-        border: 'none'
+        border: 'none',
+        cursor: 'pointer',
     }
 
 

@@ -4,24 +4,48 @@ import * as React from 'react';
 
 import { Colors } from '../constants/Styles';
 
+import type { OrderType } from '../js-api-utils/ConfigManager';
+
 type PropsType = {
     order: OrderType,
-    dimiss: () => {}
+    dismiss: () => {}
 };
 
-type StateType = {};
+type StateType = {
+    hoveringOverDismissButton: boolean,
+};
 
 export default class OrderCardBase extends React.Component<PropsType, StateType> {
 
+    state = {
+        hoveringOverDismissButton: false
+    }
+
+    hoverOn() {
+        this.setState({
+            hoveringOverDismissButton: true
+        })
+    }
+
+    hoverOff() {
+        this.setState({
+            hoveringOverDismissButton: false
+        })
+    }
+
     render() {
         const { order, dismiss } = this.props;
+        const { hoveringOverDismissButton } = this.state;
 
         return (
             <div style={styles.container}>
                 <p style={styles.title}>{order.name}</p>
                 <hr style={styles.divider} />
                 <div style={styles.dismissButtonContainer}>
-                    <button style={styles.dismissButton}
+                    <button
+                        style={{ ...styles.dismissButton, backgroundColor: hoveringOverDismissButton ? Colors.background_close_button_hovering : Colors.background_close_button }}
+                        onMouseEnter={this.hoverOn.bind(this)}
+                        onMouseLeave={this.hoverOff.bind(this)}
                         onClick={() => dismiss(order.id)}>
                         Dismiss
                     </button>
@@ -61,7 +85,6 @@ const styles = {
         alignItems: 'flex-end'
     },
     dismissButton: {
-        backgroundColor: `${Colors.red}33`,
         color: Colors.red,
         height: 30,
         // fontSize: 18,
@@ -69,52 +92,7 @@ const styles = {
         borderRadius: 3,
         paddingRight: 40,
         paddingLeft: 40,
-        border: 'none'
+        border: 'none',
+        cursor: 'pointer'
     }
 }
-
-// const styles = {
-//     orderContainer: {
-//         display: 'flex',
-//         flex: 1,
-//         flexDirection: 'column',
-//         alignItems: 'center',
-//         justifyContent: 'center',
-//     },
-//     orderCard: {
-//         width: 200,
-//         height: 200,
-//         borderRadius: 15,
-//         boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)',
-//         display: 'flex',
-//         flexDirection: 'column',
-//     },
-//     orderCardContent: {
-//         display: 'flex',
-//         flexDirection: 'column',
-//         flex: 3,
-//
-//         borderRadius: 15,
-//         borderBottomLeftRadius: 0,
-//         borderBottomRightRadius: 0,
-//
-//         backgroundColor: 'rgba(250, 250, 250, 0.4)',
-//         padding: 10,
-//     },
-//     orderCardTitle: {
-//         display: 'flex',
-//         flexDirection: 'column',
-//         flex: 1,
-//
-//         borderRadius: 15,
-//         borderTopLeftRadius: 0,
-//         borderTopRightRadius: 0,
-//
-//         alignItems: 'center',
-//         justifyContent: 'center',
-//         backgroundColor: 'rgba(250, 250, 250, 0.4)',
-//     },
-//     orderCardSeparator: {
-//         width: '80%',
-//     },
-// };

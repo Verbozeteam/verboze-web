@@ -58,9 +58,6 @@ class HotelOrdersBase extends React.Component<PropsType, StateType> {
     onRoomOrdersChanged(meta: ThingMetadataType, roomOrdersState: ThingStateType) {
         const { roomId, setRoomOrders } = this.props;
 
-        console.log('meta:', meta);
-        console.log('roomOrdersState:', roomOrdersState);
-
         /* an order was dismissed */
         if ('resolve_order' in roomOrdersState) {
             var orderId = roomOrdersState['resolve_order'];

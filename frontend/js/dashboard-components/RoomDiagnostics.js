@@ -22,6 +22,8 @@ type StateType = {
     status: number,
     errors: Array<{[string]: string}>,
     loadingDots: string,
+
+    hoveringOverButton: boolean
 };
 
 export default class RoomDiagnostics extends React.Component<PropsType, StateType> {
@@ -31,6 +33,7 @@ export default class RoomDiagnostics extends React.Component<PropsType, StateTyp
         status: 1,
         errors: [],
         loadingDots: "",
+        hoveringOverButton: false,
     }
 
     componentWillMount() {
@@ -111,8 +114,20 @@ export default class RoomDiagnostics extends React.Component<PropsType, StateTyp
         }, true);
     }
 
+    hoverOn() {
+        this.setState({
+            hoveringOverButton: true,
+        })
+    }
+
+    hoverOff() {
+        this.setState({
+            hoveringOverButton: false,
+        })
+    }
+
     renderActionButton() {
-        const { status } = this.state;
+        const { status, hoveringOverButton } = this.state;
 
         var actionButton = null;
 
@@ -120,7 +135,12 @@ export default class RoomDiagnostics extends React.Component<PropsType, StateTyp
             case 0:
             case 3:
                 /* diagnostics completed, button to clear report */
-                actionButton = <div className={ 'float-right container' } style={ styles.buttonContainer } onClick={ this.clearReport.bind(this) }>
+                actionButton = <div className={ 'float-right container' }
+                                    style={{ ...styles.buttonContainer, backgroundColor: hoveringOverButton ? Styles.Colors.background_run_diagnostics_button_hovering : Styles.Colors.background_run_diagnostics_button }}
+                                    onClick={ this.clearReport.bind(this) }
+                                    onMouseEnter={this.hoverOn.bind(this)}
+                                    onMouseLeave={this.hoverOff.bind(this)}
+                                    >
                     <button style={styles.button}>
                         Clear Report
                     </button>
@@ -128,7 +148,12 @@ export default class RoomDiagnostics extends React.Component<PropsType, StateTyp
                 break;
             case 1:
                 /* diagnostics idle ready to run, button to run */
-                actionButton = <div className={ 'float-right container' } style={ styles.buttonContainer } onClick={ this.runDiagnostics.bind(this) }>
+                actionButton = <div className={ 'float-right container' }
+                                    style={{ ...styles.buttonContainer, backgroundColor: hoveringOverButton ? Styles.Colors.background_run_diagnostics_button_hovering : Styles.Colors.background_run_diagnostics_button }}
+                                    onClick={ this.runDiagnostics.bind(this) }
+                                    onMouseEnter={this.hoverOn.bind(this)}
+                                    onMouseLeave={this.hoverOff.bind(this)}
+                                    >
                     <button style={styles.button}>
                         Run Diagnostics
                     </button>
@@ -136,7 +161,11 @@ export default class RoomDiagnostics extends React.Component<PropsType, StateTyp
                 break;
             case 2:
                 /* diagnostics running, disabled button */
-                actionButton = <div className={ 'float-right container' } style={ styles.buttonContainer }>
+                actionButton = <div className={ 'float-right container' }
+                                    style={{ ...styles.buttonContainer, backgroundColor: hoveringOverButton ? Styles.Colors.background_run_diagnostics_button_hovering : Styles.Colors.background_run_diagnostics_button }}
+                                    onMouseEnter={this.hoverOn.bind(this)}
+                                    onMouseLeave={this.hoverOff.bind(this)}
+                                    >
                     <button style={styles.button} disabled={true}>
                         Running...
                     </button>
@@ -161,7 +190,7 @@ export default class RoomDiagnostics extends React.Component<PropsType, StateTyp
             case 0:
                 /* ok, all checks successful */
                 report = <div style={ styles.diagnosticsReportContainer }>
-                    <span style={ styles.reportHeading }>All checks completed successfully. The Room is ready to welcome a new guest.</span>
+                    <span style={{ ...styles.reportHeading, color: Styles.Colors.green }}>All checks completed successfully. The Room is ready to welcome a new guest.</span>
                 </div>
                 break;
             case 1:
@@ -222,7 +251,6 @@ const styles = {
         width: 207,
         height: 35,
         borderRadius: 3,
-        backgroundColor: Styles.Colors.background_run_diagnostics_button,
         padding: 0,
     },
     button: {
@@ -232,7 +260,8 @@ const styles = {
         fontSize: 18,
         fontWeight: 500,
         borderRadius: 3,
-        border: 'none'
+        border: 'none',
+        cursor: 'pointer',
     },
     diagnosticsReportContainer: {
         paddingTop: 75 /* 40 + 35 (height of action button) */

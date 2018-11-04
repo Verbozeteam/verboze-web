@@ -69,7 +69,7 @@ class RoomOrdersBase extends React.Component<PropsType, StateType> {
         return (
             <div style={styles.headerContainer}>
                 <p style={styles.roomName}>{`Room #${roomId}`}</p>
-                <p style={styles.guestName}>Guest Mc Guest</p>
+                <p style={styles.guestName}>Yahya Alhomsi</p>
             </div>
         );
     }
