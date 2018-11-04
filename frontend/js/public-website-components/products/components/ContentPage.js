@@ -77,7 +77,7 @@ export default class ContentPage extends Component<PropsType, StateType> {
                         <div className="row">
                             <div className="col-md-9">
                                 <Helmet>
-                                    <title>Adopting Verboze | Verboze</title>
+                                    <title>{product.name + " | Verboze"}</title>
                                     <meta name="description" content={product.page.title} />
                                     <meta name="path" content={product.link} />
                                 </Helmet>

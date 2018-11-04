@@ -7,10 +7,10 @@ import ImageHolder from './components/ImagesHolder';
 const Product3: ProductType = {
     name: 'Room Diagnostics',
     link: '/room-diagnostics',
-    image: require('../../../assets/images/adopting_verboze_panel.jpg'),
+    image: require('../../../assets/images/diagnostics_dashboard_with_human_panel.jpg'),
     page: {
-        title: "Carving the path to a seamless future",
-        banner: require('../../../assets/images/adopting_verboze.jpg'),
+        title: "Room Diagnostics",
+        banner: require('../../../assets/images/diagnostics_dashboard_with_human.jpg'),
         sections: [{
             name: "Motivation",
             slug: "motivation",
@@ -23,17 +23,16 @@ const Product3: ProductType = {
             slug: "how-it-works",
             renderContent: () =>
                 <div>
-                    <p>{"We install the system in the room and reroute the wires of the room to it. The rerouting is all done in a central spot in the room (the electrical distribution board) and it requires no breaking walls, pulling wires or making any heavy changes to the room. The sensors in the system analyze and monitor the state of the room, using our machine learning algorithm, not only can we detect faults in the room, but also predict them ahead of time."}</p>
+                    <p>{"We install the system in your room and reroute the wires of the room to it. The rerouting is all done in a central spot in your room (the electrical distribution board) and it requires no breaking walls, pulling wires or making any heavy changes to your room. The sensors in the system analyze and monitor the state of your room, using our machine learning algorithm, not only can we detect faults in your room, but also predict them ahead of time."}</p>
                 </div>
         }, {
             name: "Dashboard",
             slug: "dashboard",
             renderContent: () =>
                 <div>
-                    <p>{"Our real time dashboard gives the hotel staff a holistic view of all the rooms. They can see the status of the rooms, whether they requested housekeeping or asked to not be disturbed. All room orders are displayed on the dashboard as they come in. Performing automated room diagnostics to a room before sending the guest to it is just a click away."}</p>
+                    <p>{"Our real time dashboard gives the hotel staff a holistic view of all your rooms. They can see the status of your rooms, whether they requested housekeeping or asked not to be disturbed. All room orders are displayed on the dashboard as they come in. Performing automated room diagnostics to a room before sending the guest to it is just a click away."}</p>
                     <ImageHolder images={[
-                        require('../../../assets/images/lightbulb3.png'),
-                        require('../../../assets/images/lightbulb3.png'),
+                        require('../../../assets/images/dashboard_monitor.png'),
                     ]} />
                 </div>
         }, {

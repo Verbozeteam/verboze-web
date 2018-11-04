@@ -42,6 +42,7 @@ const styles = {
         marginLeft: 'auto',
         marginRight: 'auto',
         display: 'block',
+        maxHeight: 500,
     }
 };
 
